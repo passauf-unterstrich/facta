@@ -1,0 +1,34 @@
+:root {
+	/* Flächen: von hinten nach vorn gestaffelt, wie Bühnenebenen */
+	--bg: #0a0a0b;            /* die Bühne selbst */
+	--flaeche: #18181b;       /* Karten */
+	--flaeche-hoch: #27272a;  /* Eingabefelder, Hover-Zustände */
+	--linie: #27272a;         /* leise Ränder */
+	--linie-stark: #3f3f46;   /* betonte Ränder */
+
+	/* Text: drei Lautstärken */
+	--text: #f4f4f5;          /* Sprechen */
+	--text-leise: #a1a1aa;    /* Murmeln (Untertitel, Labels) */
+	--text-fluester: #71717a; /* Flüstern (Metadaten, Hinweise) */
+
+	/* EINE Akzentfarbe — Apple-Prinzip: Zurückhaltung ist Eleganz */
+	--akzent: #0a84ff;
+	--akzent-hover: #409cff;
+
+	/* Typ-Farben: dezente Signale an der Kartenkante, keine Ampel */
+	--typ-fall: #0a84ff;
+	--typ-schema: #bf5af2;
+	--typ-definition: #30d158;
+	--typ-subsumtion: #ff9f0a;
+	--typ-simpel: #98989d;
+
+	/* Geometrie: bewusst nur drei Radien im ganzen Projekt */
+	--radius-s: 6px;
+	--radius-m: 10px;
+	--radius-l: 14px;
+
+	/* Schrift: -apple-system greift auf Mac & iPhone direkt
+	   San Francisco ab — die echte Apple-Systemschrift, gratis */
+	--schrift: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', system-ui, sans-serif;
+	--mono: ui-monospace, 'SF Mono', Menlo, monospace;
+}
