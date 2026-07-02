@@ -12,3 +12,14 @@ export function rendere(text: string): string {
 	);
 	return marked.parse(mitLinks, { async: false });
 }
+
+// Für Listen & Vorschauen: Markdown-Zeichen entfernen, nur Klartext.
+// "Was ist ein **Angebot**?" → "Was ist ein Angebot?"
+export function klartext(text: string): string {
+	return text
+		.replace(/\[\[([^\]|]+)\|[^\]]+\]\]/g, '$1') // [[Text|id]] → Text
+		.replace(/\*\*([^*]+)\*\*/g, '$1')
+		.replace(/\*([^*]+)\*/g, '$1')
+		.replace(/^#+\s*/gm, '')
+		.replace(/`([^`]+)`/g, '$1');
+}

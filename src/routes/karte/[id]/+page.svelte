@@ -5,10 +5,15 @@
 	import KinderListe from '$lib/components/KinderListe.svelte';
 	import LinkMenu from '$lib/components/LinkMenu.svelte';
 	import type { Karte, Kind } from '$lib/types';
+    import { page } from '$app/state';
 
 	let { data } = $props();
 
-	let modus = $state<'lernen' | 'bauen'>('lernen');
+	// Default ist Lernen — außer die URL wünscht explizit anderes
+	// (z.B. Sprung von "Erstellen & bauen" aus der Verwaltung)
+	let modus = $state<'lernen' | 'bauen'>(
+		page.url.searchParams.get('modus') === 'bauen' ? 'bauen' : 'lernen'
+	);
 	let zeigeVerknuepft = $state(false);
 
 	// Lern-Zustand (Ableitung: gehört zur Karten-ID)

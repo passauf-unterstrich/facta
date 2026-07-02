@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { Karte } from '$lib/types';
+	import { klartext } from '$lib/markdown';
 
 	let { data } = $props();
 
@@ -43,7 +44,7 @@
 					{#each faelle as fall (fall.id)}
 						<a class="fall-karte" href={`/karte/${fall.id}`}>
 							<span class="typ-punkt" style:--punkt="var(--typ-fall)"></span>
-							<span class="fall-front">{fall.front}</span>
+							<span class="fall-front">{klartext(fall.front)}</span>
 						</a>
 					{/each}
 				</div>
@@ -56,7 +57,7 @@
 				{#each gefiltert as node (node.id)}
 					<a class="zeile" href={`/karte/${node.id}`}>
 						<span class="typ-punkt" style:--punkt="var(--typ-{node.type})"></span>
-						<span class="zeile-front">{node.front}</span>
+						<span class="zeile-front">{klartext(node.front)}</span>
 					</a>
 				{/each}
 			</div>
