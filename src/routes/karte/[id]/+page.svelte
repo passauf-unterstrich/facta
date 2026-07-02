@@ -1,34 +1,72 @@
 <script lang="ts">
-	import { rendere } from '$lib/markdown';
+	import LernKarte from '$lib/components/LernKarte.svelte';
+	import type { Karte } from '$lib/types';
 
 	let { data } = $props();
 
-	// Trick: aufgedeckt "gehoert" zur Karten-ID. Wechselt die Karte,
-	// liefert der Vergleich automatisch false — Ableitung statt Reset.
+	// Basis-Karte: aufgedeckt gehört zur ID (Ableitung statt Reset)
 	let aufgedecktFuer = $state('');
-	const aufgedeckt = $derived(aufgedecktFuer === data.node.id);
+	const basisAufgedeckt = $derived(aufgedecktFuer === data.node.id);
+
+	// Der Stapel der Pop-up-Layer. Auch er "gehört" zur Basis-Karte:
+	// navigierst du zu einer anderen Karte, zählt der alte Stapel nicht.
+	type Layer = { node: Karte; aufgedeckt: boolean };
+	let stack = $state<Layer[]>([]);
+	let stackFuer = $state('');
+	const layers = $derived(stackFuer === data.node.id ? stack : []);
+
+	async function oeffne(id: string) {
+		const res = await fetch(`/api/nodes/${id}`);
+		if (!res.ok) return;
+		const daten = await res.json();
+		const bisher = stackFuer === data.node.id ? stack : [];
+		stackFuer = data.node.id;
+		stack = [...bisher, { node: daten.node, aufgedeckt: false }];
+	}
+
+	function schliesseOberste() {
+		stack = stack.slice(0, -1);
+	}
 </script>
+
+<!-- Esc schließt den obersten Layer — Tastatur gehört zum guten Ton -->
+<svelte:window
+	onkeydown={(e) => {
+		if (e.key === 'Escape' && layers.length > 0) schliesseOberste();
+	}}
+/>
 
 <div class="seite">
 	<nav class="leiste">
 		<a class="zurueck" href="/">‹ Bibliothek</a>
 	</nav>
 
-	<article class="karte">
-		<div class="typ">
-			<span class="typ-punkt" style:--punkt="var(--typ-{data.node.type})"></span>
-			{data.node.type}
-		</div>
-
-		<div class="inhalt">{@html rendere(data.node.front)}</div>
-
-		{#if aufgedeckt}
-			<div class="inhalt rueckseite">{@html rendere(data.node.back)}</div>
-		{:else if data.node.back}
-			<button class="aufdecken" onclick={() => (aufgedecktFuer = data.node.id)}>Aufdecken</button>
-		{/if}
-	</article>
+	<LernKarte
+		node={data.node}
+		aufgedeckt={basisAufgedeckt}
+		onaufdecken={() => (aufgedecktFuer = data.node.id)}
+		onlink={oeffne}
+	/>
 </div>
+
+{#each layers as layer, i (i)}
+	<div
+		class="overlay"
+		style:--tiefe={i}
+		onclick={schliesseOberste}
+		role="presentation"
+	>
+		<div class="overlay-inhalt" onclick={(e) => e.stopPropagation()} role="presentation">
+			<LernKarte
+				node={layer.node}
+				aufgedeckt={layer.aufgedeckt}
+				onaufdecken={() => (stack[i].aufgedeckt = true)}
+				onlink={oeffne}
+				onschliessen={schliesseOberste}
+			/>
+		</div>
+	</div>
+{/each}
 
 <style>
 	.seite {
@@ -39,7 +77,6 @@
 		flex-direction: column;
 		gap: 1.5rem;
 	}
-
 	.leiste { display: flex; }
 	.zurueck {
 		color: var(--text-fluester);
@@ -49,86 +86,36 @@
 	}
 	.zurueck:hover { color: var(--text); }
 
-	.karte {
-		background: var(--flaeche);
-		border: 1px solid var(--linie);
-		border-radius: var(--radius-l);
-		padding: 2rem;
-		box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
-	}
-
-	.typ {
+	/* Der Vorhang: dunkelt ab UND zieht Unschärfe über das Dahinter —
+	   das schafft echte Tiefe statt bloßem Grauschleier */
+	.overlay {
+		position: fixed;
+		inset: 0;
+		z-index: 50;
 		display: flex;
-		align-items: center;
-		gap: 0.45rem;
-		font-family: var(--mono);
-		font-size: 0.7rem;
-		text-transform: uppercase;
-		letter-spacing: 0.08em;
-		color: var(--text-fluester);
-		margin-bottom: 1.25rem;
+		align-items: flex-start;
+		justify-content: center;
+		overflow-y: auto;
+		background: rgba(0, 0, 0, 0.45);
+		backdrop-filter: blur(6px);
+		-webkit-backdrop-filter: blur(6px);
+		padding: 2rem 1.5rem;
+		animation: vorhang 0.2s ease;
 	}
-	.typ-punkt {
-		width: 7px;
-		height: 7px;
-		border-radius: 50%;
-		background: var(--punkt, var(--typ-simpel));
+	@keyframes vorhang {
+		from { opacity: 0; }
+		to { opacity: 1; }
 	}
 
-	.inhalt {
-		font-size: 1rem;
-		line-height: 1.65;
+	.overlay-inhalt {
+		width: 100%;
+		max-width: 42rem;
+		/* Jeder Layer rückt spürbar tiefer: Versatz wächst mit --tiefe */
+		margin-top: calc(3rem + var(--tiefe) * 1.25rem);
+		animation: auftauchen 0.22s cubic-bezier(0.2, 0.9, 0.3, 1);
 	}
-	/* Markdown-Kinder stylen: :global nötig, weil marked das HTML
-	   erzeugt und Svelte es nicht als "eigenes" erkennt */
-	.inhalt :global(p) { margin: 0 0 0.75em; }
-	.inhalt :global(p:last-child) { margin-bottom: 0; }
-	.inhalt :global(strong) { font-weight: 600; }
-	.inhalt :global(ul) { padding-left: 1.25em; margin: 0 0 0.75em; }
-	.inhalt :global(ol) { padding-left: 1.25em; margin: 0 0 0.75em; }
-	.inhalt :global(li) { margin-bottom: 0.25em; }
-
-	.rueckseite {
-		margin-top: 1.5rem;
-		padding-top: 1.5rem;
-		border-top: 1px solid var(--linie);
-		color: var(--text-leise);
-		animation: einblenden 0.25s ease;
-	}
-	@keyframes einblenden {
-		from { opacity: 0; transform: translateY(4px); }
-		to { opacity: 1; transform: translateY(0); }
-	}
-
-	.aufdecken {
-		margin-top: 1.5rem;
-		background: var(--flaeche-hoch);
-		color: var(--text);
-		border: 1px solid var(--linie-stark);
-		border-radius: var(--radius-m);
-		padding: 0.55rem 1.3rem;
-		font-family: inherit;
-		font-size: 0.9rem;
-		font-weight: 500;
-		cursor: pointer;
-		transition: background 0.15s ease, transform 0.1s ease;
-	}
-	.aufdecken:hover { background: var(--linie-stark); }
-	.aufdecken:active { transform: scale(0.97); }
-
-	:global(.inline-link) {
-		background: none;
-		border: none;
-		padding: 0;
-		font: inherit;
-		color: var(--akzent);
-		cursor: pointer;
-		text-decoration: underline;
-		text-decoration-color: color-mix(in srgb, var(--akzent) 35%, transparent);
-		text-underline-offset: 3px;
-		transition: text-decoration-color 0.15s ease;
-	}
-	:global(.inline-link:hover) {
-		text-decoration-color: var(--akzent);
+	@keyframes auftauchen {
+		from { opacity: 0; transform: translateY(14px) scale(0.985); }
+		to { opacity: 1; transform: translateY(0) scale(1); }
 	}
 </style>
