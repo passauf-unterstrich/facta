@@ -37,7 +37,10 @@ export default defineConfig(
 		rules: {
 			// Facta läuft immer an der Domain-Wurzel — resolve() für jeden
 			// Link wäre Aufwand ohne Nutzen. Bewusst deaktiviert.
-			'svelte/no-navigation-without-resolve': 'off'
+			'svelte/no-navigation-without-resolve': 'off',
+			// Kartentexte kommen ausschliesslich aus der eigenen DB (Ein-
+			// Personen-Betrieb). Bei Multi-User: Sanitizer in markdown.ts.
+			'svelte/no-at-html-tags': 'off'
 		}
 	}
 );
