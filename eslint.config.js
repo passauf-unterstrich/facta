@@ -34,8 +34,10 @@ export default defineConfig(
 		}
 	},
 	{
-		// Override or add rule settings here, such as:
-		// 'svelte/button-has-type': 'error'
-		rules: {}
+		rules: {
+			// Facta läuft immer an der Domain-Wurzel — resolve() für jeden
+			// Link wäre Aufwand ohne Nutzen. Bewusst deaktiviert.
+			'svelte/no-navigation-without-resolve': 'off'
+		}
 	}
 );
