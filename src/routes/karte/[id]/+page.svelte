@@ -193,6 +193,7 @@
 <div class="modus-hud">
 	<button class:aktiv={modus === 'lernen'} onclick={() => (modus = 'lernen')}>Lernen</button>
 	<button class:aktiv={modus === 'bauen'} onclick={() => (modus = 'bauen')}>Bauen</button>
+	<a class="hud-link" href={`/graph/${data.node.id}`}>Graph</a>
 </div>
 
 <style>
@@ -250,6 +251,18 @@
 		background: var(--flaeche-hoch);
 		color: var(--text);
 	}
+	.hud-link {
+		display: flex;
+		align-items: center;
+		border-radius: 999px;
+		padding: 0.3rem 1rem;
+		color: var(--text-fluester);
+		font-size: 0.8rem;
+		font-weight: 500;
+		text-decoration: none;
+		transition: color 0.15s ease;
+	}
+	.hud-link:hover { color: var(--text); }
 
 	.schalter {
 		display: flex;
