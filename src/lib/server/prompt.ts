@@ -5,7 +5,7 @@ import { db } from '$lib/server/db';
 // Karten wiederverwendet statt Duplikate anzulegen (Bahnhof-Effekt).
 export function bauePrompt(): string {
 	const bestand = db
-		.prepare("SELECT id, type, front FROM nodes ORDER BY type, id")
+		.prepare('SELECT id, type, front FROM nodes ORDER BY type, id')
 		.all() as Array<{ id: string; type: string; front: string }>;
 
 	const bestandListe =
@@ -75,7 +75,7 @@ Beispiele:
   fall_zerrissener_kaufvertrag
   agl_p280_1_bgb
   def_angebot
-  sub_angebot_zeitungsinserat   ← Subsumtions-IDs mit Fallbezug im Slug
+  sub_angebot_zeitungsinserat   (Subsumtions-IDs mit Fallbezug im Slug)
 
 
 ━━━ 4 · BESTEHENDE KARTEN — DUPLIKATE VERMEIDEN ━━━━━━━
@@ -97,3 +97,4 @@ front-Texte kurz und lernkartentauglich.
 Markdown erlaubt (**fett**, Listen).
 area ist eines von: zivilrecht · strafrecht · oeffentliches_recht ·
 kapitalgesellschaftsrecht`;
+}
