@@ -67,6 +67,28 @@
 		}
 	}
 
+	// --- KI-Prompt ---
+	// Safari verlangt: Clipboard-Schreiben muss DIREKT auf den Klick
+	// folgen, ohne await dazwischen. Also Prompt vorab laden.
+	let promptStatus = $state('');
+	let promptText = $state('');
+
+	$effect(() => {
+		fetch('/api/prompt')
+			.then((r) => r.text())
+			.then((t) => (promptText = t));
+	});
+
+	async function kopierePrompt() {
+		try {
+			await navigator.clipboard.writeText(promptText);
+			promptStatus = 'Prompt in der Zwischenablage — mit PDF ins Chatfenster, JSON zurück, hier importieren.';
+		} catch {
+			promptStatus = 'Kopieren blockiert — Prompt öffnet sich als Seite: /api/prompt';
+		}
+		setTimeout(() => (promptStatus = ''), 6000);
+	}
+
 	// --- Löschen ---
 	async function loesche(id: string, front: string) {
 		if (!confirm(`„${front}" wirklich löschen? Alle Verknüpfungen werden mit entfernt.`)) return;
@@ -118,9 +140,13 @@
 				JSON importieren
 			</label>
 			<a class="knopf-grau" href="/api/export" download>Backup exportieren</a>
+			<button class="knopf-grau" onclick={kopierePrompt}>KI-Prompt kopieren</button>
 		</div>
 		{#if importStatus}
 			<p class="status">{importStatus}</p>
+		{/if}
+		{#if promptStatus}
+			<p class="status">{promptStatus}</p>
 		{/if}
 	</section>
 
