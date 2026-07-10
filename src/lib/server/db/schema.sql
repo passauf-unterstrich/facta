@@ -6,6 +6,8 @@ CREATE TABLE IF NOT EXISTS nodes (
   area       TEXT,
   front      TEXT NOT NULL,
   back       TEXT NOT NULL DEFAULT '',
+  title      TEXT,
+  ref        TEXT,
   created_at TEXT NOT NULL DEFAULT (datetime('now')),
   updated_at TEXT NOT NULL DEFAULT (datetime('now'))
 );

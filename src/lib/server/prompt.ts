@@ -5,12 +5,12 @@ import { db } from '$lib/server/db';
 // Karten wiederverwendet statt Duplikate anzulegen (Bahnhof-Effekt).
 export function bauePrompt(): string {
 	const bestand = db
-		.prepare('SELECT id, type, front FROM nodes ORDER BY type, id')
-		.all() as Array<{ id: string; type: string; front: string }>;
+		.prepare('SELECT id, type, front, title FROM nodes ORDER BY type, id')
+		.all() as Array<{ id: string; type: string; front: string; title: string | null }>;
 
 	const bestandListe =
 		bestand.length > 0
-			? bestand.map((n) => `- ${n.id} [${n.type}]: ${n.front.slice(0, 80)}`).join('\n')
+			? bestand.map((n) => `- ${n.id} [${n.type}]: ${(n.title ?? n.front).slice(0, 80)}`).join('\n')
 			: '(noch keine Karten vorhanden)';
 
 	return `Du bist ein Assistent, der juristische Fälle in strukturierte Lernkarten für die App Facta umwandelt. Du erhältst einen Fall mit Lösung (meist als PDF).
@@ -19,7 +19,7 @@ Erzeuge daraus AUSSCHLIESSLICH ein JSON-Objekt nach diesem Format — keine Erkl
 
 {
   "nodes": [
-    { "id": "...", "type": "...", "area": "...", "front": "...", "back": "..." }
+    { "id": "...", "type": "...", "area": "...", "title": "...", "ref": "...", "front": "...", "back": "..." }
   ],
   "edges": []
 }
@@ -29,13 +29,17 @@ Erzeuge daraus AUSSCHLIESSLICH ein JSON-Objekt nach diesem Format — keine Erkl
 
 fall
   Der Fall selbst.
-  front: prägnanter Titel
-  back:  kurze Sachverhaltszusammenfassung, dann die Gliederung der
-         geprüften Anspruchsgrundlagen als Liste (I., II., ...) —
-         jede Anspruchsgrundlage als Link.
+  title: prägnanter Kurztitel (Pflicht), z.B.
+         "SE wegen KV über nur zeitweise bewohnbares Wochenendhaus"
+  ref:   Aktenzeichen; bei Lehrbuchfällen "fiktiv" (Pflicht)
+  front: der Sachverhalt, kompakt, kursiv (*...*)
+  back:  Gliederung der geprüften Anspruchsgrundlagen als Liste
+         (I., II., ...) — jede Anspruchsgrundlage als Link. Einrückung
+         mit führenden Leerzeichen ist erlaubt und bleibt erhalten.
 
 schema
   Eine Anspruchsgrundlage / ein Prüfungsschema.
+  title: kurzer Anzeigename (Pflicht), z.B. "Schema: c.i.c."
   front: Norm mit Kurzbezeichnung (z.B. "§ 280 I BGB — Schadensersatz")
   back:  Tatbestandsmerkmale als nummerierte Liste, jedes
          prüfungsrelevante Merkmal als Link auf seine Definition.
@@ -54,6 +58,8 @@ subsumtion
 
 simpel
   Nur für Wissen ohne Fallbezug.
+
+title und ref bei definition, subsumtion und simpel weglassen (null).
 
 
 ━━━ 2 · LINKS UND KANTEN (WICHTIG) ━━━━━━━━━━━━━━━━━━━━

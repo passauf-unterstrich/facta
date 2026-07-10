@@ -63,7 +63,7 @@
 
 <div class="kopf">
 	<a class="zurueck" href={`/karte/${data.start.id}`}>‹ Zur Karte</a>
-	<h1>{klartext(data.start.front)}</h1>
+	<h1>{klartext(data.start.title ?? data.start.front)}</h1>
 </div>
 
 <div class="band" bind:this={band}>
@@ -76,7 +76,7 @@
 					onclick={() => waehle(i, eintrag.id)}
 				>
 					<span class="typ-punkt" style:--punkt="var(--typ-{eintrag.type})"></span>
-					<span class="eintrag-text">{klartext(eintrag.front)}</span>
+					<span class="eintrag-text">{klartext(eintrag.title ?? eintrag.front)}</span>
 					{#if hatKinder(eintrag.id)}<span class="pfeil">›</span>{/if}
 				</button>
 			{/each}

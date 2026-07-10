@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { klartext } from '$lib/markdown';
 	import type { Kind } from '$lib/types';
 
 	let {
@@ -17,7 +18,7 @@
 			{#each children as kind (kind.edge_id)}
 				<button class="kachel" onclick={() => onwahl(kind.id)}>
 					<span class="typ-punkt" style:--punkt="var(--typ-{kind.type})"></span>
-					<span class="front">{kind.front}</span>
+					<span class="front">{klartext(kind.title ?? kind.front)}</span>
 					{#if kind.label}<span class="label">{kind.label}</span>{/if}
 				</button>
 			{/each}

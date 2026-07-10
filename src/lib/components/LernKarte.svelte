@@ -37,11 +37,15 @@
 			<span class="typ-punkt" style:--punkt="var(--typ-{node.type})"></span>
 			{node.type}
 		</div>
-		{#if onschliessen}
-			<button class="schliessen" onclick={onschliessen} aria-label="Schließen">×</button>
-		{/if}
+		<div class="kopf-rechts">
+			{#if node.ref}<span class="ref">{node.ref}</span>{/if}
+			{#if onschliessen}
+				<button class="schliessen" onclick={onschliessen} aria-label="Schließen">×</button>
+			{/if}
+		</div>
 	</div>
 
+	{#if node.title}<div class="titel">{node.title}</div>{/if}
 	<div class="inhalt">{@html rendere(node.front)}</div>
 
 	{#if aufgedeckt}
@@ -93,6 +97,14 @@
 		transition: color 0.15s ease;
 	}
 	.schliessen:hover { color: var(--text); }
+	.kopf-rechts { display: flex; align-items: center; gap: 0.6rem; }
+	.ref { font-family: var(--mono); font-size: 0.7rem; color: var(--text-fluester); }
+	.titel {
+		font-size: 1.15rem;
+		font-weight: 600;
+		letter-spacing: -0.01em;
+		margin-bottom: 0.75rem;
+	}
 
 	.inhalt { font-size: 1rem; line-height: 1.65; }
 	.inhalt :global(p) { margin: 0 0 0.75em; }

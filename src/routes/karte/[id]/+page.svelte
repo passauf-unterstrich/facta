@@ -4,7 +4,7 @@
 	import BauKarte from '$lib/components/BauKarte.svelte';
 	import KinderListe from '$lib/components/KinderListe.svelte';
 	import LinkMenu from '$lib/components/LinkMenu.svelte';
-	import type { Karte, Kind } from '$lib/types';
+	import type { Karte, Kind, BauDaten } from '$lib/types';
     import { page } from '$app/state';
 
 	let { data } = $props();
@@ -33,8 +33,7 @@
 		start: number;
 		ende: number;
 		text: string;
-		front: string;
-		back: string;
+		daten: BauDaten;
 	} | null>(null);
 
 	async function holeKarte(id: string) {
@@ -58,11 +57,11 @@
 	// Speichern: schreibt die Karte, dann Daten frisch holen.
 	// invalidateAll() lässt SvelteKit die load-Funktion neu laufen —
 	// so sieht die Basis-Karte ihre neuen Kinder sofort.
-	async function speichere(node: Karte, front: string, back: string) {
+	async function speichere(node: Karte, daten: BauDaten) {
 		await fetch('/api/nodes', {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify({ id: node.id, type: node.type, area: node.area, front, back })
+			body: JSON.stringify({ id: node.id, area: node.area, ...daten })
 		});
 		if (stackFuer === data.node.id && stack.length > 0) {
 			// Layer auffrischen, deren Karte das war
@@ -77,8 +76,8 @@
 	}
 
 	// Verlinken Schritt 1: BauKarte meldet Markierung + aktuellen Text
-	function linkStart(ebene: number, start: number, ende: number, text: string, front: string, back: string) {
-		link = { ebene, start, ende, text, front, back };
+	function linkStart(ebene: number, start: number, ende: number, text: string, daten: BauDaten) {
+		link = { ebene, start, ende, text, daten };
 	}
 
 	// Verlinken Schritt 2: Ziel gewählt → [[Text|id]] in den Text setzen,
@@ -87,9 +86,10 @@
 		if (!link) return;
 		const l = link;
 		link = null;
-		const neuerBack = l.back.slice(0, l.start) + `[[${l.text}|${zielId}]]` + l.back.slice(l.ende);
+		const neuerBack =
+			l.daten.back.slice(0, l.start) + `[[${l.text}|${zielId}]]` + l.daten.back.slice(l.ende);
 		const node = l.ebene === -1 ? data.node : stack[l.ebene].node;
-		await speichere(node, l.front, neuerBack);
+		await speichere(node, { ...l.daten, back: neuerBack });
 		await oeffne(zielId);
 	}
 </script>
@@ -128,15 +128,15 @@
 		{#key data.node.id}
 			<BauKarte
 				node={data.node}
-				onsave={(front, back) => speichere(data.node, front, back)}
-				onlinkstart={(start, ende, text, front, back) =>
-					linkStart(-1, start, ende, text, front, back)}
+				onsave={(daten) => speichere(data.node, daten)}
+				onlinkstart={(start, ende, text, daten) => linkStart(-1, start, ende, text, daten)}
 			/>
 		{/key}
 		{#if link && link.ebene === -1}
 			<LinkMenu
 				markText={link.text}
 				area={data.node.area}
+				elternTyp={data.node.type}
 				onfertig={linkFertig}
 				onabbrechen={() => (link = null)}
 			/>
@@ -168,9 +168,8 @@
 				{#key layer.node.id}
 					<BauKarte
 						node={layer.node}
-						onsave={(front, back) => speichere(layer.node, front, back)}
-						onlinkstart={(start, ende, text, front, back) =>
-							linkStart(i, start, ende, text, front, back)}
+						onsave={(daten) => speichere(layer.node, daten)}
+						onlinkstart={(start, ende, text, daten) => linkStart(i, start, ende, text, daten)}
 						onschliessen={schliesseOberste}
 					/>
 				{/key}
@@ -178,6 +177,7 @@
 					<LinkMenu
 						markText={link.text}
 						area={layer.node.area}
+						elternTyp={layer.node.type}
 						onfertig={linkFertig}
 						onabbrechen={() => (link = null)}
 					/>

@@ -10,6 +10,8 @@ export type Karte = {
 	area: string | null;
 	front: string;
 	back: string;
+    title: string | null;
+	ref: string | null;
 	created_at: string;
 	updated_at: string;
 };
@@ -46,6 +48,8 @@ export type FactaExport = {
 		area?: string | null;
 		front: string;
 		back?: string;
+		title?: string | null;
+		ref?: string | null;
 	}>;
 	edges: Array<{
 		from_id: string;
@@ -53,4 +57,12 @@ export type FactaExport = {
 		label?: string | null;
 		position?: number | null;
 	}>;
+};
+// Der Entwurf einer Karte im Bauen-Modus — gebündelt statt fünf Parameter
+export type BauDaten = {
+	type: KartenTyp;
+	front: string;
+	back: string;
+	title: string | null;
+	ref: string | null;
 };

@@ -10,7 +10,12 @@ export function rendere(text: string): string {
 		/\[\[([^\]|]+)\|([^\]]+)\]\]/g,
 		'<button type="button" class="inline-link" data-link="$2">$1</button>'
 	);
-	return marked.parse(mitLinks, { async: false });
+	// Führende Leerzeichen werden zu geschützten Leerzeichen:
+	// Einrückung bleibt sichtbar (A. → I. → 1.), und 4+ Leerzeichen
+	// kippen nicht mehr in Markdowns Code-Block-Falle.
+	const eingerueckt = mitLinks.replace(/^ +/gm, (m) => '\u00A0'.repeat(m.length));
+	// breaks: einfacher Zeilenumbruch im Text = Umbruch auf der Karte
+	return marked.parse(eingerueckt, { async: false, breaks: true });
 }
 
 // Für Listen & Vorschauen: Markdown-Zeichen entfernen, nur Klartext.

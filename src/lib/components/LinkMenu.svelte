@@ -4,19 +4,35 @@
 	let {
 		markText,
 		area,
+		elternTyp,
 		onfertig,
 		onabbrechen
 	}: {
 		markText: string;
 		area: string | null;
+		elternTyp: KartenTyp;
 		onfertig: (zielId: string) => void;
 		onabbrechen: () => void;
 	} = $props();
 
+	// Die natürliche Prüfungskaskade: Wer von einem Fall aus verlinkt,
+	// meint meist ein Schema; vom Schema die Definition; von der
+	// Definition die Subsumtion.
+	const folgeTyp: Record<KartenTyp, KartenTyp> = {
+		fall: 'schema',
+		schema: 'definition',
+		definition: 'subsumtion',
+		subsumtion: 'simpel',
+		simpel: 'simpel'
+	};
+
 	let alle = $state<Karte[]>([]);
-	let suche = $state(markText); // Suche startet mit dem markierten Begriff
+	// svelte-ignore state_referenced_locally
+	let suche = $state(markText);
 	let zeigeNeu = $state(false);
-	let neuTyp = $state<KartenTyp>('definition');
+	// svelte-ignore state_referenced_locally
+	let neuTyp = $state<KartenTyp>(folgeTyp[elternTyp]);
+	// svelte-ignore state_referenced_locally
 	let neuFront = $state(markText);
 	let sucheFeld: HTMLInputElement | null = $state(null);
 
@@ -32,13 +48,12 @@
 			.filter(
 				(n) =>
 					n.front.toLowerCase().includes(suche.toLowerCase()) ||
+					(n.title ?? '').toLowerCase().includes(suche.toLowerCase()) ||
 					n.id.toLowerCase().includes(suche.toLowerCase())
 			)
 			.slice(0, 8)
 	);
 
-	// Auto-ID: "Was ist ein Angebot?" → def_was_ist_ein_angebot → gekürzt.
-	// Umlaute übersetzt, Sonderzeichen raus, Kollisionen bekommen -2, -3 …
 	function baueId(typ: KartenTyp, front: string): string {
 		const praefix: Record<KartenTyp, string> = {
 			fall: 'fall', schema: 'agl', definition: 'def',
@@ -80,18 +95,13 @@
 <div class="menu" onkeydown={tastatur} role="presentation">
 	<div class="titel">„{markText}" verlinken</div>
 
-	<input
-		class="suche"
-		bind:this={sucheFeld}
-		bind:value={suche}
-		placeholder="Karte suchen …"
-	/>
+	<input class="suche" bind:this={sucheFeld} bind:value={suche} placeholder="Karte suchen …" />
 
 	<div class="liste">
 		{#each treffer as k (k.id)}
 			<button class="eintrag" onclick={() => onfertig(k.id)}>
 				<span class="typ-punkt" style:--punkt="var(--typ-{k.type})"></span>
-				<span class="eintrag-front">{k.front}</span>
+				<span class="eintrag-front">{k.title ?? k.front}</span>
 				<span class="eintrag-id">{k.id}</span>
 			</button>
 		{/each}
@@ -105,8 +115,8 @@
 	{:else}
 		<div class="neu-box">
 			<select class="neu-feld" bind:value={neuTyp}>
-				<option value="definition">Definition</option>
 				<option value="schema">Schema / Anspruchsgrundlage</option>
+				<option value="definition">Definition</option>
 				<option value="subsumtion">Subsumtion</option>
 				<option value="simpel">Simple Karte</option>
 				<option value="fall">Fall</option>
@@ -136,7 +146,6 @@
 		to { opacity: 1; transform: translateY(0); }
 	}
 	.titel { font-size: 0.8rem; color: var(--text-leise); }
-
 	.suche {
 		width: 100%;
 		background: var(--flaeche);
@@ -148,7 +157,6 @@
 		font-size: 0.88rem;
 	}
 	.suche:focus { outline: none; border-color: var(--akzent); }
-
 	.liste { display: flex; flex-direction: column; max-height: 14rem; overflow-y: auto; }
 	.eintrag {
 		display: flex;
@@ -165,12 +173,11 @@
 		cursor: pointer;
 	}
 	.eintrag:hover { background: var(--flaeche); }
-	.eintrag:first-child { background: var(--flaeche); } /* Enter-Ziel sichtbar */
+	.eintrag:first-child { background: var(--flaeche); }
 	.typ-punkt { width: 6px; height: 6px; border-radius: 50%; background: var(--punkt); flex-shrink: 0; }
 	.eintrag-front { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 	.eintrag-id { font-family: var(--mono); font-size: 0.68rem; color: var(--text-fluester); }
 	.keine { font-size: 0.82rem; color: var(--text-fluester); padding: 0.4rem 0.55rem; }
-
 	.neu-toggle {
 		background: none;
 		border: 1px dashed var(--linie-stark);
@@ -183,7 +190,6 @@
 		transition: color 0.15s ease, border-color 0.15s ease;
 	}
 	.neu-toggle:hover { color: var(--text); border-color: var(--text-fluester); }
-
 	.neu-box { display: flex; flex-direction: column; gap: 0.45rem; }
 	.neu-feld {
 		width: 100%;
@@ -207,7 +213,6 @@
 		cursor: pointer;
 	}
 	.neu-los:hover { background: var(--akzent-hover); }
-
 	.abbrechen {
 		background: none; border: none; color: var(--text-fluester);
 		font-size: 0.75rem; cursor: pointer; align-self: flex-start; padding: 0;

@@ -27,15 +27,19 @@ function zielIdsAusText(text: string): Set<string> {
 // POST /api/nodes → Karte anlegen/aktualisieren + Kanten aus dem Text syncen
 export const POST: RequestHandler = async ({ request }) => {
 	const daten = await request.json();
-	const { id, type, area, front, back } = daten as {
+	const { id, type, area, front, back, title, ref } = daten as {
 		id: string;
 		type: KartenTyp;
 		area?: string | null;
 		front: string;
 		back?: string;
+		title?: string | null;
+		ref?: string | null;
 	};
 
-	if (!id || !type || !front) {
+	// front muss VORHANDEN sein, darf aber leer sein ('' ist ok):
+	// eine frisch getaufte Karte hat Titel, aber noch keinen Inhalt.
+	if (!id || !type || typeof front !== 'string') {
 		throw error(400, 'id, type und front sind Pflicht');
 	}
 
@@ -48,15 +52,17 @@ export const POST: RequestHandler = async ({ request }) => {
 	const speichern = db.transaction(() => {
 		// Upsert: neu anlegen, oder bei bekannter id aktualisieren
 		db.prepare(
-			`INSERT INTO nodes (id, type, area, front, back)
-			 VALUES (?, ?, ?, ?, ?)
+			`INSERT INTO nodes (id, type, area, front, back, title, ref)
+			 VALUES (?, ?, ?, ?, ?, ?, ?)
 			 ON CONFLICT(id) DO UPDATE SET
 			   type = excluded.type,
 			   area = excluded.area,
 			   front = excluded.front,
 			   back = excluded.back,
+			   title = excluded.title,
+			   ref = excluded.ref,
 			   updated_at = datetime('now')`
-		).run(id, type, area ?? null, front, back ?? '');
+		).run(id, type, area ?? null, front, back ?? '', title ?? null, ref ?? null);
 
 		// Kanten-Sync: Der Text ist die einzige Wahrheit.
 		// Alte ausgehende Kanten weg, aktuelle aus dem Text neu rein.

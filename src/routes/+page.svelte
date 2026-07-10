@@ -12,6 +12,7 @@
 		data.nodes.filter(
 			(n: Karte) =>
 				n.front.toLowerCase().includes(suche.toLowerCase()) ||
+				(n.title ?? '').toLowerCase().includes(suche.toLowerCase()) ||
 				n.id.toLowerCase().includes(suche.toLowerCase())
 		)
 	);
@@ -44,7 +45,7 @@
 					{#each faelle as fall (fall.id)}
 						<a class="fall-karte" href={`/karte/${fall.id}`}>
 							<span class="typ-punkt" style:--punkt="var(--typ-fall)"></span>
-							<span class="fall-front">{klartext(fall.front)}</span>
+							<span class="fall-front">{klartext(fall.title ?? fall.front)}</span>
 						</a>
 					{/each}
 				</div>
@@ -57,7 +58,7 @@
 				{#each gefiltert as node (node.id)}
 					<a class="zeile" href={`/karte/${node.id}`}>
 						<span class="typ-punkt" style:--punkt="var(--typ-{node.type})"></span>
-						<span class="zeile-front">{klartext(node.front)}</span>
+						<span class="zeile-front">{klartext(node.title ?? node.front)}</span>
 					</a>
 				{/each}
 			</div>

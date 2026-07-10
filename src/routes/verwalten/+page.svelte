@@ -8,7 +8,7 @@
 	// --- Neue Karte ---
 	let neuTyp = $state<KartenTyp>('fall');
 	let neuArea = $state('zivilrecht');
-	let neuFront = $state('');
+	let neuTitel = $state('');
 
 	function baueId(typ: KartenTyp, front: string): string {
 		const praefix: Record<KartenTyp, string> = {
@@ -28,16 +28,26 @@
 	}
 
 	async function erstelle() {
-		if (!neuFront.trim()) return;
-		const id = baueId(neuTyp, neuFront);
+		if (!neuTitel.trim()) return;
+		const id = baueId(neuTyp, neuTitel);
 		const res = await fetch('/api/nodes', {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify({ id, type: neuTyp, area: neuArea, front: neuFront, back: '' })
+			body: JSON.stringify({
+				id,
+				type: neuTyp,
+				area: neuArea,
+				title: neuTitel.trim(),
+				front: '',
+				back: ''
+			})
 		});
 		if (res.ok) {
 			// Direkt in den Bauen-Modus der neuen Karte springen
 			goto(`/karte/${id}?modus=bauen`);
+		} else {
+			const antwort = await res.json().catch(() => null);
+			alert('Erstellen fehlgeschlagen: ' + (antwort?.message ?? res.status));
 		}
 	}
 
@@ -122,11 +132,11 @@
 			</select>
 			<input
 				class="feld feld-breit"
-				bind:value={neuFront}
-				placeholder="Vorderseite, z.B. Der zerrissene Kaufvertrag"
+				bind:value={neuTitel}
+				placeholder="Titel, z.B. SE wegen KV über Wochenendhaus"
 				onkeydown={(e) => e.key === 'Enter' && erstelle()}
 			/>
-			<button class="knopf-blau" onclick={erstelle} disabled={!neuFront.trim()}>
+			<button class="knopf-blau" onclick={erstelle} disabled={!neuTitel.trim()}>
 				Erstellen & bauen
 			</button>
 		</div>
@@ -156,7 +166,7 @@
 			{#each data.nodes as node (node.id)}
 				<div class="zeile">
 					<span class="typ-punkt" style:--punkt="var(--typ-{node.type})"></span>
-					<a class="zeile-front" href={`/karte/${node.id}`}>{klartext(node.front)}</a>
+					<a class="zeile-front" href={`/karte/${node.id}`}>{klartext(node.title ?? node.front)}</a>
 					<span class="zeile-id">{node.id}</span>
 					<button class="loeschen" onclick={() => loesche(node.id, node.front)} aria-label="Löschen">
 						×
