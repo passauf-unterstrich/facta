@@ -27,7 +27,8 @@
 	// svelte-ignore state_referenced_locally
 	let back = $state(node.back);
 	let speichert = $state(false);
-	let zeigeVorschau = $state(false);
+	let vorschauFront = $state(false);
+	let vorschauBack = $state(false);
 
 	// Der komplette Entwurf als ein Objekt — wandert beim Speichern
 	// und beim Verlinken gebündelt nach oben.
@@ -133,12 +134,21 @@
 		{/if}
 	</div>
 
-	<label class="feld-label" for="front-{node.id}">Vorderseite</label>
+	<div class="label-zeile">
+		<label class="feld-label" for="front-{node.id}">Vorderseite</label>
+		<button class="vorschau-toggle" class:aktiv={vorschauFront} onclick={() => (vorschauFront = !vorschauFront)}>
+			Vorschau
+		</button>
+	</div>
 	<textarea id="front-{node.id}" class="feld" rows="2" bind:value={front} bind:this={frontFeld}></textarea>
+
+	{#if vorschauFront && front.trim()}
+		<div class="vorschau">{@html rendere(front)}</div>
+	{/if}
 
 	<div class="label-zeile">
 		<label class="feld-label" for="back-{node.id}">Rückseite</label>
-		<button class="vorschau-toggle" class:aktiv={zeigeVorschau} onclick={() => (zeigeVorschau = !zeigeVorschau)}>
+		<button class="vorschau-toggle" class:aktiv={vorschauBack} onclick={() => (vorschauBack = !vorschauBack)}>
 			Vorschau
 		</button>
 	</div>
@@ -150,7 +160,7 @@
 		bind:this={backFeld}
 	></textarea>
 
-	{#if zeigeVorschau && back.trim()}
+	{#if vorschauBack && back.trim()}
 		<div class="vorschau">{@html rendere(back)}</div>
 	{/if}
 
