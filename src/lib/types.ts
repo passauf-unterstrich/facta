@@ -2,7 +2,7 @@
 // Vertippst du dich irgendwo, meckert VS Code sofort beim Tippen —
 // statt dass es später zur Laufzeit kracht.
 
-export type KartenTyp = 'fall' | 'schema' | 'definition' | 'subsumtion' | 'simpel';
+export type KartenTyp = 'fall' | 'schema' | 'definition' | 'subsumtion' | 'simpel' | 'thema';
 
 // Wie die Rückseite dargestellt wird — der Text bleibt die Wahrheit,
 // der Mode ist nur die Brille: open = Freitext, agls/schema = eine

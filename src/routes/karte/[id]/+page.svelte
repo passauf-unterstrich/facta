@@ -26,6 +26,15 @@
 	let stackFuer = $state('');
 	const layers = $derived(stackFuer === data.node.id ? stack : []);
 
+	// id → typ für alle aktuell bekannten Karten: nährt die Signal-
+	// Erkennung im Renderer (Link auf 'thema' = gelbe Markierung).
+	const typMap = $derived.by(() => {
+		const m = new Map<string, string>();
+		for (const k of data.children) m.set(k.id, k.type);
+		for (const l of stack) for (const k of l.children) m.set(k.id, k.type);
+		return m;
+	});
+
 	// Verlink-Zustand: welche Ebene verlinkt gerade was?
 	// ebene -1 = Basis-Karte, 0+ = Layer-Index
 	let link = $state<{
@@ -171,6 +180,7 @@
 					onaufdecken={() => (stack[i].aufgedeckt = true)}
 					onlink={oeffne}
 					onschliessen={schliesseOberste}
+					{typMap}
 				/>
 			{:else}
 				{#key `${layer.node.id}:${layer.node.updated_at}`}

@@ -10,13 +10,15 @@
 		aufgedeckt,
 		onaufdecken,
 		onlink,
-		onschliessen
+		onschliessen,
+		typMap
 	}: {
 		node: Karte;
 		aufgedeckt: boolean;
 		onaufdecken: () => void;
 		onlink: (id: string) => void;
 		onschliessen?: () => void;
+		typMap?: Map<string, string>;
 	} = $props();
 
 	// Ein Lauscher für alle Inline-Links (Event-Delegation):
@@ -58,7 +60,7 @@
 	</div>
 
 	{#if node.title}<div class="titel">{node.title}</div>{/if}
-	<div class="inhalt">{@html rendere(node.front)}</div>
+	<div class="inhalt">{@html rendere(node.front, typMap)}</div>
 
 	{#if aufgedeckt}
 		{#if node.mode && node.mode !== 'open'}
@@ -75,7 +77,7 @@
 				{/each}
 			</div>
 		{:else}
-			<div class="inhalt rueckseite">{@html rendere(node.back)}</div>
+			<div class="inhalt rueckseite">{@html rendere(node.back, typMap)}</div>
 		{/if}
 	{:else if node.back}
 		<button class="aufdecken" onclick={onaufdecken}>Aufdecken</button>
@@ -232,4 +234,17 @@
 		transition: text-decoration-color 0.15s ease;
 	}
 	:global(.inline-link:hover) { text-decoration-color: var(--akzent); }
+
+	/* Signal-Wort: gelb markiert wie im Lehrbuch, kein Verweis-Look */
+	:global(.inline-link.signal) {
+		color: var(--text);
+		text-decoration: none;
+		background: color-mix(in srgb, var(--typ-thema) 22%, transparent);
+		box-shadow: 0 0 0 2px color-mix(in srgb, var(--typ-thema) 22%, transparent);
+		border-radius: 3px;
+	}
+	:global(.inline-link.signal:hover) {
+		background: color-mix(in srgb, var(--typ-thema) 38%, transparent);
+		box-shadow: 0 0 0 2px color-mix(in srgb, var(--typ-thema) 38%, transparent);
+	}
 </style>

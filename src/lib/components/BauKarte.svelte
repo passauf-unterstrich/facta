@@ -199,6 +199,7 @@
 				<option value="definition">definition</option>
 				<option value="subsumtion">subsumtion</option>
 				<option value="simpel">simpel</option>
+				<option value="thema">thema</option>
 			</select>
 			<span class="id">{node.id}</span>
 		</div>

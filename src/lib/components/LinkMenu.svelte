@@ -57,7 +57,7 @@
 	function baueId(typ: KartenTyp, front: string): string {
 		const praefix: Record<KartenTyp, string> = {
 			fall: 'fall', schema: 'agl', definition: 'def',
-			subsumtion: 'sub', simpel: 'k'
+			subsumtion: 'sub', simpel: 'k', thema: 'thema'
 		};
 		const slug = front
 			.toLowerCase()
@@ -127,6 +127,7 @@
 				<option value="definition">Definition</option>
 				<option value="subsumtion">Subsumtion</option>
 				<option value="simpel">Simple Karte</option>
+				<option value="thema">Thema (Signal)</option>
 				<option value="fall">Fall</option>
 			</select>
 			<input class="neu-feld" bind:value={neuFront} placeholder="Vorderseite der neuen Karte" />

@@ -3,7 +3,7 @@ import { db } from '$lib/server/db';
 import type { Karte, KartenTyp } from '$lib/types';
 import type { RequestHandler } from './$types';
 
-const ERLAUBTE_TYPEN: KartenTyp[] = ['fall', 'schema', 'definition', 'subsumtion', 'simpel'];
+const ERLAUBTE_TYPEN: KartenTyp[] = ['fall', 'schema', 'definition', 'subsumtion', 'simpel', 'thema'];
 
 // GET /api/nodes → alle Karten
 export const GET: RequestHandler = () => {

@@ -65,7 +65,15 @@ subsumtion
 simpel
   Nur für Wissen ohne Fallbezug.
 
-title und ref bei definition, subsumtion und simpel weglassen (null).
+thema
+  Ein Erkennungs-Signal / wiederkehrendes Rechtsthema (z.B. "Arglist",
+  "Sachmangel", "Minderjährigkeit"). front = das Thema, back = eine
+  Merkliste der Konsequenzen, an die man beim Lesen des Signalworts
+  denken muss (mode "agls" oder "chips"). Themen werden aus dem
+  Sachverhalt eines Falls heraus verlinkt: das auslösende Signalwort
+  im front des Falls als [[bewusst verschwiegen|thema_arglist]].
+
+title und ref bei definition, subsumtion, simpel und thema weglassen (null).
 mode bei definition, subsumtion und simpel: "open" — back ist dort
 normaler Freitext mit Inline-Links an beliebiger Stelle.
 

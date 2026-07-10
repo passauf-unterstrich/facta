@@ -2,7 +2,7 @@
 -- ein Tippfehler wie 'defintion' wird an der Tür abgewiesen.
 CREATE TABLE IF NOT EXISTS nodes (
   id         TEXT PRIMARY KEY,
-  type       TEXT NOT NULL CHECK (type IN ('fall','schema','definition','subsumtion','simpel')),
+  type       TEXT NOT NULL CHECK (type IN ('fall','schema','definition','subsumtion','simpel','thema')),
   area       TEXT,
   front      TEXT NOT NULL,
   back       TEXT NOT NULL DEFAULT '',

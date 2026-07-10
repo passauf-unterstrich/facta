@@ -5,10 +5,16 @@ import { marked } from 'marked';
 //    mit data-link. (Kein href="#" — die Seite entscheidet selbst,
 //    was ein Klick tut: Layer öffnen.)
 // 2. marked übersetzt den Rest (fett, Listen, Überschriften …).
-export function rendere(text: string): string {
+export function rendere(text: string, typMap?: Map<string, string>): string {
 	const mitLinks = text.replace(
 		/\[\[([^\]|]+)\|([^\]]+)\]\]/g,
-		'<button type="button" class="inline-link" data-link="$2">$1</button>'
+		(_m, label, ziel) => {
+			// Zeigt der Link auf eine Themen-Karte, wird er zum gelben
+			// Signal-Marker statt zum blauen Struktur-Verweis.
+			const istThema = typMap?.get(ziel) === 'thema';
+			const klasse = istThema ? 'inline-link signal' : 'inline-link';
+			return `<button type="button" class="${klasse}" data-link="${ziel}">${label}</button>`;
+		}
 	);
 	// Führende Leerzeichen werden zu geschützten Leerzeichen:
 	// Einrückung bleibt sichtbar (A. → I. → 1.), und 4+ Leerzeichen
