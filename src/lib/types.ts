@@ -4,6 +4,11 @@
 
 export type KartenTyp = 'fall' | 'schema' | 'definition' | 'subsumtion' | 'simpel';
 
+// Wie die Rückseite dargestellt wird — der Text bleibt die Wahrheit,
+// der Mode ist nur die Brille: open = Freitext, agls/schema = eine
+// Link-Zeile pro Schale, chips = Link-Zeilen als kleine Bubbles.
+export type KartenMode = 'open' | 'agls' | 'schema' | 'chips';
+
 export type Karte = {
 	id: string;
 	type: KartenTyp;
@@ -12,6 +17,7 @@ export type Karte = {
 	back: string;
     title: string | null;
 	ref: string | null;
+	mode: KartenMode;
 	created_at: string;
 	updated_at: string;
 };
@@ -50,6 +56,7 @@ export type FactaExport = {
 		back?: string;
 		title?: string | null;
 		ref?: string | null;
+		mode?: KartenMode;
 	}>;
 	edges: Array<{
 		from_id: string;
@@ -65,4 +72,5 @@ export type BauDaten = {
 	back: string;
 	title: string | null;
 	ref: string | null;
+	mode: KartenMode;
 };

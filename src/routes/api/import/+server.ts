@@ -16,8 +16,8 @@ export const POST: RequestHandler = async ({ request }) => {
 	}
 
 	const nodeStmt = db.prepare(
-		`INSERT INTO nodes (id, type, area, front, back, title, ref)
-		 VALUES (?, ?, ?, ?, ?, ?, ?)
+		`INSERT INTO nodes (id, type, area, front, back, title, ref, mode)
+		 VALUES (?, ?, ?, ?, ?, ?, ?, ?)
 		 ON CONFLICT(id) DO UPDATE SET
 		   type = excluded.type,
 		   area = excluded.area,
@@ -25,6 +25,7 @@ export const POST: RequestHandler = async ({ request }) => {
 		   back = excluded.back,
 		   title = excluded.title,
 		   ref = excluded.ref,
+		   mode = excluded.mode,
 		   updated_at = datetime('now')`
 	);
 	const edgeStmt = db.prepare(
@@ -35,7 +36,7 @@ export const POST: RequestHandler = async ({ request }) => {
 	const importiere = db.transaction(() => {
 		// Erst alle Karten (müssen existieren, bevor Kanten auf sie zeigen)
 		for (const n of nodes) {
-			nodeStmt.run(n.id, n.type, n.area ?? null, n.front, n.back ?? '', n.title ?? null, n.ref ?? null);
+			nodeStmt.run(n.id, n.type, n.area ?? null, n.front, n.back ?? '', n.title ?? null, n.ref ?? null, n.mode ?? 'open');
 		}
 		// Dann die Kanten — nur wenn beide Enden existieren.
 		// Kaputte Kanten im JSON werden gezählt statt alles zu sprengen.

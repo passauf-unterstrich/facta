@@ -39,7 +39,8 @@
 				area: neuArea,
 				title: neuTitel.trim(),
 				front: '',
-				back: ''
+				back: '',
+				mode: neuTyp === 'schema' ? 'schema' : neuTyp === 'fall' ? 'agls' : 'open'
 			})
 		});
 		if (res.ok) {

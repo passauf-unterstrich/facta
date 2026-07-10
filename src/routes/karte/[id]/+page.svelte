@@ -125,7 +125,7 @@
 			onlink={oeffne}
 		/>
 	{:else}
-		{#key data.node.id}
+		{#key `${data.node.id}:${data.node.updated_at}`}
 			<BauKarte
 				node={data.node}
 				onsave={(daten) => speichere(data.node, daten)}
@@ -165,7 +165,7 @@
 					onschliessen={schliesseOberste}
 				/>
 			{:else}
-				{#key layer.node.id}
+				{#key `${layer.node.id}:${layer.node.updated_at}`}
 					<BauKarte
 						node={layer.node}
 						onsave={(daten) => speichere(layer.node, daten)}

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { rendere } from '$lib/markdown';
-	import type { Karte, KartenTyp, BauDaten } from '$lib/types';
+	import type { Karte, KartenTyp, KartenMode, BauDaten } from '$lib/types';
 
 	let {
 		node,
@@ -14,10 +14,30 @@
 		onschliessen?: () => void;
 	} = $props();
 
-	// Lokale Arbeitskopie (Entwurf) — Abkopplung vom Prop ist gewollt:
-	// ein Entwurf darf nicht verloren gehen, wenn sich node ändert.
+	// Eine Schale = eine Zeile der Rückseite: Beschriftung + optionales Ziel
+	type Zeile = { label: string; ziel: string | null };
+
+	function parseZeilen(text: string): Zeile[] {
+		return text
+			.split('\n')
+			.filter((z) => z.trim() !== '')
+			.map((z) => {
+				const m = z.trim().match(/^\[\[([^\]|]+)\|([^\]]+)\]\]$/);
+				return m ? { label: m[1], ziel: m[2] } : { label: z.trim(), ziel: null };
+			});
+	}
+	function serialisiere(zs: Zeile[]): string {
+		return zs
+			.filter((z) => z.label.trim() !== '')
+			.map((z) => (z.ziel ? `[[${z.label}|${z.ziel}]]` : z.label))
+			.join('\n');
+	}
+
+	// Arbeitskopie (Entwurf) — Abkopplung vom Prop ist gewollt.
 	// svelte-ignore state_referenced_locally
 	let typ = $state<KartenTyp>(node.type);
+	// svelte-ignore state_referenced_locally
+	let modeWert = $state<KartenMode>(node.mode);
 	// svelte-ignore state_referenced_locally
 	let titel = $state(node.title ?? '');
 	// svelte-ignore state_referenced_locally
@@ -26,22 +46,37 @@
 	let front = $state(node.front);
 	// svelte-ignore state_referenced_locally
 	let back = $state(node.back);
+	// svelte-ignore state_referenced_locally
+	let zeilen = $state<Zeile[]>(node.mode !== 'open' ? parseZeilen(node.back) : []);
 	let speichert = $state(false);
 	let vorschauFront = $state(false);
 	let vorschauBack = $state(false);
 
-	// Der komplette Entwurf als ein Objekt — wandert beim Speichern
-	// und beim Verlinken gebündelt nach oben.
+	const istSchalen = $derived(modeWert !== 'open');
+
+	// In Schalen-Modi ist back stets die Serialisierung der Schalen —
+	// Text und UI können nicht auseinanderlaufen.
+	$effect(() => {
+		if (istSchalen) back = serialisiere(zeilen);
+	});
+
+	function wechsleMode(neu: KartenMode) {
+		if (neu !== 'open' && modeWert === 'open') zeilen = parseZeilen(back);
+		modeWert = neu;
+	}
+
 	const daten = $derived<BauDaten>({
 		type: typ,
 		front,
 		back,
 		title: titel.trim() || null,
-		ref: ref.trim() || null
+		ref: ref.trim() || null,
+		mode: modeWert
 	});
 
 	const geaendert = $derived(
 		typ !== node.type ||
+			modeWert !== node.mode ||
 			front !== node.front ||
 			back !== node.back ||
 			(titel.trim() || null) !== node.title ||
@@ -57,28 +92,41 @@
 		speichert = false;
 	}
 
-	function verlinken() {
-		if (!backFeld) return;
-		const start = backFeld.selectionStart;
-		const ende = backFeld.selectionEnd;
-		if (start === ende) return;
-		onlinkstart(start, ende, back.slice(start, ende), daten);
+	// --- Schalen-Aktionen ---
+	function neueSchale() {
+		zeilen = [...zeilen, { label: '', ziel: null }];
+	}
+	function loescheSchale(k: number) {
+		zeilen = zeilen.filter((_, i) => i !== k);
+	}
+	function entlinke(k: number) {
+		zeilen[k].ziel = null;
+	}
+	// Verlinken einer Schale: Position der Zeile im serialisierten Text
+	// berechnen und den normalen Link-Flow der Seite nutzen — die Seite
+	// legt [[label|id]] um genau diesen Bereich.
+	function verlinkeSchale(k: number) {
+		const label = zeilen[k].label.trim();
+		if (!label) return;
+		zeilen[k].label = label;
+		const teile = zeilen
+			.filter((z) => z.label.trim() !== '')
+			.map((z) => (z.ziel ? `[[${z.label}|${z.ziel}]]` : z.label));
+		let offset = 0;
+		let index = 0;
+		for (const z of zeilen) {
+			if (z.label.trim() === '') continue;
+			if (index === k) break;
+			offset += (z.ziel ? `[[${z.label}|${z.ziel}]]` : z.label).length + 1;
+			index++;
+		}
+		back = teile.join('\n');
+		onlinkstart(offset, offset + label.length, label, daten);
 	}
 
-	// Legt Markdown-Zeichen um die Markierung und stellt die
-	// Auswahl danach wieder her — man kann direkt weiterformatieren.
-	function formatiere(feld: HTMLTextAreaElement, istFront: boolean, vor: string, nach: string) {
-		const start = feld.selectionStart;
-		const ende = feld.selectionEnd;
-		if (start === ende) return;
-		const text = istFront ? front : back;
-		const neu = text.slice(0, start) + vor + text.slice(start, ende) + nach + text.slice(ende);
-		if (istFront) front = neu;
-		else back = neu;
-		requestAnimationFrame(() => {
-			feld.focus();
-			feld.setSelectionRange(start + vor.length, ende + vor.length);
-		});
+	// --- Formatieren (Cmd+B/I/U) — Textareas UND Schalen-Felder ---
+	function formatiereText(text: string, start: number, ende: number, vor: string, nach: string) {
+		return text.slice(0, start) + vor + text.slice(start, ende) + nach + text.slice(ende);
 	}
 
 	function tastatur(e: KeyboardEvent) {
@@ -90,16 +138,54 @@
 			return;
 		}
 
-		// Formatieren nur in den Inhaltsfeldern (nicht Titel/Aktenzeichen)
+		const paare: Record<string, [string, string]> = {
+			b: ['**', '**'],
+			i: ['*', '*'],
+			u: ['<u>', '</u>']
+		};
+		const paar = paare[e.key];
+		if (!paar) return;
+
 		const ziel = e.target;
+
+		// Schalen-Beschriftung?
+		if (ziel instanceof HTMLInputElement && ziel.dataset.schale !== undefined) {
+			e.preventDefault();
+			const k = Number(ziel.dataset.schale);
+			const start = ziel.selectionStart ?? 0;
+			const ende = ziel.selectionEnd ?? 0;
+			if (start === ende) return;
+			zeilen[k].label = formatiereText(zeilen[k].label, start, ende, paar[0], paar[1]);
+			requestAnimationFrame(() => {
+				ziel.focus();
+				ziel.setSelectionRange(start + paar[0].length, ende + paar[0].length);
+			});
+			return;
+		}
+
+		// Vorder-/Rückseite?
 		const istFront = ziel === frontFeld;
 		const istBack = ziel === backFeld;
 		if (!istFront && !istBack) return;
+		e.preventDefault();
 		const feld = ziel as HTMLTextAreaElement;
+		const start = feld.selectionStart;
+		const ende = feld.selectionEnd;
+		if (start === ende) return;
+		if (istFront) front = formatiereText(front, start, ende, paar[0], paar[1]);
+		else back = formatiereText(back, start, ende, paar[0], paar[1]);
+		requestAnimationFrame(() => {
+			feld.focus();
+			feld.setSelectionRange(start + paar[0].length, ende + paar[0].length);
+		});
+	}
 
-		if (e.key === 'b') { e.preventDefault(); formatiere(feld, istFront, '**', '**'); }
-		if (e.key === 'i') { e.preventDefault(); formatiere(feld, istFront, '*', '*'); }
-		if (e.key === 'u') { e.preventDefault(); formatiere(feld, istFront, '<u>', '</u>'); }
+	function verlinken() {
+		if (!backFeld) return;
+		const start = backFeld.selectionStart;
+		const ende = backFeld.selectionEnd;
+		if (start === ende) return;
+		onlinkstart(start, ende, back.slice(start, ende), daten);
 	}
 </script>
 
@@ -134,13 +220,13 @@
 		{/if}
 	</div>
 
-	<div class="label-zeile">
-		<label class="feld-label" for="front-{node.id}">Vorderseite</label>
+	<label class="feld-label" for="front-{node.id}">Vorderseite</label>
+	<textarea id="front-{node.id}" class="feld" rows="2" bind:value={front} bind:this={frontFeld}></textarea>
+	<div class="unter-zeile">
 		<button class="vorschau-toggle" class:aktiv={vorschauFront} onclick={() => (vorschauFront = !vorschauFront)}>
 			Vorschau
 		</button>
 	</div>
-	<textarea id="front-{node.id}" class="feld" rows="2" bind:value={front} bind:this={frontFeld}></textarea>
 
 	{#if vorschauFront && front.trim()}
 		<div class="vorschau">{@html rendere(front)}</div>
@@ -148,24 +234,65 @@
 
 	<div class="label-zeile">
 		<label class="feld-label" for="back-{node.id}">Rückseite</label>
-		<button class="vorschau-toggle" class:aktiv={vorschauBack} onclick={() => (vorschauBack = !vorschauBack)}>
-			Vorschau
-		</button>
+		<select class="mode-wahl" value={modeWert} onchange={(e) => wechsleMode(e.currentTarget.value as KartenMode)}>
+			<option value="open">Offen</option>
+			<option value="agls">AGLs</option>
+			<option value="schema">Schema</option>
+			<option value="chips">Chips</option>
+		</select>
 	</div>
-	<textarea
-		id="back-{node.id}"
-		class="feld feld-back"
-		rows="8"
-		bind:value={back}
-		bind:this={backFeld}
-	></textarea>
 
-	{#if vorschauBack && back.trim()}
-		<div class="vorschau">{@html rendere(back)}</div>
+	{#if !istSchalen}
+		<textarea
+			id="back-{node.id}"
+			class="feld feld-back"
+			rows="8"
+			bind:value={back}
+			bind:this={backFeld}
+		></textarea>
+
+		<div class="unter-zeile">
+			<button class="vorschau-toggle" class:aktiv={vorschauBack} onclick={() => (vorschauBack = !vorschauBack)}>
+				Vorschau
+			</button>
+		</div>
+
+		{#if vorschauBack && back.trim()}
+			<div class="vorschau">{@html rendere(back)}</div>
+		{/if}
+	{:else}
+		<div class="schalen">
+			{#each zeilen as zeile, k (k)}
+				<div class="schale">
+					<input
+						class="schale-label"
+						data-schale={k}
+						bind:value={zeile.label}
+						placeholder="z.B. A. § 437 iVm. § 280 — SE wegen Sachmangel"
+					/>
+					{#if zeile.ziel}
+						<span class="schale-chip">
+							{zeile.ziel}
+							<button class="chip-x" onclick={() => entlinke(k)} title="Verlinkung lösen">×</button>
+						</span>
+					{:else}
+						<button class="schale-link" onclick={() => verlinkeSchale(k)} disabled={!zeile.label.trim()}>
+							verlinken
+						</button>
+					{/if}
+					<button class="schale-weg" onclick={() => loescheSchale(k)} aria-label="Schale löschen">×</button>
+				</div>
+			{/each}
+			<button class="schale-plus" onclick={neueSchale}>＋</button>
+		</div>
 	{/if}
 
 	<div class="aktionen">
-		<button class="verlinken" onclick={verlinken}>Markiertes verlinken</button>
+		{#if !istSchalen}
+			<button class="verlinken" onclick={verlinken}>Markiertes verlinken</button>
+		{:else}
+			<span></span>
+		{/if}
 		<button class="speichern" class:bereit={geaendert} onclick={speichern} disabled={!geaendert || speichert}>
 			{speichert ? 'Speichert …' : geaendert ? 'Speichern' : 'Gespeichert'}
 		</button>
@@ -187,16 +314,11 @@
 		align-items: flex-start;
 		margin-bottom: 0.5rem;
 	}
-	.typ {
-		display: flex;
-		align-items: center;
-		gap: 0.45rem;
-	}
+	.typ { display: flex; align-items: center; gap: 0.45rem; }
 	.typ-punkt {
 		width: 7px; height: 7px; border-radius: 50%;
 		background: var(--punkt, var(--typ-simpel));
 	}
-	/* Der Typ ist im Bauen-Modus eine Entscheidung, kein Etikett */
 	.typ-wahl {
 		background: none;
 		border: none;
@@ -225,6 +347,16 @@
 	.spalte-titel { flex: 1; display: flex; flex-direction: column; }
 	.spalte-ref { flex: 0 0 11rem; display: flex; flex-direction: column; }
 
+	.label-zeile {
+		display: flex;
+		justify-content: space-between;
+		align-items: baseline;
+	}
+	.unter-zeile {
+		display: flex;
+		justify-content: flex-end;
+		margin-top: 0.3rem;
+	}
 	.feld-label {
 		font-size: 0.7rem;
 		text-transform: uppercase;
@@ -232,6 +364,33 @@
 		color: var(--text-fluester);
 		margin: 0.75rem 0 0.35rem;
 	}
+	.mode-wahl {
+		background: none;
+		border: none;
+		color: var(--text-fluester);
+		font-family: inherit;
+		font-size: 0.7rem;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+		cursor: pointer;
+		padding-right: 1.4rem !important;
+	}
+	.mode-wahl:focus { outline: none; color: var(--text); }
+	.vorschau-toggle {
+		background: none;
+		border: none;
+		color: var(--text-fluester);
+		font-family: inherit;
+		font-size: 0.7rem;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+		cursor: pointer;
+		padding: 0;
+		transition: color 0.15s ease;
+	}
+	.vorschau-toggle:hover { color: var(--text-leise); }
+	.vorschau-toggle.aktiv { color: var(--akzent); }
+
 	.feld {
 		width: 100%;
 		background: var(--bg);
@@ -248,27 +407,6 @@
 	.feld:focus { outline: none; border-color: var(--akzent); }
 	.feld-back { font-size: 0.92rem; }
 
-	.label-zeile {
-		display: flex;
-		justify-content: space-between;
-		align-items: baseline;
-	}
-	.vorschau-toggle {
-		background: none;
-		border: none;
-		color: var(--text-fluester);
-		font-family: inherit;
-		font-size: 0.7rem;
-		text-transform: uppercase;
-		letter-spacing: 0.05em;
-		cursor: pointer;
-		padding: 0;
-		transition: color 0.15s ease;
-	}
-	.vorschau-toggle:hover { color: var(--text-leise); }
-	.vorschau-toggle.aktiv { color: var(--akzent); }
-
-	/* Die Vorschau sieht aus wie die spätere Lernkarte: gleiche Typo */
 	.vorschau {
 		margin-top: 0.5rem;
 		border: 1px dashed var(--linie-stark);
@@ -283,6 +421,80 @@
 	.vorschau :global(strong) { font-weight: 600; color: var(--text); }
 	.vorschau :global(ul) { padding-left: 1.25em; margin: 0 0 0.6em; }
 	.vorschau :global(ol) { padding-left: 1.25em; margin: 0 0 0.6em; }
+
+	/* Die Schalen: deine Skizze — gestapelte Pillen, ＋ darunter */
+	.schalen { display: flex; flex-direction: column; gap: 0.5rem; }
+	.schale {
+		display: flex;
+		align-items: center;
+		gap: 0.6rem;
+		background: var(--bg);
+		border: 1px solid var(--linie);
+		border-radius: 999px;
+		padding: 0.35rem 0.6rem 0.35rem 1rem;
+		transition: border-color 0.15s ease;
+	}
+	.schale:focus-within { border-color: var(--akzent); }
+	.schale-label {
+		flex: 1;
+		background: none;
+		border: none;
+		color: var(--text);
+		font-family: inherit;
+		font-size: 0.92rem;
+		padding: 0.3rem 0;
+	}
+	.schale-label:focus { outline: none; }
+	.schale-chip {
+		display: flex;
+		align-items: center;
+		gap: 0.35rem;
+		background: var(--flaeche-hoch);
+		border-radius: 999px;
+		padding: 0.2rem 0.4rem 0.2rem 0.7rem;
+		font-family: var(--mono);
+		font-size: 0.7rem;
+		color: var(--typ-definition);
+		flex-shrink: 0;
+	}
+	.chip-x {
+		background: none; border: none; color: var(--text-fluester);
+		font-size: 0.9rem; line-height: 1; cursor: pointer; padding: 0 0.15rem;
+	}
+	.chip-x:hover { color: var(--text); }
+	.schale-link {
+		background: none;
+		border: 1px solid var(--linie-stark);
+		border-radius: 999px;
+		padding: 0.25rem 0.75rem;
+		color: var(--text-leise);
+		font-family: inherit;
+		font-size: 0.78rem;
+		cursor: pointer;
+		flex-shrink: 0;
+		transition: color 0.15s ease, border-color 0.15s ease;
+	}
+	.schale-link:hover:not(:disabled) { color: var(--text); border-color: var(--text-fluester); }
+	.schale-link:disabled { opacity: 0.4; cursor: default; }
+	.schale-weg {
+		background: none; border: none; color: var(--text-fluester);
+		font-size: 1rem; line-height: 1; cursor: pointer; padding: 0 0.2rem;
+		flex-shrink: 0; transition: color 0.15s ease;
+	}
+	.schale-weg:hover { color: #ff453a; }
+	.schale-plus {
+		align-self: flex-start;
+		background: none;
+		border: 1px dashed var(--linie-stark);
+		border-radius: 999px;
+		padding: 0.35rem 1.1rem;
+		color: var(--text-fluester);
+		font-family: inherit;
+		font-size: 0.9rem;
+		cursor: pointer;
+		transition: color 0.15s ease, border-color 0.15s ease;
+	}
+	.schale-plus:hover { color: var(--text); border-color: var(--text-fluester); }
 
 	.aktionen {
 		display: flex;

@@ -19,7 +19,7 @@ Erzeuge daraus AUSSCHLIESSLICH ein JSON-Objekt nach diesem Format — keine Erkl
 
 {
   "nodes": [
-    { "id": "...", "type": "...", "area": "...", "title": "...", "ref": "...", "front": "...", "back": "..." }
+    { "id": "...", "type": "...", "area": "...", "title": "...", "ref": "...", "mode": "...", "front": "...", "back": "..." }
   ],
   "edges": []
 }
@@ -33,16 +33,22 @@ fall
          "SE wegen KV über nur zeitweise bewohnbares Wochenendhaus"
   ref:   Aktenzeichen; bei Lehrbuchfällen "fiktiv" (Pflicht)
   front: der Sachverhalt, kompakt, kursiv (*...*)
-  back:  Gliederung der geprüften Anspruchsgrundlagen als Liste
-         (I., II., ...) — jede Anspruchsgrundlage als Link. Einrückung
-         mit führenden Leerzeichen ist erlaubt und bleibt erhalten.
+  mode:  "agls"
+  back:  EINE Link-Zeile pro geprüfter Anspruchsgrundlage, sonst
+         nichts. Format pro Zeile:
+         [[A. § 437 iVm. § 280 — SE wegen Sachmangel|agl_id]]
+         Die Beschriftung enthält Gliederungsbuchstabe, Norm(en) und
+         Kurzbezeichnung. Zeilen ohne Link sind als Zwischenüber-
+         schriften erlaubt.
 
 schema
   Eine Anspruchsgrundlage / ein Prüfungsschema.
   title: kurzer Anzeigename (Pflicht), z.B. "Schema: c.i.c."
   front: Norm mit Kurzbezeichnung (z.B. "§ 280 I BGB — Schadensersatz")
-  back:  Tatbestandsmerkmale als nummerierte Liste, jedes
-         prüfungsrelevante Merkmal als Link auf seine Definition.
+  mode:  "schema"
+  back:  EINE Link-Zeile pro Tatbestandsmerkmal:
+         [[I. Schuldverhältnis|def_schuldverhaeltnis]]
+         Nicht verlinkbare Punkte als Zeile ohne Link.
 
 definition
   Ein Tatbestandsmerkmal, abstrakt.
@@ -60,6 +66,8 @@ simpel
   Nur für Wissen ohne Fallbezug.
 
 title und ref bei definition, subsumtion und simpel weglassen (null).
+mode bei definition, subsumtion und simpel: "open" — back ist dort
+normaler Freitext mit Inline-Links an beliebiger Stelle.
 
 
 ━━━ 2 · LINKS UND KANTEN (WICHTIG) ━━━━━━━━━━━━━━━━━━━━

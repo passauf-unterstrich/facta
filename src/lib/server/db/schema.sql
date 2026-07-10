@@ -8,6 +8,7 @@ CREATE TABLE IF NOT EXISTS nodes (
   back       TEXT NOT NULL DEFAULT '',
   title      TEXT,
   ref        TEXT,
+  mode       TEXT NOT NULL DEFAULT 'open' CHECK (mode IN ('open','agls','schema','chips')),
   created_at TEXT NOT NULL DEFAULT (datetime('now')),
   updated_at TEXT NOT NULL DEFAULT (datetime('now'))
 );

@@ -78,7 +78,15 @@
 		const res = await fetch('/api/nodes', {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify({ id, type: neuTyp, area, front: neuFront, back: '' })
+			body: JSON.stringify({
+				id,
+				type: neuTyp,
+				area,
+				front: neuFront,
+				back: '',
+				title: neuTyp === 'schema' || neuTyp === 'fall' ? neuFront : null,
+				mode: neuTyp === 'schema' ? 'schema' : neuTyp === 'fall' ? 'agls' : 'open'
+			})
 		});
 		if (res.ok) onfertig(id);
 	}
