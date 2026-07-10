@@ -149,7 +149,15 @@
 </div>
 
 {#each layers as layer, i (i)}
-	<div class="overlay" onclick={schliesseOberste} role="presentation">
+	<div
+		class="overlay"
+		onmousedown={(e) => {
+			// Nur schließen, wenn der DRÜCK-Start auf dem Vorhang lag —
+			// Markier-Schwünge aus der Karte hinaus schließen nichts mehr.
+			if (e.target === e.currentTarget) schliesseOberste();
+		}}
+		role="presentation"
+	>
 		<div
 			class="overlay-inhalt"
 			style:--tiefe={i}

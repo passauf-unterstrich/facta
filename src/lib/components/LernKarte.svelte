@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { rendere } from '$lib/markdown';
+	import { rendere, rendereInline } from '$lib/markdown';
 	import type { Karte } from '$lib/types';
 
 	// Die Komponente ist bewusst "dumm": Sie zeigt an und meldet
@@ -22,6 +22,18 @@
 	// Ein Lauscher für alle Inline-Links (Event-Delegation):
 	// statt jeden Link einzeln zu verkabeln, fängt die Karte
 	// jeden Klick und prüft, ob er einen .inline-link traf.
+	// Zeilen der Rückseite in Schalen zerlegen (nur für Schalen-Modi)
+	type Zeile = { label: string; ziel: string | null };
+	function zeilen(text: string): Zeile[] {
+		return text
+			.split('\n')
+			.filter((z) => z.trim() !== '')
+			.map((z) => {
+				const m = z.trim().match(/^\[\[([^\]|]+)\|([^\]]+)\]\]$/);
+				return m ? { label: m[1], ziel: m[2] } : { label: z.trim(), ziel: null };
+			});
+	}
+
 	function klickAbfangen(e: MouseEvent) {
 		const ziel = e.target as HTMLElement;
 		if (ziel.classList.contains('inline-link')) {
@@ -49,7 +61,22 @@
 	<div class="inhalt">{@html rendere(node.front)}</div>
 
 	{#if aufgedeckt}
-		<div class="inhalt rueckseite">{@html rendere(node.back)}</div>
+		{#if node.mode && node.mode !== 'open'}
+			<div class="schalen rueckseite" class:chips={node.mode === 'chips'}>
+				{#each zeilen(node.back) as z, i (i)}
+					{#if z.ziel}
+						<button class="schale" onclick={() => onlink(z.ziel!)}>
+							<span class="schale-text">{@html rendereInline(z.label)}</span>
+							<span class="schale-pfeil">›</span>
+						</button>
+					{:else}
+						<div class="schale-titel">{@html rendereInline(z.label)}</div>
+					{/if}
+				{/each}
+			</div>
+		{:else}
+			<div class="inhalt rueckseite">{@html rendere(node.back)}</div>
+		{/if}
 	{:else if node.back}
 		<button class="aufdecken" onclick={onaufdecken}>Aufdecken</button>
 	{/if}
@@ -120,6 +147,56 @@
 		border-top: 1px solid var(--linie);
 		color: var(--text-leise);
 		animation: einblenden 0.25s ease;
+	}
+
+	/* Schalen im Lern-Modus: große, tappbare Pillen untereinander */
+	.schalen {
+		display: flex;
+		flex-direction: column;
+		gap: 0.6rem;
+	}
+	.schale {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+		width: 100%;
+		text-align: left;
+		background: var(--flaeche-hoch);
+		border: 1px solid var(--linie-stark);
+		border-radius: 999px;
+		padding: 0.85rem 1.25rem;
+		color: var(--text);
+		font-family: inherit;
+		font-size: 0.95rem;
+		cursor: pointer;
+		transition: border-color 0.15s ease, transform 0.12s ease, background 0.15s ease;
+	}
+	.schale:hover {
+		border-color: var(--akzent);
+		transform: translateY(-1px);
+	}
+	.schale:active { transform: translateY(0) scale(0.99); }
+	.schale-text { flex: 1; }
+	.schale-pfeil { color: var(--text-fluester); }
+	.schale-titel {
+		font-size: 0.8rem;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+		color: var(--text-fluester);
+		margin-top: 0.4rem;
+	}
+
+	/* Chips-Variante: kleine Bubbles nebeneinander (Skizze 2) */
+	.schalen.chips {
+		flex-direction: row;
+		flex-wrap: wrap;
+		gap: 0.5rem;
+	}
+	.schalen.chips .schale {
+		width: auto;
+		font-size: 0.85rem;
+		padding: 0.45rem 0.9rem;
 	}
 	@keyframes einblenden {
 		from { opacity: 0; transform: translateY(4px); }

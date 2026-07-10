@@ -28,3 +28,9 @@ export function klartext(text: string): string {
 		.replace(/^#+\s*/gm, '')
 		.replace(/`([^`]+)`/g, '$1');
 }
+// Für einzeilige Beschriftungen (Schalen, Chips): Markdown rendern,
+// aber ohne <p>-Umhüllung — bleibt eine Zeile.
+export function rendereInline(text: string): string {
+	const mitLinks = text.replace(/\[\[([^\]|]+)\|([^\]]+)\]\]/g, '$1');
+	return marked.parseInline(mitLinks, { async: false }) as string;
+}

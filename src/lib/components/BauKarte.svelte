@@ -373,7 +373,9 @@
 		text-transform: uppercase;
 		letter-spacing: 0.05em;
 		cursor: pointer;
-		padding-right: 1.4rem !important;
+		text-align: right;
+		padding-right: 1.1rem !important;
+		background-position: right 0 center !important;
 	}
 	.mode-wahl:focus { outline: none; color: var(--text); }
 	.vorschau-toggle {
