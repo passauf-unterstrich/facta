@@ -234,12 +234,15 @@
 
 	<div class="label-zeile">
 		<label class="feld-label" for="back-{node.id}">Rückseite</label>
-		<select class="mode-wahl" value={modeWert} onchange={(e) => wechsleMode(e.currentTarget.value as KartenMode)}>
-			<option value="open">Offen</option>
-			<option value="agls">AGLs</option>
-			<option value="schema">Schema</option>
-			<option value="chips">Chips</option>
-		</select>
+		<span class="mode-wrap">
+			<span class="mode-anzeige">{modeWert === 'open' ? 'Offen' : modeWert === 'agls' ? 'AGLs' : modeWert === 'schema' ? 'Schema' : 'Chips'}</span>
+			<select class="mode-wahl" value={modeWert} onchange={(e) => wechsleMode(e.currentTarget.value as KartenMode)} aria-label="Darstellungs-Modus">
+				<option value="open">Offen</option>
+				<option value="agls">AGLs</option>
+				<option value="schema">Schema</option>
+				<option value="chips">Chips</option>
+			</select>
+		</span>
 	</div>
 
 	{#if !istSchalen}
@@ -364,18 +367,28 @@
 		color: var(--text-fluester);
 		margin: 0.75rem 0 0.35rem;
 	}
-	.mode-wahl {
-		background: none;
-		border: none;
-		color: var(--text-fluester);
-		font-family: inherit;
+	/* Natives Menü, eigene Anzeige: der Span ist die pixelgenaue
+	   Optik, das unsichtbare Select darüber liefert das Klick-Menü. */
+	.mode-wrap {
+		position: relative;
+		display: inline-block;
+	}
+	.mode-anzeige {
 		font-size: 0.7rem;
 		text-transform: uppercase;
 		letter-spacing: 0.05em;
+		color: var(--text-fluester);
+		transition: color 0.15s ease;
+	}
+	.mode-wrap:hover .mode-anzeige { color: var(--text-leise); }
+	.mode-wahl {
+		position: absolute;
+		inset: 0;
+		opacity: 0;
 		cursor: pointer;
-		text-align: right;
-		padding-right: 1.1rem !important;
-		background-position: right 0 center !important;
+		background: none !important;
+		padding: 0 !important;
+		border: none;
 	}
 	.mode-wahl:focus { outline: none; color: var(--text); }
 	.vorschau-toggle {
