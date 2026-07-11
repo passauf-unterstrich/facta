@@ -54,6 +54,9 @@
 			const antwort = await res.json();
 			if (!res.ok) throw new Error(antwort.message ?? 'Import fehlgeschlagen');
 			importStatus = `${antwort.nodes} Karten, ${antwort.edges} Verknüpfungen importiert${antwort.uebersprungen ? ` (${antwort.uebersprungen} kaputte Kanten übersprungen)` : ''}.`;
+			if (antwort.kollisionen?.length) {
+				importStatus += ` ⚠ Überschrieben, bitte prüfen: ${antwort.kollisionen.join(', ')}`;
+			}
 			await invalidateAll();
 		} catch (fehler) {
 			importStatus = 'Fehler: ' + (fehler as Error).message;

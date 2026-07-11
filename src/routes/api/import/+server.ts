@@ -34,6 +34,11 @@ export const POST: RequestHandler = async ({ request }) => {
 	);
 	const existiert = db.prepare('SELECT 1 FROM nodes WHERE id = ?');
 
+	// Kollisions-Radar: Welche IDs existieren SCHON? Der Upsert wird
+	// sie überschreiben — das muss der Mensch als Reviewer sehen,
+	// bis die Merge-API (Roadmap) Duplikate intelligent auflöst.
+	const kollisionen = nodes.map((n) => n.id).filter((id) => existiert.get(id));
+
 	const importiere = db.transaction(() => {
 		// Erst alle Karten (müssen existieren, bevor Kanten auf sie zeigen)
 		for (const n of nodes) {
@@ -66,6 +71,7 @@ export const POST: RequestHandler = async ({ request }) => {
 		ok: true,
 		nodes: nodes.length,
 		edges: edges.length - uebersprungen,
-		uebersprungen
+		uebersprungen,
+		kollisionen
 	});
 };

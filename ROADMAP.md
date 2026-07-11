@@ -60,11 +60,14 @@ Lern-Modus: kleine gelbe Bubbles unter der Karte nach dem Aufdecken.
 Anatomie: Kern oben in front/back, Tiefe über Links, Besonderheiten
 und Anwendungsfälle unten als Chips.
 
-## KI-Dedup, Zwei-Stufen-Plan
-Jetzt (manuell): Bestand steht im frisch kopierten Prompt — die
-Chat-KI sieht existierende IDs und verlinkt/erweitert statt zu
-duplizieren. Trägt bis einige hundert Karten.
-Stufe 3 (API): Chat-KI generiert frei → beim Upload läuft ein
-Merge-Endpoint mit KI: gleicht neues JSON gegen den Bestand ab
-(Normen/Titel matchen), löst Duplikate auf, ERWEITERT statt zu
-kürzen, Ergebnis als Vorschau — Mensch bleibt Reviewer.
+## KI-Dedup (entschieden): Prompt bleibt bestandsfrei
+Die Chat-KI arbeitet jeden Fall frei und in sich konsistent aus, als
+gäbe es kein Netz — alles Richtung KI bleibt simpel, Fehlerquellen
+gering. Der Bestand steht NICHT im Prompt (bloße IDs würden falsche
+Wiederverwendung provozieren).
+Übergangsweise: Import meldet ID-Kollisionen ("Überschrieben, bitte
+prüfen: …") — der Mensch reviewt.
+Merge-API (nächster großer Baustein): Beim Upload gleicht ein
+KI-gestützter Endpoint das neue JSON gegen den Bestand ab (Inhalte
+matchen, nicht nur IDs), löst Duplikate auf, ERWEITERT statt zu
+kürzen (inkl. Chips), Ergebnis als Vorschau vor dem Schreiben.

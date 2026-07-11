@@ -1,18 +1,8 @@
-import { db } from '$lib/server/db';
-
-// Baut den System-Prompt für die KI-Pipeline. Enthält den aktuellen
-// Kartenbestand, damit die KI bestehende Karten wiederverwendet statt
-// Duplikate anzulegen — so wächst EIN Netz statt vieler Inseln.
+// Baut den System-Prompt für die KI-Pipeline. Bewusst OHNE den
+// Kartenbestand: Die KI arbeitet jeden Fall frei und in sich
+// konsistent aus — Duplikat-Abgleich mit dem Bestand ist Aufgabe
+// der App (Merge beim Import), nicht der Chat-KI. Simpel = robust.
 export function bauePrompt(): string {
-	const bestand = db
-		.prepare('SELECT id, type, front, title FROM nodes ORDER BY type, id')
-		.all() as Array<{ id: string; type: string; front: string; title: string | null }>;
-
-	const bestandListe =
-		bestand.length > 0
-			? bestand.map((n) => `- ${n.id} [${n.type}]: ${(n.title ?? n.front).slice(0, 80)}`).join('\n')
-			: '(noch keine Karten vorhanden)';
-
 	return `Du bist ein Assistent, der juristische Fälle und Lernmaterial in strukturierte Lernkarten für die App Facta umwandelt. Facta bildet Wissen als Graph ab: Karten (nodes) sind über Inline-Links im Text verbunden. Dein Ziel ist nicht eine Kartensammlung, sondern ein wachsendes NETZ — geteilte Definitionen und Themen, auf die viele Fälle verweisen.
 
 Erzeuge AUSSCHLIESSLICH ein JSON-Objekt nach diesem Format — keine Erklärungen, kein Markdown drumherum:
@@ -123,21 +113,15 @@ def_sachmangel · sub_sachmangel_wochenendhaus · thema_arglist
 Subsumtions-IDs tragen den Fallbezug im Slug.
 
 
-━━━ 5 · DAS NETZ: BESTAND & WIEDERVERWENDUNG ━━━━━━━━━━
+━━━ 5 · KONSISTENZ IM EIGENEN JSON ━━━━━━━━━━━━━━━━━━━━
 
-Diese Karten existieren bereits. WIEDERVERWENDEN statt duplizieren:
-- Verlinke auf bestehende Definitionen, Schemata und Themen, statt
-  inhaltsgleiche neue anzulegen.
-- Bestehende Schemata/Definitionen/Themen darfst du in "nodes" erneut
-  aufführen, um ihre back zu ERWEITERN (fehlendes Merkmal ergänzen,
-  Link auf eine neue Subsumtion anhängen, Konsequenz in einer
-  Themen-Merkliste nachtragen). Dabei bestehenden Inhalt vollständig
-  übernehmen und nur ergänzen — nie kürzen, nie umformulieren.
-- Neue Themen nur für wirklich wiederkehrende Erkennungsmuster
-  anlegen, nicht für Einzelfall-Details.
-
-${bestandListe}
-
+Arbeite den Fall vollständig und in sich geschlossen aus, als wäre
+er der erste im System. Verlinke AUSSCHLIESSLICH auf IDs, die in
+deinem eigenen "nodes"-Array vorkommen — jede verlinkte ID muss dort
+als Karte existieren. Geteilte Bausteine (Schemata, Definitionen,
+Themen) legst du als eigene Karten an, auch wenn sie allgemein
+klingen — der Abgleich mit eventuell schon existierenden Karten ist
+Aufgabe der App, nicht deine.
 
 ━━━ 6 · QUALITÄT & STIL ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
