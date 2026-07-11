@@ -85,11 +85,25 @@
 	}
 
 	// --- Zeilen-Aktionen (Schalen und Chips teilen die Mechanik) ---
-	function neueSchale() {
-		zeilen = [...zeilen, { label: '', ziel: null }];
+	// pos = Index, VOR dem eingefügt wird; ohne pos: ans Ende.
+	function neueSchale(pos?: number) {
+		const p = pos ?? zeilen.length;
+		zeilen = [...zeilen.slice(0, p), { label: '', ziel: null }, ...zeilen.slice(p)];
+		fokusZeile = p;
 	}
-	function neueSection() {
-		zeilen = [...zeilen, { label: '', ziel: null, section: true }];
+	function neueSection(pos?: number) {
+		const p = pos ?? zeilen.length;
+		zeilen = [...zeilen.slice(0, p), { label: '', ziel: null, section: true }, ...zeilen.slice(p)];
+		fokusZeile = p;
+	}
+
+	// Nach dem Einfügen soll der Cursor direkt im neuen Feld sitzen.
+	let fokusZeile = $state<number | null>(null);
+	function autofokus(el: HTMLInputElement, k: number) {
+		if (k === fokusZeile) {
+			el.focus();
+			fokusZeile = null;
+		}
 	}
 	function loescheSchale(k: number) {
 		zeilen = zeilen.filter((_, i) => i !== k);
@@ -272,12 +286,34 @@
 	{:else}
 		<div class="schalen">
 			{#each zeilen as zeile, k (k)}
+				<!-- Unsichtbare Einfüge-Zone: zeigt beim Hover eine Linie mit ＋ -->
+				<div class="fuge" role="presentation">
+					<div class="fuge-linie"></div>
+					<div class="fuge-knoepfe">
+						<button class="fuge-plus" onclick={() => neueSchale(k)} title="Schale hier einfügen"
+							>＋</button
+						>
+						<button class="fuge-plus" onclick={() => neueSection(k)} title="Section hier einfügen">
+							<svg
+								width="12"
+								height="10"
+								viewBox="0 0 14 12"
+								fill="none"
+								stroke="currentColor"
+								stroke-width="1.3"
+							>
+								<path d="M1 3.5V2a1 1 0 0 1 1-1h3l1.5 1.5H12a1 1 0 0 1 1 1V10a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V3.5z" />
+							</svg>
+						</button>
+					</div>
+				</div>
 				{#if zeile.section}
 					<div class="section">
 						<input
 							class="section-label"
 							data-zeile={k}
 							data-feld="back"
+							use:autofokus={k}
 							bind:value={zeile.label}
 							placeholder="Section, z.B. Allgemeine Voraussetzungen"
 						/>
@@ -291,6 +327,7 @@
 							class="schale-label"
 							data-zeile={k}
 							data-feld="back"
+							use:autofokus={k}
 							bind:value={zeile.label}
 							placeholder="z.B. A. § 437 iVm. § 280 — SE wegen Sachmangel"
 						/>
@@ -317,8 +354,8 @@
 				{/if}
 			{/each}
 			<div class="plus-zeile">
-				<button class="schale-plus" onclick={neueSchale}>＋</button>
-				<button class="section-plus" onclick={neueSection} title="Section (Zwischenüberschrift)">
+				<button class="schale-plus" onclick={() => neueSchale()}>＋</button>
+				<button class="section-plus" onclick={() => neueSection()} title="Section (Zwischenüberschrift)">
 					<svg width="14" height="12" viewBox="0 0 14 12" fill="none" stroke="currentColor" stroke-width="1.3">
 						<path d="M1 3.5V2a1 1 0 0 1 1-1h3l1.5 1.5H12a1 1 0 0 1 1 1V10a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V3.5z" />
 					</svg>
@@ -562,11 +599,68 @@
 		margin: 0 0 0.6em;
 	}
 
-	/* Schalen: gestapelte Pillen */
+	/* Schalen: gestapelte Pillen. Kein gap — die Fugen zwischen den
+	   Zeilen sind selbst die Abstände (und die Einfüge-Zonen). */
 	.schalen {
 		display: flex;
 		flex-direction: column;
-		gap: 0.5rem;
+	}
+	.schalen > :global(.schale),
+	.schalen > :global(.section) {
+		margin-bottom: 0;
+	}
+
+	/* Die Fuge: unsichtbare Zone zwischen den Zeilen. Beim Hover
+	   erscheint eine feine Akzent-Linie mit ＋ — die Einfügemarke. */
+	.fuge {
+		position: relative;
+		height: 0.5rem;
+		display: flex;
+		align-items: center;
+	}
+	.fuge-linie {
+		position: absolute;
+		left: 0.75rem;
+		right: 0.75rem;
+		height: 1px;
+		background: var(--akzent);
+		opacity: 0;
+		transition: opacity 0.12s ease;
+	}
+	.fuge-knoepfe {
+		position: relative;
+		margin: 0 auto;
+		display: flex;
+		gap: 0.25rem;
+		opacity: 0;
+		transition: opacity 0.12s ease;
+	}
+	.fuge:hover .fuge-linie,
+	.fuge:hover .fuge-knoepfe,
+	.fuge:focus-within .fuge-linie,
+	.fuge:focus-within .fuge-knoepfe {
+		opacity: 1;
+	}
+	.fuge-plus {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 1.3rem;
+		height: 1.3rem;
+		background: var(--flaeche);
+		border: 1px solid var(--akzent);
+		border-radius: 50%;
+		color: var(--akzent);
+		font-size: 0.75rem;
+		line-height: 1;
+		cursor: pointer;
+		transition:
+			background 0.12s ease,
+			color 0.12s ease;
+	}
+	.fuge-plus:hover {
+		background: var(--akzent);
+		color: white;
 	}
 	.schale {
 		display: flex;
