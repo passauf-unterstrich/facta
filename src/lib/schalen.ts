@@ -12,16 +12,24 @@ export function parseZeilen(text: string): Zeile[] {
 		.split('\n')
 		.filter((z) => z.trim() !== '')
 		.map((z) => {
-			const m = z.trim().match(/^\[\[([^\]|]+)\|([^\]]+)\]\]$/);
-			return m
-				? { label: m[1], ziel: m[2] }
-				: { label: z.trim(), ziel: null, section: true };
+			const zeile = z.trim();
+			// Section: ## Überschrift (Markdown-Syntax, menschenlesbar)
+			const sec = zeile.match(/^##\s*(.*)$/);
+			if (sec) return { label: sec[1], ziel: null, section: true };
+			// Schale mit Link
+			const m = zeile.match(/^\[\[([^\]|]+)\|([^\]]+)\]\]$/);
+			if (m) return { label: m[1], ziel: m[2] };
+			// Schale ohne Link (z.B. gerade erst angelegt)
+			return { label: zeile, ziel: null };
 		});
 }
 
 export function serialisiere(zeilen: Zeile[]): string {
 	return zeilen
-		.filter((z) => z.label.trim() !== '')
-		.map((z) => (z.ziel ? `[[${z.label}|${z.ziel}]]` : z.label))
+		.filter((z) => z.label.trim() !== '' || z.section)
+		.map((z) => {
+			if (z.section) return `## ${z.label}`;
+			return z.ziel ? `[[${z.label}|${z.ziel}]]` : z.label;
+		})
 		.join('\n');
 }

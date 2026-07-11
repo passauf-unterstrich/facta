@@ -55,13 +55,18 @@
 		{#if node.mode && node.mode !== 'open'}
 			<div class="schalen rueckseite">
 				{#each parseZeilen(node.back) as z, i (i)}
-					{#if z.ziel}
+					{#if z.section}
+						<div class="schale-titel">{@html rendereInline(z.label)}</div>
+					{:else if z.ziel}
 						<button class="schale" onclick={() => onlink(z.ziel!)}>
 							<span class="schale-text">{@html rendereInline(z.label)}</span>
 							<span class="schale-pfeil">›</span>
 						</button>
 					{:else}
-						<div class="schale-titel">{@html rendereInline(z.label)}</div>
+						<!-- Unverlinkte Schale: Prüfungspunkt ohne Karte dahinter -->
+						<div class="schale schale-passiv">
+							<span class="schale-text">{@html rendereInline(z.label)}</span>
+						</div>
 					{/if}
 				{/each}
 			</div>
@@ -213,6 +218,14 @@
 	}
 	.schale:active {
 		transform: translateY(0) scale(0.99);
+	}
+	.schale-passiv {
+		cursor: default;
+		opacity: 0.75;
+	}
+	.schale-passiv:hover {
+		border-color: var(--linie-stark);
+		transform: none;
 	}
 	.schale-text {
 		flex: 1;

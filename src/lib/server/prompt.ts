@@ -75,13 +75,15 @@ title und ref bei definition, subsumtion, simpel und thema: null.
 
 mode (Darstellung der RÜCKSEITE):
 "open"     Freitext mit Inline-Links an beliebiger Stelle.
-"struktur" NUR Zeilen: eine [[Link-Zeile]] pro Prüfungspunkt (Schale)
-           oder eine blanke Text-Zeile als SECTION (Zwischenüberschrift,
-           gruppiert die Schalen darunter). Beispiel:
-           Allgemeine Voraussetzungen
+"struktur" NUR Zeilen, drei Arten:
+           [[Label|ziel_id]]  → Schale (tappbarer Prüfungspunkt)
+           ## Überschrift     → Section (gruppiert die Schalen darunter)
+           Blanker Text       → Schale ohne Link (sparsam einsetzen)
+           Beispiel:
+           ## Allgemeine Voraussetzungen
            [[I. Kaufvertrag|def_kaufvertrag]]
            [[II. Sachmangel|def_sachmangel]]
-           Spezielle Voraussetzungen SE
+           ## Spezielle Voraussetzungen SE
            [[III. Vertretenmüssen|def_vertretenmuessen]]
 
 chips (eigenes Feld, bei JEDEM Kartentyp erlaubt):
