@@ -19,7 +19,7 @@ Erzeuge AUSSCHLIESSLICH ein JSON-Objekt nach diesem Format — keine Erklärunge
 
 {
   "nodes": [
-    { "id": "...", "type": "...", "area": "...", "title": "...", "ref": "...", "mode": "...", "front": "...", "back": "..." }
+    { "id": "...", "type": "...", "area": "...", "title": "...", "ref": "...", "mode": "...", "front": "...", "back": "...", "chips": "..." }
   ],
   "edges": []
 }
@@ -51,10 +51,11 @@ schema — Eine Anspruchsgrundlage / ein Prüfungsschema.
 definition — Ein Tatbestandsmerkmal, abstrakt und fallunabhängig.
   front: "Was ist ...?" / "Wann liegt ... vor?"
   mode:  "open"
-  back:  die abstrakte Definition. Gibt es im Fall eine Subsumtion zu
-         diesem Merkmal: am Ende einen Link auf die Subsumtionskarte
-         anhängen. So sammelt eine Definition über die Zeit alle ihre
-         Anwendungsfälle (Bahnhof-Effekt).
+  back:  die abstrakte Definition — nur der Kern, sofort erfassbar.
+  chips: eine Zeile pro Anwendungsfall/Subsumtion aus den Fällen.
+         So sammelt eine Definition über die Zeit alle ihre
+         Anwendungsfälle (Bahnhof-Effekt), ohne dass der Kerntext
+         wächst.
 
 subsumtion — Die fallspezifische Anwendung.
   front: kurze Frage zum konkreten Problem des Falls
@@ -68,7 +69,8 @@ simpel — Fallunabhängiges Wissen (Skript-Stoff, Merksätze).
 thema — Ein Erkennungs-Signal / wiederkehrendes Rechtsthema
   (z.B. "Arglist", "Sachmangel", "Minderjährigkeit", "Verzug").
   front: das Thema als Frage oder Stichwort
-  mode:  "agls" oder "chips"
+  mode:  "agls"
+  chips: optionale Vertiefungen zur Merkliste
   back:  MERKLISTE der Konsequenzen — woran man denken muss, wenn das
          Signal im Sachverhalt auftaucht (welche Normen, Anfechtung,
          Haftungsausschluss-Aushebelung …). KEIN Register der Fälle.
@@ -79,14 +81,24 @@ thema — Ein Erkennungs-Signal / wiederkehrendes Rechtsthema
 title und ref bei definition, subsumtion, simpel und thema: null.
 
 
-━━━ 2 · MODES (DARSTELLUNG DER RÜCKSEITE) ━━━━━━━━━━━━━
+━━━ 2 · MODES & CHIPS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
+mode (Darstellung der RÜCKSEITE):
 "open"   Freitext mit Inline-Links an beliebiger Stelle.
 "agls"   NUR Link-Zeilen (+ Überschrift-Zeilen) — große Schalen.
 "schema" wie agls, für Tatbestandsmerkmale.
-"chips"  wie agls, kleine Bubbles — für Themen-Merklisten geeignet.
-In agls/schema/chips gilt strikt: eine Zeile = ein Link oder eine
-Überschrift, nichts anderes.
+In agls/schema gilt strikt: eine Zeile = ein Link oder Überschrift.
+
+chips (eigenes Feld, bei JEDEM Kartentyp erlaubt):
+Kleine Verweis-Bubbles unter der Karte — der Bahnhof. Format wie
+Schalen: eine [[Label|ziel_id]]-Zeile pro Chip. Einsatz:
+- Unter DEFINITIONEN: die Subsumtionen/Anwendungsfälle aus den Fällen.
+  Label = sprechend und knapp, z.B. "BGH: Wochenendhaus als Mangel?"
+- Unter THEMEN: Vertiefungen zur Merkliste.
+- Sonst: "" (leerer String).
+Anatomie einer guten Karte: front/back tragen das WICHTIGSTE, sofort
+erfassbar. Tiefe über Links. Besonderheiten und Anwendungsfälle nach
+UNTEN in die chips — nie den Kerntext damit aufblähen.
 
 
 ━━━ 3 · LINKS & KANTEN ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -150,7 +162,8 @@ Vollständigkeit: lieber ein sauberer Kernbaum als zwanzig dünne Karten.
     { "id": "def_sachmangel", "type": "definition", "area": "zivilrecht",
       "title": null, "ref": null, "mode": "open",
       "front": "Wann liegt ein **Sachmangel** vor?",
-      "back": "Die Sache ist mangelhaft, wenn sie bei Gefahrübergang von der vereinbarten Beschaffenheit abweicht (§ 434 BGB). Im Fall: [[Wochenendhaus-Eigenschaft als Mangel?|sub_sachmangel_wochenendhaus]]" }
+      "back": "Die Sache ist mangelhaft, wenn sie bei Gefahrübergang von der vereinbarten Beschaffenheit abweicht (§ 434 BGB).",
+      "chips": "[[BGH: Wochenendhaus-Eigenschaft als Mangel?|sub_sachmangel_wochenendhaus]]" }
   ],
   "edges": []
 }`;

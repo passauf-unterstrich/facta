@@ -5,7 +5,7 @@ import type { RequestHandler } from './$types';
 // Dein Backup-Knopf: Export-Format = Import-Format = KI-Pipeline-Format.
 export const GET: RequestHandler = () => {
 	const nodes = db
-		.prepare('SELECT id, type, area, front, back, title, ref, mode FROM nodes ORDER BY id')
+		.prepare('SELECT id, type, area, front, back, chips, title, ref, mode FROM nodes ORDER BY id')
 		.all();
 	const edges = db.prepare('SELECT from_id, to_id, label, position FROM edges ORDER BY id').all();
 

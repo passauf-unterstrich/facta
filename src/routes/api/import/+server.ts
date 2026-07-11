@@ -16,13 +16,14 @@ export const POST: RequestHandler = async ({ request }) => {
 	}
 
 	const nodeStmt = db.prepare(
-		`INSERT INTO nodes (id, type, area, front, back, title, ref, mode)
-		 VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+		`INSERT INTO nodes (id, type, area, front, back, chips, title, ref, mode)
+		 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
 		 ON CONFLICT(id) DO UPDATE SET
 		   type = excluded.type,
 		   area = excluded.area,
 		   front = excluded.front,
 		   back = excluded.back,
+		   chips = excluded.chips,
 		   title = excluded.title,
 		   ref = excluded.ref,
 		   mode = excluded.mode,

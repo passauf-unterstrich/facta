@@ -39,6 +39,7 @@
 	// ebene -1 = Basis-Karte, 0+ = Layer-Index
 	let link = $state<{
 		ebene: number;
+		feld: 'back' | 'chips';
 		start: number;
 		ende: number;
 		text: string;
@@ -85,8 +86,15 @@
 	}
 
 	// Verlinken Schritt 1: BauKarte meldet Markierung + aktuellen Text
-	function linkStart(ebene: number, start: number, ende: number, text: string, daten: BauDaten) {
-		link = { ebene, start, ende, text, daten };
+	function linkStart(
+		ebene: number,
+		feld: 'back' | 'chips',
+		start: number,
+		ende: number,
+		text: string,
+		daten: BauDaten
+	) {
+		link = { ebene, feld, start, ende, text, daten };
 	}
 
 	// Verlinken Schritt 2: Ziel gewählt → [[Text|id]] in den Text setzen,
@@ -95,10 +103,10 @@
 		if (!link) return;
 		const l = link;
 		link = null;
-		const neuerBack =
-			l.daten.back.slice(0, l.start) + `[[${l.text}|${zielId}]]` + l.daten.back.slice(l.ende);
+		const quelle = l.feld === 'chips' ? l.daten.chips : l.daten.back;
+		const neuerText = quelle.slice(0, l.start) + `[[${l.text}|${zielId}]]` + quelle.slice(l.ende);
 		const node = l.ebene === -1 ? data.node : stack[l.ebene].node;
-		await speichere(node, { ...l.daten, back: neuerBack });
+		await speichere(node, { ...l.daten, [l.feld]: neuerText });
 		await oeffne(zielId);
 	}
 </script>
@@ -138,7 +146,7 @@
 			<BauKarte
 				node={data.node}
 				onsave={(daten) => speichere(data.node, daten)}
-				onlinkstart={(start, ende, text, daten) => linkStart(-1, start, ende, text, daten)}
+				onlinkstart={(feld, start, ende, text, daten) => linkStart(-1, feld, start, ende, text, daten)}
 			/>
 		{/key}
 		{#if link && link.ebene === -1}
@@ -187,7 +195,7 @@
 					<BauKarte
 						node={layer.node}
 						onsave={(daten) => speichere(layer.node, daten)}
-						onlinkstart={(start, ende, text, daten) => linkStart(i, start, ende, text, daten)}
+						onlinkstart={(feld, start, ende, text, daten) => linkStart(i, feld, start, ende, text, daten)}
 						onschliessen={schliesseOberste}
 					/>
 				{/key}

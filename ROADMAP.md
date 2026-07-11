@@ -52,3 +52,19 @@ Die App trainiert zwei Kernkompetenzen über geteilte Knoten:
 Text = einzige Quelle für Kanten · Mensch als Reviewer · IDs sind
 Maschinensache · ein Austauschformat für alles · Design: ruhig,
 dezent, haptisch
+
+## Konzept: Chips (entschieden)
+Chips sind KEIN Mode, sondern ein drittes Textfeld jeder Karte
+(Spalte `chips`, eine Link-Zeile pro Chip, Teil des Kanten-Syncs).
+Lern-Modus: kleine gelbe Bubbles unter der Karte nach dem Aufdecken.
+Anatomie: Kern oben in front/back, Tiefe über Links, Besonderheiten
+und Anwendungsfälle unten als Chips.
+
+## KI-Dedup, Zwei-Stufen-Plan
+Jetzt (manuell): Bestand steht im frisch kopierten Prompt — die
+Chat-KI sieht existierende IDs und verlinkt/erweitert statt zu
+duplizieren. Trägt bis einige hundert Karten.
+Stufe 3 (API): Chat-KI generiert frei → beim Upload läuft ein
+Merge-Endpoint mit KI: gleicht neues JSON gegen den Bestand ab
+(Normen/Titel matchen), löst Duplikate auf, ERWEITERT statt zu
+kürzen, Ergebnis als Vorschau — Mensch bleibt Reviewer.

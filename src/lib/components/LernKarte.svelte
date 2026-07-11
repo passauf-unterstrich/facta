@@ -53,7 +53,7 @@
 
 	{#if aufgedeckt}
 		{#if node.mode && node.mode !== 'open'}
-			<div class="schalen rueckseite" class:chips={node.mode === 'chips'}>
+			<div class="schalen rueckseite">
 				{#each parseZeilen(node.back) as z, i (i)}
 					{#if z.ziel}
 						<button class="schale" onclick={() => onlink(z.ziel!)}>
@@ -70,6 +70,21 @@
 		{/if}
 	{:else if node.back}
 		<button class="aufdecken" onclick={onaufdecken}>Aufdecken</button>
+	{/if}
+
+	<!-- Chips: der Bahnhof — kleine gelbe Verweise, erst nach dem Aufdecken -->
+	{#if aufgedeckt && node.chips.trim()}
+		<div class="chips">
+			{#each parseZeilen(node.chips) as chip, i (i)}
+				{#if chip.ziel}
+					<button class="chip" onclick={() => onlink(chip.ziel!)}>
+						{@html rendereInline(chip.label)}
+					</button>
+				{:else}
+					<span class="chip chip-passiv">{@html rendereInline(chip.label)}</span>
+				{/if}
+			{/each}
+		</div>
 	{/if}
 </article>
 
@@ -214,16 +229,47 @@
 		margin-top: 0.4rem;
 	}
 
-	/* Chips-Variante: kleine Bubbles nebeneinander (Skizze 2) */
-	.schalen.chips {
-		flex-direction: row;
+	/* Chips: kleine gelbe Bubbles unter der Karte — der Bahnhof.
+	   Kleiner als Schalen, damit die Hierarchie stimmt: erst die
+	   Definition, dann die Vertiefungen. */
+	.chips {
+		display: flex;
 		flex-wrap: wrap;
-		gap: 0.5rem;
+		gap: 0.45rem;
+		margin-top: 1.25rem;
+		padding-top: 1rem;
+		border-top: 1px dashed var(--linie);
 	}
-	.schalen.chips .schale {
-		width: auto;
-		font-size: 0.85rem;
-		padding: 0.45rem 0.9rem;
+	.chip {
+		background: color-mix(in srgb, var(--typ-thema) 10%, var(--flaeche));
+		border: 1px solid color-mix(in srgb, var(--typ-thema) 30%, transparent);
+		border-radius: 999px;
+		padding: 0.3rem 0.75rem;
+		color: var(--text-leise);
+		font-family: inherit;
+		font-size: 0.78rem;
+		cursor: pointer;
+		transition:
+			border-color 0.15s ease,
+			color 0.15s ease,
+			transform 0.12s ease;
+	}
+	.chip:hover {
+		border-color: var(--typ-thema);
+		color: var(--text);
+		transform: translateY(-1px);
+	}
+	.chip:active {
+		transform: translateY(0) scale(0.98);
+	}
+	.chip-passiv {
+		cursor: default;
+		opacity: 0.7;
+	}
+	.chip-passiv:hover {
+		border-color: color-mix(in srgb, var(--typ-thema) 30%, transparent);
+		color: var(--text-leise);
+		transform: none;
 	}
 	@keyframes einblenden {
 		from {

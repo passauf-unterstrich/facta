@@ -1,13 +1,12 @@
 // Dieses Vokabular sprechen ALLE: Datenbank, API, jede Svelte-Seite.
-// Vertippst du dich irgendwo, meckert VS Code sofort beim Tippen —
-// statt dass es später zur Laufzeit kracht.
+// Vertippst du dich irgendwo, meckert VS Code sofort beim Tippen.
 
 export type KartenTyp = 'fall' | 'schema' | 'definition' | 'subsumtion' | 'simpel' | 'thema';
 
-// Wie die Rückseite dargestellt wird — der Text bleibt die Wahrheit,
+// Wie die RÜCKSEITE dargestellt wird — der Text bleibt die Wahrheit,
 // der Mode ist nur die Brille: open = Freitext, agls/schema = eine
-// Link-Zeile pro Schale, chips = Link-Zeilen als kleine Bubbles.
-export type KartenMode = 'open' | 'agls' | 'schema' | 'chips';
+// Link-Zeile pro Schale.
+export type KartenMode = 'open' | 'agls' | 'schema';
 
 export type Karte = {
 	id: string;
@@ -15,6 +14,10 @@ export type Karte = {
 	area: string | null;
 	front: string;
 	back: string;
+	// Chips: drittes Textfeld, eine Link-Zeile pro Chip. Kleine gelbe
+	// Bubbles unter der Karte — der Bahnhof (Definition → ihre
+	// Subsumtionen, Thema → Vertiefungen). Nimmt am Kanten-Sync teil.
+	chips: string;
 	title: string | null;
 	ref: string | null;
 	mode: KartenMode;
@@ -31,22 +34,18 @@ export type Kante = {
 };
 
 // Ein Kind = Zielkarte plus die Infos der Kante, die dorthin führt.
-// So braucht die Kinder-Liste einer Karte nur einen einzigen Typ.
 export type Kind = Karte & {
 	edge_id: number;
 	label: string | null;
 	position: number | null;
 };
 
-// Was die Detail-API liefert: die Karte selbst + ihre Kinder
 export type KarteMitKindern = {
 	node: Karte;
 	children: Kind[];
 };
 
-// Das Austauschformat. Bewusst EIN Format für drei Zwecke:
-// Import, Export/Backup, und das, was deine KI-Pipeline liefert.
-// (created_at etc. fehlen absichtlich — die vergibt die DB selbst.)
+// Das Austauschformat: Import = Export = KI-Pipeline.
 export type FactaExport = {
 	nodes: Array<{
 		id: string;
@@ -54,6 +53,7 @@ export type FactaExport = {
 		area?: string | null;
 		front: string;
 		back?: string;
+		chips?: string;
 		title?: string | null;
 		ref?: string | null;
 		mode?: KartenMode;
@@ -65,11 +65,13 @@ export type FactaExport = {
 		position?: number | null;
 	}>;
 };
-// Der Entwurf einer Karte im Bauen-Modus — gebündelt statt fünf Parameter
+
+// Der Entwurf einer Karte im Bauen-Modus — gebündelt statt sieben Parameter
 export type BauDaten = {
 	type: KartenTyp;
 	front: string;
 	back: string;
+	chips: string;
 	title: string | null;
 	ref: string | null;
 	mode: KartenMode;
