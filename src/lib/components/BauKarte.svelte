@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { rendere } from '$lib/markdown';
-	import { parseZeilen, serialisiere, type Zeile } from '$lib/schalen';
+	import { parseZeilen, serialisiere, zeilenOffset, type Zeile } from '$lib/schalen';
 	import type { Karte, KartenTyp, KartenMode, BauDaten } from '$lib/types';
 
 	// Verlinken meldet neben der Position auch das QUELL-FELD, damit
@@ -101,26 +101,14 @@
 		chipZeilen = chipZeilen.filter((_, i) => i !== k);
 	}
 
-	// Offset einer Zeile im serialisierten Text — damit die Seite den
-	// [[Link]] exakt um dieses Label legen kann.
-	function zeilenOffset(zs: Zeile[], k: number): number {
-		let offset = 0;
-		let index = 0;
-		for (const z of zs) {
-			if (z.label.trim() === '') continue;
-			if (index === k) break;
-			offset += (z.ziel ? `[[${z.label}|${z.ziel}]]` : z.label).length + 1;
-			index++;
-		}
-		return offset;
-	}
-
 	function verlinkeZeile(feld: LinkFeld, zs: Zeile[], k: number) {
 		const label = zs[k].label.trim();
-		if (!label) return;
+		if (!label || zs[k].section) return;
 		zs[k].label = label;
-		const offset = zeilenOffset(zs, k);
+		// Erst serialisieren, dann den Offset in GENAU diesem Text
+		// berechnen (zeilenOffset ist das Spiegelbild von serialisiere)
 		if (feld === 'back') back = serialisiere(zs);
+		const offset = zeilenOffset(zs, k);
 		onlinkstart(feld, offset, offset + label.length, label, daten);
 	}
 

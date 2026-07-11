@@ -33,3 +33,22 @@ export function serialisiere(zeilen: Zeile[]): string {
 		})
 		.join('\n');
 }
+
+// Zeichen-Offset des Labels der Zeile k im serialisierten Text.
+// MUSS spiegelbildlich zu serialisiere() rechnen — gleiche Filter,
+// gleiche Präfixe — sonst landen Links in der falschen Zeile.
+export function zeilenOffset(zeilen: Zeile[], k: number): number {
+	let offset = 0;
+	for (let i = 0; i < zeilen.length; i++) {
+		const z = zeilen[i];
+		const wird = z.label.trim() !== '' || z.section;
+		if (!wird) continue; // Zeile fällt beim Serialisieren weg
+		if (i === k) {
+			// Innerhalb der Ziel-Zeile: das Label beginnt nach dem Präfix
+			return offset + (z.section ? '## '.length : z.ziel ? '[['.length : 0);
+		}
+		const text = z.section ? `## ${z.label}` : z.ziel ? `[[${z.label}|${z.ziel}]]` : z.label;
+		offset += text.length + 1; // +1 für den Zeilenumbruch
+	}
+	return offset;
+}
