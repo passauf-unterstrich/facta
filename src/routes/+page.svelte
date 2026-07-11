@@ -25,12 +25,7 @@
 		<p class="untertitel">Dein vernetztes Wissen für die Fallbearbeitung.</p>
 	</header>
 
-	<input
-		class="suche"
-		type="search"
-		placeholder="Karten durchsuchen …"
-		bind:value={suche}
-	/>
+	<input class="suche" type="search" placeholder="Karten durchsuchen …" bind:value={suche} />
 
 	{#if data.nodes.length === 0}
 		<div class="leer">
@@ -80,7 +75,9 @@
 		gap: 2.5rem;
 	}
 
-	.kopf { text-align: center; }
+	.kopf {
+		text-align: center;
+	}
 	h1 {
 		font-size: 2rem;
 		font-weight: 700;
@@ -103,9 +100,13 @@
 		color: var(--text);
 		font-family: inherit;
 		font-size: 0.95rem;
-		transition: border-color 0.15s ease, background 0.15s ease;
+		transition:
+			border-color 0.15s ease,
+			background 0.15s ease;
 	}
-	.suche::placeholder { color: var(--text-fluester); }
+	.suche::placeholder {
+		color: var(--text-fluester);
+	}
 	.suche:focus {
 		outline: none;
 		border-color: var(--akzent);
@@ -120,7 +121,10 @@
 		color: var(--text-fluester);
 		margin: 0 0 0.9rem;
 	}
-	.zahl { font-weight: 400; margin-left: 0.3rem; }
+	.zahl {
+		font-weight: 400;
+		margin-left: 0.3rem;
+	}
 
 	.fall-grid {
 		display: grid;
@@ -140,7 +144,10 @@
 		padding: 1.1rem 1.2rem;
 		text-decoration: none;
 		color: var(--text);
-		transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+		transition:
+			border-color 0.15s ease,
+			transform 0.15s ease,
+			box-shadow 0.15s ease;
 	}
 	.fall-karte:hover {
 		border-color: var(--linie-stark);
@@ -151,7 +158,11 @@
 		transform: translateY(0) scale(0.985);
 		box-shadow: none;
 	}
-	.fall-front { font-size: 0.95rem; line-height: 1.45; font-weight: 500; }
+	.fall-front {
+		font-size: 0.95rem;
+		line-height: 1.45;
+		font-weight: 500;
+	}
 
 	/* Der Typ-Punkt: dezentes farbiges Signal statt bunter Rahmen */
 	.typ-punkt {
@@ -180,9 +191,15 @@
 		border-bottom: 1px solid var(--linie);
 		transition: background 0.1s ease;
 	}
-	.zeile:last-child { border-bottom: none; }
-	.zeile:hover { background: var(--flaeche); }
-	.zeile:active { background: var(--flaeche-hoch); }
+	.zeile:last-child {
+		border-bottom: none;
+	}
+	.zeile:hover {
+		background: var(--flaeche);
+	}
+	.zeile:active {
+		background: var(--flaeche-hoch);
+	}
 	.zeile-front {
 		flex: 1;
 		white-space: nowrap;
@@ -195,14 +212,21 @@
 		padding: 4rem 0;
 		color: var(--text-leise);
 	}
-	.leer-hinweis { color: var(--text-fluester); font-size: 0.85rem; }
+	.leer-hinweis {
+		color: var(--text-fluester);
+		font-size: 0.85rem;
+	}
 
-	.fuss { text-align: center; }
+	.fuss {
+		text-align: center;
+	}
 	.fuss a {
 		color: var(--text-fluester);
 		font-size: 0.85rem;
 		text-decoration: none;
 		transition: color 0.15s ease;
 	}
-	.fuss a:hover { color: var(--text-leise); }
+	.fuss a:hover {
+		color: var(--text-leise);
+	}
 </style>

@@ -6,9 +6,7 @@ import type { PageServerLoad } from './$types';
 // HTTP-Umweg — direkter Griff in die Datenbank. Was hier returned
 // wird, liegt in der Seite als fertiges `data` bereit.
 export const load: PageServerLoad = () => {
-	const nodes = db
-		.prepare('SELECT * FROM nodes ORDER BY updated_at DESC')
-		.all() as Karte[];
+	const nodes = db.prepare('SELECT * FROM nodes ORDER BY updated_at DESC').all() as Karte[];
 
 	return { nodes };
 };

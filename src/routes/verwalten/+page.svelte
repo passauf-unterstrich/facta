@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { invalidateAll, goto } from '$app/navigation';
 	import { klartext } from '$lib/markdown';
+	import { baueId } from '$lib/id';
 	import type { KartenTyp } from '$lib/types';
 
 	let { data } = $props();
@@ -10,26 +11,9 @@
 	let neuArea = $state('zivilrecht');
 	let neuTitel = $state('');
 
-	function baueId(typ: KartenTyp, front: string): string {
-		const praefix: Record<KartenTyp, string> = {
-			fall: 'fall', schema: 'agl', definition: 'def', subsumtion: 'sub', simpel: 'k', thema: 'thema'
-		};
-		const slug = front
-			.toLowerCase()
-			.replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/ß/g, 'ss')
-			.replace(/§/g, 'p')
-			.replace(/[^a-z0-9]+/g, '_')
-			.replace(/^_+|_+$/g, '')
-			.split('_').slice(0, 4).join('_');
-		let id = `${praefix[typ]}_${slug}`;
-		let n = 2;
-		while (data.nodes.some((k) => k.id === id)) id = `${praefix[typ]}_${slug}_${n++}`;
-		return id;
-	}
-
 	async function erstelle() {
 		if (!neuTitel.trim()) return;
-		const id = baueId(neuTyp, neuTitel);
+		const id = baueId(neuTyp, neuTitel, (kandidat) => data.nodes.some((k) => k.id === kandidat));
 		const res = await fetch('/api/nodes', {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
@@ -93,7 +77,8 @@
 	async function kopierePrompt() {
 		try {
 			await navigator.clipboard.writeText(promptText);
-			promptStatus = 'Prompt in der Zwischenablage — mit PDF ins Chatfenster, JSON zurück, hier importieren.';
+			promptStatus =
+				'Prompt in der Zwischenablage — mit PDF ins Chatfenster, JSON zurück, hier importieren.';
 		} catch {
 			promptStatus = 'Kopieren blockiert — Prompt öffnet sich als Seite: /api/prompt';
 		}
@@ -170,7 +155,11 @@
 					<span class="typ-punkt" style:--punkt="var(--typ-{node.type})"></span>
 					<a class="zeile-front" href={`/karte/${node.id}`}>{klartext(node.title ?? node.front)}</a>
 					<span class="zeile-id">{node.id}</span>
-					<button class="loeschen" onclick={() => loesche(node.id, node.front)} aria-label="Löschen">
+					<button
+						class="loeschen"
+						onclick={() => loesche(node.id, klartext(node.title ?? node.front))}
+						aria-label="Löschen"
+					>
 						×
 					</button>
 				</div>
@@ -188,14 +177,18 @@
 		flex-direction: column;
 		gap: 2rem;
 	}
-	.leiste { display: flex; }
+	.leiste {
+		display: flex;
+	}
 	.zurueck {
 		color: var(--text-fluester);
 		text-decoration: none;
 		font-size: 0.85rem;
 		transition: color 0.15s ease;
 	}
-	.zurueck:hover { color: var(--text); }
+	.zurueck:hover {
+		color: var(--text);
+	}
 
 	h1 {
 		font-size: 1.5rem;
@@ -211,8 +204,14 @@
 		color: var(--text-fluester);
 		margin: 0 0 0.9rem;
 	}
-	.zahl { font-weight: 400; margin-left: 0.3rem; }
-	.block { display: flex; flex-direction: column; }
+	.zahl {
+		font-weight: 400;
+		margin-left: 0.3rem;
+	}
+	.block {
+		display: flex;
+		flex-direction: column;
+	}
 
 	.neu-zeile {
 		display: flex;
@@ -228,9 +227,17 @@
 		font-family: inherit;
 		font-size: 0.88rem;
 	}
-	.feld:focus { outline: none; border-color: var(--akzent); }
-	.feld-schmal { flex: 0 0 auto; }
-	.feld-breit { flex: 1; min-width: 12rem; }
+	.feld:focus {
+		outline: none;
+		border-color: var(--akzent);
+	}
+	.feld-schmal {
+		flex: 0 0 auto;
+	}
+	.feld-breit {
+		flex: 1;
+		min-width: 12rem;
+	}
 
 	.knopf-blau {
 		background: var(--akzent);
@@ -242,13 +249,26 @@
 		font-size: 0.88rem;
 		font-weight: 500;
 		cursor: pointer;
-		transition: background 0.15s ease, transform 0.1s ease, opacity 0.15s ease;
+		transition:
+			background 0.15s ease,
+			transform 0.1s ease,
+			opacity 0.15s ease;
 	}
-	.knopf-blau:hover { background: var(--akzent-hover); }
-	.knopf-blau:active { transform: scale(0.97); }
-	.knopf-blau:disabled { opacity: 0.4; cursor: default; }
+	.knopf-blau:hover {
+		background: var(--akzent-hover);
+	}
+	.knopf-blau:active {
+		transform: scale(0.97);
+	}
+	.knopf-blau:disabled {
+		opacity: 0.4;
+		cursor: default;
+	}
 
-	.daten-zeile { display: flex; gap: 0.5rem; }
+	.daten-zeile {
+		display: flex;
+		gap: 0.5rem;
+	}
 	.knopf-grau {
 		display: inline-block;
 		background: var(--flaeche-hoch);
@@ -262,8 +282,14 @@
 		cursor: pointer;
 		transition: background 0.15s ease;
 	}
-	.knopf-grau:hover { background: var(--linie-stark); }
-	.status { font-size: 0.85rem; color: var(--text-leise); margin: 0.75rem 0 0; }
+	.knopf-grau:hover {
+		background: var(--linie-stark);
+	}
+	.status {
+		font-size: 0.85rem;
+		color: var(--text-leise);
+		margin: 0.75rem 0 0;
+	}
 
 	.liste {
 		display: flex;
@@ -280,9 +306,13 @@
 		border-bottom: 1px solid var(--linie);
 		font-size: 0.9rem;
 	}
-	.zeile:last-child { border-bottom: none; }
+	.zeile:last-child {
+		border-bottom: none;
+	}
 	.typ-punkt {
-		width: 7px; height: 7px; border-radius: 50%;
+		width: 7px;
+		height: 7px;
+		border-radius: 50%;
 		background: var(--punkt, var(--typ-simpel));
 		flex-shrink: 0;
 	}
@@ -294,7 +324,9 @@
 		overflow: hidden;
 		text-overflow: ellipsis;
 	}
-	.zeile-front:hover { color: var(--akzent); }
+	.zeile-front:hover {
+		color: var(--akzent);
+	}
 	/* Im Maschinenraum ist die ID zu Hause — hier darf sie stehen */
 	.zeile-id {
 		font-family: var(--mono);
@@ -312,5 +344,7 @@
 		padding: 0 0.2rem;
 		transition: color 0.15s ease;
 	}
-	.loeschen:hover { color: #ff453a; }
+	.loeschen:hover {
+		color: #ff453a;
+	}
 </style>

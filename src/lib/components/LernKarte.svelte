@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { rendere, rendereInline } from '$lib/markdown';
+	import { parseZeilen } from '$lib/schalen';
 	import type { Karte } from '$lib/types';
 
 	// Die Komponente ist bewusst "dumm": Sie zeigt an und meldet
@@ -21,21 +22,9 @@
 		typMap?: Map<string, string>;
 	} = $props();
 
-	// Ein Lauscher für alle Inline-Links (Event-Delegation):
-	// statt jeden Link einzeln zu verkabeln, fängt die Karte
-	// jeden Klick und prüft, ob er einen .inline-link traf.
-	// Zeilen der Rückseite in Schalen zerlegen (nur für Schalen-Modi)
-	type Zeile = { label: string; ziel: string | null };
-	function zeilen(text: string): Zeile[] {
-		return text
-			.split('\n')
-			.filter((z) => z.trim() !== '')
-			.map((z) => {
-				const m = z.trim().match(/^\[\[([^\]|]+)\|([^\]]+)\]\]$/);
-				return m ? { label: m[1], ziel: m[2] } : { label: z.trim(), ziel: null };
-			});
-	}
-
+	// Ein Lauscher für alle Inline-Links (Event-Delegation): statt
+	// jeden Link einzeln zu verkabeln, fängt die Karte jeden Klick
+	// und prüft, ob er einen .inline-link traf.
 	function klickAbfangen(e: MouseEvent) {
 		const ziel = e.target as HTMLElement;
 		if (ziel.classList.contains('inline-link')) {
@@ -65,7 +54,7 @@
 	{#if aufgedeckt}
 		{#if node.mode && node.mode !== 'open'}
 			<div class="schalen rueckseite" class:chips={node.mode === 'chips'}>
-				{#each zeilen(node.back) as z, i (i)}
+				{#each parseZeilen(node.back) as z, i (i)}
 					{#if z.ziel}
 						<button class="schale" onclick={() => onlink(z.ziel!)}>
 							<span class="schale-text">{@html rendereInline(z.label)}</span>
@@ -125,9 +114,19 @@
 		padding: 0 0.2rem;
 		transition: color 0.15s ease;
 	}
-	.schliessen:hover { color: var(--text); }
-	.kopf-rechts { display: flex; align-items: center; gap: 0.6rem; }
-	.ref { font-family: var(--mono); font-size: 0.7rem; color: var(--text-fluester); }
+	.schliessen:hover {
+		color: var(--text);
+	}
+	.kopf-rechts {
+		display: flex;
+		align-items: center;
+		gap: 0.6rem;
+	}
+	.ref {
+		font-family: var(--mono);
+		font-size: 0.7rem;
+		color: var(--text-fluester);
+	}
 	.titel {
 		font-size: 1.15rem;
 		font-weight: 600;
@@ -135,13 +134,30 @@
 		margin-bottom: 0.75rem;
 	}
 
-	.inhalt { font-size: 1rem; line-height: 1.65; }
-	.inhalt :global(p) { margin: 0 0 0.75em; }
-	.inhalt :global(p:last-child) { margin-bottom: 0; }
-	.inhalt :global(strong) { font-weight: 600; }
-	.inhalt :global(ul) { padding-left: 1.25em; margin: 0 0 0.75em; }
-	.inhalt :global(ol) { padding-left: 1.25em; margin: 0 0 0.75em; }
-	.inhalt :global(li) { margin-bottom: 0.25em; }
+	.inhalt {
+		font-size: 1rem;
+		line-height: 1.65;
+	}
+	.inhalt :global(p) {
+		margin: 0 0 0.75em;
+	}
+	.inhalt :global(p:last-child) {
+		margin-bottom: 0;
+	}
+	.inhalt :global(strong) {
+		font-weight: 600;
+	}
+	.inhalt :global(ul) {
+		padding-left: 1.25em;
+		margin: 0 0 0.75em;
+	}
+	.inhalt :global(ol) {
+		padding-left: 1.25em;
+		margin: 0 0 0.75em;
+	}
+	.inhalt :global(li) {
+		margin-bottom: 0.25em;
+	}
 
 	.rueckseite {
 		margin-top: 1.5rem;
@@ -171,15 +187,24 @@
 		font-family: inherit;
 		font-size: 0.95rem;
 		cursor: pointer;
-		transition: border-color 0.15s ease, transform 0.12s ease, background 0.15s ease;
+		transition:
+			border-color 0.15s ease,
+			transform 0.12s ease,
+			background 0.15s ease;
 	}
 	.schale:hover {
 		border-color: var(--akzent);
 		transform: translateY(-1px);
 	}
-	.schale:active { transform: translateY(0) scale(0.99); }
-	.schale-text { flex: 1; }
-	.schale-pfeil { color: var(--text-fluester); }
+	.schale:active {
+		transform: translateY(0) scale(0.99);
+	}
+	.schale-text {
+		flex: 1;
+	}
+	.schale-pfeil {
+		color: var(--text-fluester);
+	}
 	.schale-titel {
 		font-size: 0.8rem;
 		font-weight: 600;
@@ -201,8 +226,14 @@
 		padding: 0.45rem 0.9rem;
 	}
 	@keyframes einblenden {
-		from { opacity: 0; transform: translateY(4px); }
-		to { opacity: 1; transform: translateY(0); }
+		from {
+			opacity: 0;
+			transform: translateY(4px);
+		}
+		to {
+			opacity: 1;
+			transform: translateY(0);
+		}
 	}
 
 	.aufdecken {
@@ -216,10 +247,16 @@
 		font-size: 0.9rem;
 		font-weight: 500;
 		cursor: pointer;
-		transition: background 0.15s ease, transform 0.1s ease;
+		transition:
+			background 0.15s ease,
+			transform 0.1s ease;
 	}
-	.aufdecken:hover { background: var(--linie-stark); }
-	.aufdecken:active { transform: scale(0.97); }
+	.aufdecken:hover {
+		background: var(--linie-stark);
+	}
+	.aufdecken:active {
+		transform: scale(0.97);
+	}
 
 	:global(.inline-link) {
 		background: none;
@@ -233,7 +270,9 @@
 		text-underline-offset: 3px;
 		transition: text-decoration-color 0.15s ease;
 	}
-	:global(.inline-link:hover) { text-decoration-color: var(--akzent); }
+	:global(.inline-link:hover) {
+		text-decoration-color: var(--akzent);
+	}
 
 	/* Signal-Wort: gelb markiert wie im Lehrbuch, kein Verweis-Look */
 	:global(.inline-link.signal) {

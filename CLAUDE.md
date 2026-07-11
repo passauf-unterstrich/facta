@@ -7,86 +7,107 @@ in gestapelte Layer immer tiefer). Ein-Personen-Betrieb, später
 Server-Hosting und FSRS-Spaced-Repetition.
 
 ## Nutzer & Arbeitsweise
-- Der Nutzer ist selbstlernender Programmier-Laie mit guten Grundkenntnissen.
-  Er will bei jeder Änderung VERSTEHEN, was passiert: kurze Erklärungen,
-  gern eine Metapher, keine Romane.
+
+- Selbstlernender Programmier-Laie mit guten Grundkenntnissen. Er will
+  bei jeder Änderung VERSTEHEN, was passiert: kurze Erklärungen, gern
+  eine Metapher, keine Romane.
 - Kleine, abgeschlossene Schritte. Nach jedem funktionierenden Stand ein
   Commit mit deutscher, aussagekräftiger Message.
 - Der Nutzer testet selbst im Browser; auf Erfolgskontrollen hinweisen.
-- Design-Anspruch: Apple-Philosophie. Ruhig, reduziert, dezent, "gebacken"
-  und haptisch (sanfte Hover/Active-Transitions, Blur-Tiefe, eine
+- Design-Anspruch: Apple-Philosophie. Ruhig, reduziert, "gebacken" und
+  haptisch (sanfte Hover/Active-Transitions, Blur-Tiefe, EINE
   Akzentfarbe). Vor UI-Arbeit tokens.css lesen.
 
 ## Tech-Stack
-SvelteKit (Svelte 5, Runes-Modus erzwungen) · TypeScript strict ·
-better-sqlite3 · marked · Tailwind v4 ist installiert, aber Komponenten
-nutzen Scoped CSS mit den Tokens aus src/lib/tokens.css. Keine neuen
-Dependencies ohne triftigen Grund — bewusst KEINE Graph-Library
-(Finder-Spalten sind pures CSS).
+
+SvelteKit (Svelte 5, Runes erzwungen) · TypeScript strict ·
+better-sqlite3 · marked. Tailwind v4 ist installiert und liefert den
+CSS-Reset (Preflight) — Komponenten stylen aber mit Scoped CSS + Tokens
+aus src/lib/tokens.css. Keine neuen Dependencies ohne triftigen Grund —
+bewusst KEINE Graph-Library (Finder-Spalten sind pures CSS).
 
 ## Architektur
+
 Browser (Svelte) ⇄ API-Routen (+server.ts) ⇄ $lib/server/db ⇄ SQLite
-- Datenbank: data/facta.db (gitignored, NIE committen — enthält die
-  Lerninhalte des Nutzers, Backup läuft über /api/export als JSON)
-- Schema: src/lib/server/db/schema.sql — nodes, edges, review_state
-  (review_state ist die vorbereitete FSRS-Steckdose, noch ungenutzt)
-- Seiten laden Daten über +page.server.ts-load (direkter DB-Zugriff),
-  Mutationen laufen über fetch auf die API-Routen + invalidateAll()
+
+- Datenbank: data/facta.db (gitignored, NIE committen). Backup über
+  /api/export. Schema-Änderung = Server aus → data/facta.db* löschen →
+  Server an (Hausmeister in db/index.ts baut nach schema.sql neu).
+- Seiten laden über +page.server.ts-load (direkter DB-Zugriff via
+  $lib/server/db/queries.ts), Mutationen über fetch + invalidateAll().
+- Geteilte Helfer: $lib/id.ts (baueId), $lib/schalen.ts (parseZeilen/
+  serialisiere), $lib/markdown.ts (rendere/rendereInline/klartext),
+  $lib/server/db/queries.ts (holeKarte/holeKinder). Duplikate dieser
+  Logik NIE wieder inline anlegen.
+
+## Datenmodell
+
+Sechs Kartentypen (TS-Union + CHECK in SQLite): fall, schema,
+definition, subsumtion, simpel, thema.
+
+- title = Anzeigename für Menüs (Regel überall: title ?? front),
+  ref = Aktenzeichen (nur fall), mode = Darstellung der Rückseite.
+- mode: open (Freitext) · agls/schema (eine Link-Zeile pro Schale) ·
+  chips (Link-Zeilen als Bubbles). In Schalen-Modi ist back stets die
+  Serialisierung der Schalen.
+- thema = Erkennungs-Signal (Arglist, Sachmangel …). Signalwörter im
+  Sachverhalt sind Links auf Themen-Karten und werden GELB gerendert
+  (Renderer bekommt eine typMap id→typ). Themen-Rückseite = Merkliste
+  der Konsequenzen, KEIN Fall-Register.
 
 ## Eherne Regeln (nie brechen)
-1. **Der Text ist die einzige Quelle für Kanten.** [[Text|ziel_id]]-Links
-   im Kartentext erzeugen beim Speichern (POST /api/nodes) die edges —
-   Sync: alle ausgehenden Kanten löschen, aus dem Text neu aufbauen.
-   NIEMALS einen zweiten Weg einführen, der Kanten am Text vorbei anlegt.
-2. **Alles Schreibende in Transaktionen** (db.transaction), Import atomar.
-3. **IDs sind Maschinensache**: im Lern-UI unsichtbar, im Bauen-Modus und
-   in Verwalten sichtbar. Auto-Generierung: praefix_slug (fall_, agl_,
-   def_, sub_, k), Umlaute→ae/oe/ue, §→p, Kollision→_2.
-4. **Ein Austauschformat** (FactaExport in types.ts): Import = Export =
-   KI-Pipeline. Beim Import werden edges mit fehlenden Endpunkten
-   übersprungen, nodes sind Upserts.
-5. **Sichtbarer UI-Text mit echten Umlauten (ä/ö/ü/ß)**; Code-Bezeichner
-   und IDs bleiben umlautfrei. UI-Sprache ist durchgehend Deutsch,
-   Code-Bezeichner ebenfalls deutsch (oeffne, speichere, KinderListe).
-6. Fünf Kartentypen: fall, schema, definition, subsumtion, simpel —
-   doppelt abgesichert (TS-Check in der API + CHECK constraint in SQLite).
 
-## Was existiert (Stand: Fundament + Kern fertig)
-- / Bibliothek: Load-Funktion, Suche, Fall-Kacheln (ohne IDs)
-- /karte/[id]: EINE Seite, Modi Lernen|Bauen via schwebendem HUD
-  (z-index 100, über den Overlays mit z-index 50); ?modus=bauen als
-  Start-Parameter. Layer-Stack: gestapelte Overlays mit Blur + Versatz,
-  Esc schließt. LernKarte/BauKarte/KinderListe/LinkMenu als Komponenten.
-  Verlinken: Text markieren → LinkMenu (Suche vorbefüllt, Enter = erster
-  Treffer, oder neue Karte mit Auto-ID) → speichern → Ziel öffnet als Layer.
-- /graph/[id]: Finder-Spalten (Miller Columns). Pfad = State (ID-Kette),
-  Akkordeon folgt aus der Datenstruktur. Wurzel-Spalte, Vorschau rechts.
-- /verwalten: Karte erstellen (springt in Bauen-Modus), JSON-Import,
-  Export-Download, KI-Prompt-Feld (dynamisch aus DB via /api/prompt,
-  Textarea mit select-on-click — NICHT navigator.clipboard, Safari!),
-  Karten löschen.
-- API: GET/POST /api/nodes (POST = Upsert + Kanten-Sync), GET/DELETE
-  /api/nodes/[id] (DELETE cascaded via Schema), POST /api/import,
-  GET /api/export, GET /api/prompt
+1. **Der Text ist die einzige Quelle für Kanten.** [[Text|ziel_id]]-Links
+   erzeugen beim Speichern (POST /api/nodes) die edges — Sync: alle
+   ausgehenden Kanten löschen, aus dem Text neu aufbauen. Auch DELETE
+   respektiert das: Links auf die gelöschte Karte werden serverseitig
+   zu blankem Text entschärft. NIEMALS einen zweiten Weg einführen.
+2. **Alles Schreibende in Transaktionen** (db.transaction).
+3. **IDs sind Maschinensache**: im Lern-UI unsichtbar. Auto-Generierung
+   zentral in $lib/id.ts (fall_/agl_/def_/sub_/k_/thema_, Umlaute→ae/oe,
+   §→p, Kollision→_2).
+4. **Ein Austauschformat** (FactaExport): Import = Export = KI-Pipeline.
+5. **Sichtbarer UI-Text mit echten Umlauten**; Code-Bezeichner deutsch
+   und umlautfrei (oeffne, speichere, KinderListe).
+
+## Was existiert
+
+- / Bibliothek: Suche, Fall-Kacheln (title ?? front, keine IDs)
+- /karte/[id]: Modi Lernen|Bauen via schwebendem HUD (+ Graph-Link,
+  z-index 100 über Overlays 50); ?modus=bauen als Startparameter.
+  Layer-Stack mit Blur + Versatz; Overlay schließt nur bei
+  mousedown-Start auf dem Vorhang (Markier-Schwünge sicher), Esc.
+  BauKarte: Typ + Mode wechselbar, Titel/Aktenzeichen, Schalen-Editor
+  (Zeilen-UI, ＋, verlinken pro Schale), Vorschau-Toggles unter den
+  Feldern, Cmd+S speichern, Cmd+B/I/U formatieren (auch in Schalen).
+  LinkMenu: Suche vorbefüllt, Enter = erster Treffer, kontextsensitiver
+  Typ-Default (fall→schema→definition→subsumtion), neue Karten
+  bekommen passenden mode/title.
+- /graph/[id]: Finder-Spalten, Pfad = State, Wurzel-Spalte, Vorschau.
+- /verwalten: Karte per Titel erstellen (springt in Bauen-Modus),
+  JSON-Import, Export, KI-Prompt (dynamisch aus $lib/server/prompt.ts;
+  Safari: Prompt wird vorab geladen, Clipboard-Schreiben direkt nach
+  Klick ohne await), Löschen mit confirm.
+- API: GET/POST /api/nodes (POST = Upsert + Kanten-Sync, leere front
+  erlaubt), GET/DELETE /api/nodes/[id] (DELETE entschärft Links),
+  POST /api/import (Transaktion), GET /api/export, GET /api/prompt
 
 ## Bekannte Stolpersteine
+
 - Svelte: :global() darf nur EINEN Selektor enthalten
-- Safari blockiert navigator.clipboard nach await — deshalb Prompt-Textarea
-- ESLint bewusst deaktiviert (dokumentiert in eslint.config.js):
-  svelte/no-navigation-without-resolve (App läuft an Domain-Wurzel),
-  svelte/no-at-html-tags (Inhalte aus eigener DB; bei Multi-User:
-  Sanitizer in src/lib/markdown.ts nachrüsten)
-- BauKarte koppelt front/back bewusst vom node-Prop ab
-  (svelte-ignore state_referenced_locally) — Entwurfsschutz; frischer
-  Zustand bei Kartenwechsel via {#key node.id}
-- Tailwind-CSS-Datei heißt src/routes/layout.css (nicht app.css)
+- Safari-Clipboard: kein await zwischen Klick und writeText
+- ESLint bewusst aus (dokumentiert): no-navigation-without-resolve,
+  no-at-html-tags (eigene DB; bei Multi-User Sanitizer in markdown.ts)
+- BauKarte koppelt Entwurf bewusst vom node-Prop ab (svelte-ignore
+  state_referenced_locally); frisch via {#key id:updated_at}
+- Globale select-Styles setzen Chevron mit !important — Ausnahmen
+  (mode-wahl) überstimmen gezielt
+- Tailwind-CSS-Datei heißt src/routes/layout.css
 
 ## Befehle
-npm run dev · npm run check (svelte-check) · npm run lint · npm run format
-API-Tests per curl gegen localhost:5173 (Beispiele: Git-History)
+
+npm run dev · npm run check · npm run lint · npm run format
 
 ## Roadmap
-Siehe ROADMAP.md — als Nächstes: erster echter Fall von Hand (liefert
-Muster-JSON für den KI-Prompt), dann Bibliothek in Fälle/Wissen
-strukturieren, KI-Pipeline Stufe 2+3, FSRS-Lernmodi, Subsumtions-Chips,
-Server-Hosting (adapter-node, PWA).
+
+Siehe ROADMAP.md

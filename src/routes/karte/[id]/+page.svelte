@@ -5,7 +5,7 @@
 	import KinderListe from '$lib/components/KinderListe.svelte';
 	import LinkMenu from '$lib/components/LinkMenu.svelte';
 	import type { Karte, Kind, BauDaten } from '$lib/types';
-    import { page } from '$app/state';
+	import { page } from '$app/state';
 
 	let { data } = $props();
 
@@ -235,7 +235,9 @@
 		font-size: 0.85rem;
 		transition: color 0.15s ease;
 	}
-	.zurueck:hover { color: var(--text); }
+	.zurueck:hover {
+		color: var(--text);
+	}
 
 	/* Schwebendes HUD: über allen Ebenen, halbtransparent mit Blur */
 	.modus-hud {
@@ -263,7 +265,9 @@
 		font-size: 0.8rem;
 		font-weight: 500;
 		cursor: pointer;
-		transition: background 0.15s ease, color 0.15s ease;
+		transition:
+			background 0.15s ease,
+			color 0.15s ease;
 	}
 	.modus-hud button.aktiv {
 		background: var(--flaeche-hoch);
@@ -280,7 +284,9 @@
 		text-decoration: none;
 		transition: color 0.15s ease;
 	}
-	.hud-link:hover { color: var(--text); }
+	.hud-link:hover {
+		color: var(--text);
+	}
 
 	.schalter {
 		display: flex;
@@ -294,16 +300,27 @@
 		font-family: inherit;
 		font-size: 0.8rem;
 		cursor: pointer;
-		transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+		transition:
+			color 0.15s ease,
+			border-color 0.15s ease,
+			background 0.15s ease;
 	}
-	.schalter:hover { color: var(--text-leise); border-color: var(--linie-stark); }
+	.schalter:hover {
+		color: var(--text-leise);
+		border-color: var(--linie-stark);
+	}
 	.schalter.aktiv {
 		color: var(--text);
 		background: var(--flaeche-hoch);
 		border-color: var(--linie-stark);
 	}
-	.schalter-zahl { font-size: 0.7rem; opacity: 0.7; }
-	.platzhalter { width: 1px; }
+	.schalter-zahl {
+		font-size: 0.7rem;
+		opacity: 0.7;
+	}
+	.platzhalter {
+		width: 1px;
+	}
 
 	.overlay {
 		position: fixed;
@@ -319,7 +336,14 @@
 		padding: 2rem 1.5rem;
 		animation: vorhang 0.2s ease;
 	}
-	@keyframes vorhang { from { opacity: 0; } to { opacity: 1; } }
+	@keyframes vorhang {
+		from {
+			opacity: 0;
+		}
+		to {
+			opacity: 1;
+		}
+	}
 
 	.overlay-inhalt {
 		width: 100%;
@@ -331,7 +355,13 @@
 		animation: auftauchen 0.22s cubic-bezier(0.2, 0.9, 0.3, 1);
 	}
 	@keyframes auftauchen {
-		from { opacity: 0; transform: translateY(14px) scale(0.985); }
-		to { opacity: 1; transform: translateY(0) scale(1); }
+		from {
+			opacity: 0;
+			transform: translateY(14px) scale(0.985);
+		}
+		to {
+			opacity: 1;
+			transform: translateY(0) scale(1);
+		}
 	}
 </style>

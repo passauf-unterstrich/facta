@@ -27,7 +27,10 @@
 {/if}
 
 <style>
-	.kinder { display: flex; flex-direction: column; }
+	.kinder {
+		display: flex;
+		flex-direction: column;
+	}
 	h2 {
 		font-size: 0.8rem;
 		font-weight: 600;
@@ -59,9 +62,15 @@
 		cursor: pointer;
 		transition: background 0.1s ease;
 	}
-	.kachel:last-child { border-bottom: none; }
-	.kachel:hover { background: var(--flaeche); }
-	.kachel:active { background: var(--flaeche-hoch); }
+	.kachel:last-child {
+		border-bottom: none;
+	}
+	.kachel:hover {
+		background: var(--flaeche);
+	}
+	.kachel:active {
+		background: var(--flaeche-hoch);
+	}
 	.typ-punkt {
 		width: 7px;
 		height: 7px;

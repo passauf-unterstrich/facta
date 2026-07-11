@@ -15,7 +15,7 @@ export type Karte = {
 	area: string | null;
 	front: string;
 	back: string;
-    title: string | null;
+	title: string | null;
 	ref: string | null;
 	mode: KartenMode;
 	created_at: string;

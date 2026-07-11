@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { rendere } from '$lib/markdown';
+	import { parseZeilen, serialisiere, type Zeile } from '$lib/schalen';
 	import type { Karte, KartenTyp, KartenMode, BauDaten } from '$lib/types';
 
 	let {
@@ -13,25 +14,6 @@
 		onlinkstart: (start: number, ende: number, text: string, daten: BauDaten) => void;
 		onschliessen?: () => void;
 	} = $props();
-
-	// Eine Schale = eine Zeile der Rückseite: Beschriftung + optionales Ziel
-	type Zeile = { label: string; ziel: string | null };
-
-	function parseZeilen(text: string): Zeile[] {
-		return text
-			.split('\n')
-			.filter((z) => z.trim() !== '')
-			.map((z) => {
-				const m = z.trim().match(/^\[\[([^\]|]+)\|([^\]]+)\]\]$/);
-				return m ? { label: m[1], ziel: m[2] } : { label: z.trim(), ziel: null };
-			});
-	}
-	function serialisiere(zs: Zeile[]): string {
-		return zs
-			.filter((z) => z.label.trim() !== '')
-			.map((z) => (z.ziel ? `[[${z.label}|${z.ziel}]]` : z.label))
-			.join('\n');
-	}
 
 	// Arbeitskopie (Entwurf) — Abkopplung vom Prop ist gewollt.
 	// svelte-ignore state_referenced_locally
@@ -222,9 +204,14 @@
 	</div>
 
 	<label class="feld-label" for="front-{node.id}">Vorderseite</label>
-	<textarea id="front-{node.id}" class="feld" rows="2" bind:value={front} bind:this={frontFeld}></textarea>
+	<textarea id="front-{node.id}" class="feld" rows="2" bind:value={front} bind:this={frontFeld}
+	></textarea>
 	<div class="unter-zeile">
-		<button class="vorschau-toggle" class:aktiv={vorschauFront} onclick={() => (vorschauFront = !vorschauFront)}>
+		<button
+			class="vorschau-toggle"
+			class:aktiv={vorschauFront}
+			onclick={() => (vorschauFront = !vorschauFront)}
+		>
 			Vorschau
 		</button>
 	</div>
@@ -236,8 +223,21 @@
 	<div class="label-zeile">
 		<label class="feld-label" for="back-{node.id}">Rückseite</label>
 		<span class="mode-wrap">
-			<span class="mode-anzeige">{modeWert === 'open' ? 'Offen' : modeWert === 'agls' ? 'AGLs' : modeWert === 'schema' ? 'Schema' : 'Chips'}</span>
-			<select class="mode-wahl" value={modeWert} onchange={(e) => wechsleMode(e.currentTarget.value as KartenMode)} aria-label="Darstellungs-Modus">
+			<span class="mode-anzeige"
+				>{modeWert === 'open'
+					? 'Offen'
+					: modeWert === 'agls'
+						? 'AGLs'
+						: modeWert === 'schema'
+							? 'Schema'
+							: 'Chips'}</span
+			>
+			<select
+				class="mode-wahl"
+				value={modeWert}
+				onchange={(e) => wechsleMode(e.currentTarget.value as KartenMode)}
+				aria-label="Darstellungs-Modus"
+			>
 				<option value="open">Offen</option>
 				<option value="agls">AGLs</option>
 				<option value="schema">Schema</option>
@@ -252,11 +252,14 @@
 			class="feld feld-back"
 			rows="8"
 			bind:value={back}
-			bind:this={backFeld}
-		></textarea>
+			bind:this={backFeld}></textarea>
 
 		<div class="unter-zeile">
-			<button class="vorschau-toggle" class:aktiv={vorschauBack} onclick={() => (vorschauBack = !vorschauBack)}>
+			<button
+				class="vorschau-toggle"
+				class:aktiv={vorschauBack}
+				onclick={() => (vorschauBack = !vorschauBack)}
+			>
 				Vorschau
 			</button>
 		</div>
@@ -280,11 +283,17 @@
 							<button class="chip-x" onclick={() => entlinke(k)} title="Verlinkung lösen">×</button>
 						</span>
 					{:else}
-						<button class="schale-link" onclick={() => verlinkeSchale(k)} disabled={!zeile.label.trim()}>
+						<button
+							class="schale-link"
+							onclick={() => verlinkeSchale(k)}
+							disabled={!zeile.label.trim()}
+						>
 							verlinken
 						</button>
 					{/if}
-					<button class="schale-weg" onclick={() => loescheSchale(k)} aria-label="Schale löschen">×</button>
+					<button class="schale-weg" onclick={() => loescheSchale(k)} aria-label="Schale löschen"
+						>×</button
+					>
 				</div>
 			{/each}
 			<button class="schale-plus" onclick={neueSchale}>＋</button>
@@ -297,7 +306,12 @@
 		{:else}
 			<span></span>
 		{/if}
-		<button class="speichern" class:bereit={geaendert} onclick={speichern} disabled={!geaendert || speichert}>
+		<button
+			class="speichern"
+			class:bereit={geaendert}
+			onclick={speichern}
+			disabled={!geaendert || speichert}
+		>
 			{speichert ? 'Speichert …' : geaendert ? 'Speichern' : 'Gespeichert'}
 		</button>
 	</div>
@@ -318,9 +332,15 @@
 		align-items: flex-start;
 		margin-bottom: 0.5rem;
 	}
-	.typ { display: flex; align-items: center; gap: 0.45rem; }
+	.typ {
+		display: flex;
+		align-items: center;
+		gap: 0.45rem;
+	}
 	.typ-punkt {
-		width: 7px; height: 7px; border-radius: 50%;
+		width: 7px;
+		height: 7px;
+		border-radius: 50%;
 		background: var(--punkt, var(--typ-simpel));
 	}
 	.typ-wahl {
@@ -333,7 +353,10 @@
 		letter-spacing: 0.08em;
 		cursor: pointer;
 	}
-	.typ-wahl:focus { outline: none; color: var(--text); }
+	.typ-wahl:focus {
+		outline: none;
+		color: var(--text);
+	}
 	.id {
 		font-family: var(--mono);
 		font-size: 0.7rem;
@@ -341,15 +364,33 @@
 		opacity: 0.7;
 	}
 	.schliessen {
-		background: none; border: none; color: var(--text-fluester);
-		font-size: 1.3rem; line-height: 1; cursor: pointer; padding: 0 0.2rem;
+		background: none;
+		border: none;
+		color: var(--text-fluester);
+		font-size: 1.3rem;
+		line-height: 1;
+		cursor: pointer;
+		padding: 0 0.2rem;
 		transition: color 0.15s ease;
 	}
-	.schliessen:hover { color: var(--text); }
+	.schliessen:hover {
+		color: var(--text);
+	}
 
-	.zeile-2 { display: flex; gap: 0.75rem; }
-	.spalte-titel { flex: 1; display: flex; flex-direction: column; }
-	.spalte-ref { flex: 0 0 11rem; display: flex; flex-direction: column; }
+	.zeile-2 {
+		display: flex;
+		gap: 0.75rem;
+	}
+	.spalte-titel {
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+	}
+	.spalte-ref {
+		flex: 0 0 11rem;
+		display: flex;
+		flex-direction: column;
+	}
 
 	.label-zeile {
 		display: flex;
@@ -381,7 +422,9 @@
 		color: var(--text-fluester);
 		transition: color 0.15s ease;
 	}
-	.mode-wrap:hover .mode-anzeige { color: var(--text-leise); }
+	.mode-wrap:hover .mode-anzeige {
+		color: var(--text-leise);
+	}
 	.mode-wahl {
 		position: absolute;
 		inset: 0;
@@ -391,7 +434,10 @@
 		padding: 0 !important;
 		border: none;
 	}
-	.mode-wahl:focus { outline: none; color: var(--text); }
+	.mode-wahl:focus {
+		outline: none;
+		color: var(--text);
+	}
 	.vorschau-toggle {
 		background: none;
 		border: none;
@@ -404,8 +450,12 @@
 		padding: 0;
 		transition: color 0.15s ease;
 	}
-	.vorschau-toggle:hover { color: var(--text-leise); }
-	.vorschau-toggle.aktiv { color: var(--akzent); }
+	.vorschau-toggle:hover {
+		color: var(--text-leise);
+	}
+	.vorschau-toggle.aktiv {
+		color: var(--akzent);
+	}
 
 	.feld {
 		width: 100%;
@@ -420,8 +470,13 @@
 		resize: vertical;
 		transition: border-color 0.15s ease;
 	}
-	.feld:focus { outline: none; border-color: var(--akzent); }
-	.feld-back { font-size: 0.92rem; }
+	.feld:focus {
+		outline: none;
+		border-color: var(--akzent);
+	}
+	.feld-back {
+		font-size: 0.92rem;
+	}
 
 	.vorschau {
 		margin-top: 0.5rem;
@@ -432,14 +487,31 @@
 		line-height: 1.6;
 		color: var(--text-leise);
 	}
-	.vorschau :global(p) { margin: 0 0 0.6em; }
-	.vorschau :global(p:last-child) { margin-bottom: 0; }
-	.vorschau :global(strong) { font-weight: 600; color: var(--text); }
-	.vorschau :global(ul) { padding-left: 1.25em; margin: 0 0 0.6em; }
-	.vorschau :global(ol) { padding-left: 1.25em; margin: 0 0 0.6em; }
+	.vorschau :global(p) {
+		margin: 0 0 0.6em;
+	}
+	.vorschau :global(p:last-child) {
+		margin-bottom: 0;
+	}
+	.vorschau :global(strong) {
+		font-weight: 600;
+		color: var(--text);
+	}
+	.vorschau :global(ul) {
+		padding-left: 1.25em;
+		margin: 0 0 0.6em;
+	}
+	.vorschau :global(ol) {
+		padding-left: 1.25em;
+		margin: 0 0 0.6em;
+	}
 
 	/* Die Schalen: deine Skizze — gestapelte Pillen, ＋ darunter */
-	.schalen { display: flex; flex-direction: column; gap: 0.5rem; }
+	.schalen {
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+	}
 	.schale {
 		display: flex;
 		align-items: center;
@@ -450,7 +522,9 @@
 		padding: 0.35rem 0.6rem 0.35rem 1rem;
 		transition: border-color 0.15s ease;
 	}
-	.schale:focus-within { border-color: var(--akzent); }
+	.schale:focus-within {
+		border-color: var(--akzent);
+	}
 	.schale-label {
 		flex: 1;
 		background: none;
@@ -460,7 +534,9 @@
 		font-size: 0.92rem;
 		padding: 0.3rem 0;
 	}
-	.schale-label:focus { outline: none; }
+	.schale-label:focus {
+		outline: none;
+	}
 	.schale-chip {
 		display: flex;
 		align-items: center;
@@ -474,10 +550,17 @@
 		flex-shrink: 0;
 	}
 	.chip-x {
-		background: none; border: none; color: var(--text-fluester);
-		font-size: 0.9rem; line-height: 1; cursor: pointer; padding: 0 0.15rem;
+		background: none;
+		border: none;
+		color: var(--text-fluester);
+		font-size: 0.9rem;
+		line-height: 1;
+		cursor: pointer;
+		padding: 0 0.15rem;
 	}
-	.chip-x:hover { color: var(--text); }
+	.chip-x:hover {
+		color: var(--text);
+	}
 	.schale-link {
 		background: none;
 		border: 1px solid var(--linie-stark);
@@ -488,16 +571,32 @@
 		font-size: 0.78rem;
 		cursor: pointer;
 		flex-shrink: 0;
-		transition: color 0.15s ease, border-color 0.15s ease;
+		transition:
+			color 0.15s ease,
+			border-color 0.15s ease;
 	}
-	.schale-link:hover:not(:disabled) { color: var(--text); border-color: var(--text-fluester); }
-	.schale-link:disabled { opacity: 0.4; cursor: default; }
+	.schale-link:hover:not(:disabled) {
+		color: var(--text);
+		border-color: var(--text-fluester);
+	}
+	.schale-link:disabled {
+		opacity: 0.4;
+		cursor: default;
+	}
 	.schale-weg {
-		background: none; border: none; color: var(--text-fluester);
-		font-size: 1rem; line-height: 1; cursor: pointer; padding: 0 0.2rem;
-		flex-shrink: 0; transition: color 0.15s ease;
+		background: none;
+		border: none;
+		color: var(--text-fluester);
+		font-size: 1rem;
+		line-height: 1;
+		cursor: pointer;
+		padding: 0 0.2rem;
+		flex-shrink: 0;
+		transition: color 0.15s ease;
 	}
-	.schale-weg:hover { color: #ff453a; }
+	.schale-weg:hover {
+		color: #ff453a;
+	}
 	.schale-plus {
 		align-self: flex-start;
 		background: none;
@@ -508,9 +607,14 @@
 		font-family: inherit;
 		font-size: 0.9rem;
 		cursor: pointer;
-		transition: color 0.15s ease, border-color 0.15s ease;
+		transition:
+			color 0.15s ease,
+			border-color 0.15s ease;
 	}
-	.schale-plus:hover { color: var(--text); border-color: var(--text-fluester); }
+	.schale-plus:hover {
+		color: var(--text);
+		border-color: var(--text-fluester);
+	}
 
 	.aktionen {
 		display: flex;
@@ -527,9 +631,14 @@
 		font-family: inherit;
 		font-size: 0.85rem;
 		cursor: pointer;
-		transition: color 0.15s ease, border-color 0.15s ease;
+		transition:
+			color 0.15s ease,
+			border-color 0.15s ease;
 	}
-	.verlinken:hover { color: var(--text); border-color: var(--text-fluester); }
+	.verlinken:hover {
+		color: var(--text);
+		border-color: var(--text-fluester);
+	}
 	.speichern {
 		background: var(--flaeche-hoch);
 		color: var(--text-fluester);
@@ -540,7 +649,10 @@
 		font-size: 0.85rem;
 		font-weight: 500;
 		cursor: default;
-		transition: background 0.15s ease, color 0.15s ease, transform 0.1s ease;
+		transition:
+			background 0.15s ease,
+			color 0.15s ease,
+			transform 0.1s ease;
 	}
 	.speichern.bereit {
 		background: var(--akzent);
@@ -548,6 +660,10 @@
 		border-color: transparent;
 		cursor: pointer;
 	}
-	.speichern.bereit:hover { background: var(--akzent-hover); }
-	.speichern.bereit:active { transform: scale(0.97); }
+	.speichern.bereit:hover {
+		background: var(--akzent-hover);
+	}
+	.speichern.bereit:active {
+		transform: scale(0.97);
+	}
 </style>

@@ -17,6 +17,9 @@
 
 	// Der Pfad IST der Zustand: eine Kette gewählter IDs.
 	// Spalte i zeigt die Kinder von pfad[i].
+	// Der Pfad startet einmal bei der Wurzel und lebt dann eigenständig —
+	// Abkopplung vom Prop ist gewollt.
+	// svelte-ignore state_referenced_locally
 	let pfad = $state<string[]>([data.start.id]);
 
 	type Spalte = { elternId: string; eintraege: Karte[] };
@@ -34,9 +37,7 @@
 	});
 
 	// Vorschau: die zuletzt gewählte Karte (Pfad-Ende, außer Start)
-	const gewaehlt = $derived(
-		pfad.length > 1 ? (nodeMap.get(pfad[pfad.length - 1]) ?? null) : null
-	);
+	const gewaehlt = $derived(pfad.length > 1 ? (nodeMap.get(pfad[pfad.length - 1]) ?? null) : null);
 
 	function waehle(spaltenIndex: number, id: string) {
 		// Wurzel-Klick: Pfad auf den Anfang zurücksetzen
@@ -109,7 +110,9 @@
 		white-space: nowrap;
 		transition: color 0.15s ease;
 	}
-	.zurueck:hover { color: var(--text); }
+	.zurueck:hover {
+		color: var(--text);
+	}
 	h1 {
 		font-size: 1.1rem;
 		font-weight: 600;
@@ -141,8 +144,14 @@
 		animation: spalte-auf 0.18s ease;
 	}
 	@keyframes spalte-auf {
-		from { opacity: 0; transform: translateX(-6px); }
-		to { opacity: 1; transform: translateX(0); }
+		from {
+			opacity: 0;
+			transform: translateX(-6px);
+		}
+		to {
+			opacity: 1;
+			transform: translateX(0);
+		}
 	}
 
 	.eintrag {
@@ -158,16 +167,23 @@
 		font-size: 0.85rem;
 		text-align: left;
 		cursor: pointer;
-		transition: background 0.1s ease, color 0.1s ease;
+		transition:
+			background 0.1s ease,
+			color 0.1s ease;
 	}
-	.eintrag:hover { background: var(--flaeche); color: var(--text); }
+	.eintrag:hover {
+		background: var(--flaeche);
+		color: var(--text);
+	}
 	/* Der aktive Pfad: gefüllt, hell — man sieht die Spur durch den Baum */
 	.eintrag.im-pfad {
 		background: var(--flaeche-hoch);
 		color: var(--text);
 	}
 	.typ-punkt {
-		width: 6px; height: 6px; border-radius: 50%;
+		width: 6px;
+		height: 6px;
+		border-radius: 50%;
 		background: var(--punkt, var(--typ-simpel));
 		flex-shrink: 0;
 	}
@@ -176,9 +192,13 @@
 		overflow: hidden;
 		display: -webkit-box;
 		-webkit-line-clamp: 2;
+		line-clamp: 2;
 		-webkit-box-orient: vertical;
 	}
-	.pfeil { color: var(--text-fluester); flex-shrink: 0; }
+	.pfeil {
+		color: var(--text-fluester);
+		flex-shrink: 0;
+	}
 
 	/* Vorschau-Spalte: das Finder-Detailfenster */
 	.vorschau {
@@ -196,8 +216,13 @@
 		letter-spacing: 0.08em;
 		color: var(--text-fluester);
 	}
-	.vorschau-front { font-size: 0.95rem; line-height: 1.55; }
-	.vorschau-front :global(p) { margin: 0 0 0.6em; }
+	.vorschau-front {
+		font-size: 0.95rem;
+		line-height: 1.55;
+	}
+	.vorschau-front :global(p) {
+		margin: 0 0 0.6em;
+	}
 	.vorschau-lernen {
 		align-self: flex-start;
 		color: var(--akzent);
@@ -205,5 +230,7 @@
 		font-size: 0.88rem;
 		font-weight: 500;
 	}
-	.vorschau-lernen:hover { color: var(--akzent-hover); }
+	.vorschau-lernen:hover {
+		color: var(--akzent-hover);
+	}
 </style>

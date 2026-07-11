@@ -3,7 +3,14 @@ import { db } from '$lib/server/db';
 import type { Karte, KartenTyp } from '$lib/types';
 import type { RequestHandler } from './$types';
 
-const ERLAUBTE_TYPEN: KartenTyp[] = ['fall', 'schema', 'definition', 'subsumtion', 'simpel', 'thema'];
+const ERLAUBTE_TYPEN: KartenTyp[] = [
+	'fall',
+	'schema',
+	'definition',
+	'subsumtion',
+	'simpel',
+	'thema'
+];
 
 // GET /api/nodes → alle Karten
 export const GET: RequestHandler = () => {
@@ -44,7 +51,7 @@ export const POST: RequestHandler = async ({ request }) => {
 		throw error(400, 'id, type und front sind Pflicht');
 	}
 
-    if (!ERLAUBTE_TYPEN.includes(type)) {
+	if (!ERLAUBTE_TYPEN.includes(type)) {
 		throw error(400, `Unbekannter Typ "${type}". Erlaubt: ${ERLAUBTE_TYPEN.join(', ')}`);
 	}
 

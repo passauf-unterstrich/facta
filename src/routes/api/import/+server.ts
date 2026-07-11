@@ -36,7 +36,16 @@ export const POST: RequestHandler = async ({ request }) => {
 	const importiere = db.transaction(() => {
 		// Erst alle Karten (müssen existieren, bevor Kanten auf sie zeigen)
 		for (const n of nodes) {
-			nodeStmt.run(n.id, n.type, n.area ?? null, n.front, n.back ?? '', n.title ?? null, n.ref ?? null, n.mode ?? 'open');
+			nodeStmt.run(
+				n.id,
+				n.type,
+				n.area ?? null,
+				n.front,
+				n.back ?? '',
+				n.title ?? null,
+				n.ref ?? null,
+				n.mode ?? 'open'
+			);
 		}
 		// Dann die Kanten — nur wenn beide Enden existieren.
 		// Kaputte Kanten im JSON werden gezählt statt alles zu sprengen.

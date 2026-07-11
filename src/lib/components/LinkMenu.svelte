@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { baueId } from '$lib/id';
 	import type { Karte, KartenTyp } from '$lib/types';
 
 	let {
@@ -23,7 +24,8 @@
 		schema: 'definition',
 		definition: 'subsumtion',
 		subsumtion: 'simpel',
-		simpel: 'simpel'
+		simpel: 'simpel',
+		thema: 'definition'
 	};
 
 	let alle = $state<Karte[]>([]);
@@ -54,27 +56,9 @@
 			.slice(0, 8)
 	);
 
-	function baueId(typ: KartenTyp, front: string): string {
-		const praefix: Record<KartenTyp, string> = {
-			fall: 'fall', schema: 'agl', definition: 'def',
-			subsumtion: 'sub', simpel: 'k', thema: 'thema'
-		};
-		const slug = front
-			.toLowerCase()
-			.replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/ß/g, 'ss')
-			.replace(/§/g, 'p')
-			.replace(/[^a-z0-9]+/g, '_')
-			.replace(/^_+|_+$/g, '')
-			.split('_').slice(0, 4).join('_');
-		let id = `${praefix[typ]}_${slug}`;
-		let n = 2;
-		while (alle.some((k) => k.id === id)) id = `${praefix[typ]}_${slug}_${n++}`;
-		return id;
-	}
-
 	async function erstelleUndVerlinke() {
 		if (!neuFront.trim()) return;
-		const id = baueId(neuTyp, neuFront);
+		const id = baueId(neuTyp, neuFront, (kandidat) => alle.some((k) => k.id === kandidat));
 		const res = await fetch('/api/nodes', {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
@@ -151,10 +135,19 @@
 		animation: auf 0.15s ease;
 	}
 	@keyframes auf {
-		from { opacity: 0; transform: translateY(-4px); }
-		to { opacity: 1; transform: translateY(0); }
+		from {
+			opacity: 0;
+			transform: translateY(-4px);
+		}
+		to {
+			opacity: 1;
+			transform: translateY(0);
+		}
 	}
-	.titel { font-size: 0.8rem; color: var(--text-leise); }
+	.titel {
+		font-size: 0.8rem;
+		color: var(--text-leise);
+	}
 	.suche {
 		width: 100%;
 		background: var(--flaeche);
@@ -165,8 +158,16 @@
 		font-family: inherit;
 		font-size: 0.88rem;
 	}
-	.suche:focus { outline: none; border-color: var(--akzent); }
-	.liste { display: flex; flex-direction: column; max-height: 14rem; overflow-y: auto; }
+	.suche:focus {
+		outline: none;
+		border-color: var(--akzent);
+	}
+	.liste {
+		display: flex;
+		flex-direction: column;
+		max-height: 14rem;
+		overflow-y: auto;
+	}
 	.eintrag {
 		display: flex;
 		align-items: center;
@@ -181,12 +182,35 @@
 		text-align: left;
 		cursor: pointer;
 	}
-	.eintrag:hover { background: var(--flaeche); }
-	.eintrag:first-child { background: var(--flaeche); }
-	.typ-punkt { width: 6px; height: 6px; border-radius: 50%; background: var(--punkt); flex-shrink: 0; }
-	.eintrag-front { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-	.eintrag-id { font-family: var(--mono); font-size: 0.68rem; color: var(--text-fluester); }
-	.keine { font-size: 0.82rem; color: var(--text-fluester); padding: 0.4rem 0.55rem; }
+	.eintrag:hover {
+		background: var(--flaeche);
+	}
+	.eintrag:first-child {
+		background: var(--flaeche);
+	}
+	.typ-punkt {
+		width: 6px;
+		height: 6px;
+		border-radius: 50%;
+		background: var(--punkt);
+		flex-shrink: 0;
+	}
+	.eintrag-front {
+		flex: 1;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+	.eintrag-id {
+		font-family: var(--mono);
+		font-size: 0.68rem;
+		color: var(--text-fluester);
+	}
+	.keine {
+		font-size: 0.82rem;
+		color: var(--text-fluester);
+		padding: 0.4rem 0.55rem;
+	}
 	.neu-toggle {
 		background: none;
 		border: 1px dashed var(--linie-stark);
@@ -196,10 +220,19 @@
 		font-family: inherit;
 		font-size: 0.82rem;
 		cursor: pointer;
-		transition: color 0.15s ease, border-color 0.15s ease;
+		transition:
+			color 0.15s ease,
+			border-color 0.15s ease;
 	}
-	.neu-toggle:hover { color: var(--text); border-color: var(--text-fluester); }
-	.neu-box { display: flex; flex-direction: column; gap: 0.45rem; }
+	.neu-toggle:hover {
+		color: var(--text);
+		border-color: var(--text-fluester);
+	}
+	.neu-box {
+		display: flex;
+		flex-direction: column;
+		gap: 0.45rem;
+	}
 	.neu-feld {
 		width: 100%;
 		background: var(--flaeche);
@@ -221,10 +254,19 @@
 		font-weight: 500;
 		cursor: pointer;
 	}
-	.neu-los:hover { background: var(--akzent-hover); }
-	.abbrechen {
-		background: none; border: none; color: var(--text-fluester);
-		font-size: 0.75rem; cursor: pointer; align-self: flex-start; padding: 0;
+	.neu-los:hover {
+		background: var(--akzent-hover);
 	}
-	.abbrechen:hover { color: var(--text-leise); }
+	.abbrechen {
+		background: none;
+		border: none;
+		color: var(--text-fluester);
+		font-size: 0.75rem;
+		cursor: pointer;
+		align-self: flex-start;
+		padding: 0;
+	}
+	.abbrechen:hover {
+		color: var(--text-leise);
+	}
 </style>

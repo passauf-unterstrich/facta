@@ -1,14 +1,14 @@
 :root {
 	/* Flächen: von hinten nach vorn gestaffelt, wie Bühnenebenen */
-	--bg: #0a0a0b;            /* die Bühne selbst */
-	--flaeche: #18181b;       /* Karten */
-	--flaeche-hoch: #27272a;  /* Eingabefelder, Hover-Zustände */
-	--linie: #27272a;         /* leise Ränder */
-	--linie-stark: #3f3f46;   /* betonte Ränder */
+	--bg: #0a0a0b; /* die Bühne selbst */
+	--flaeche: #18181b; /* Karten */
+	--flaeche-hoch: #27272a; /* Eingabefelder, Hover-Zustände */
+	--linie: #27272a; /* leise Ränder */
+	--linie-stark: #3f3f46; /* betonte Ränder */
 
 	/* Text: drei Lautstärken */
-	--text: #f4f4f5;          /* Sprechen */
-	--text-leise: #a1a1aa;    /* Murmeln (Untertitel, Labels) */
+	--text: #f4f4f5; /* Sprechen */
+	--text-leise: #a1a1aa; /* Murmeln (Untertitel, Labels) */
 	--text-fluester: #71717a; /* Flüstern (Metadaten, Hinweise) */
 
 	/* EINE Akzentfarbe — Apple-Prinzip: Zurückhaltung ist Eleganz */

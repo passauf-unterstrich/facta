@@ -1,42 +1,40 @@
-# sv
+# Facta
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+Jura-Lernkarten-App für die Examensvorbereitung. Fälle werden als
+verschachtelter Wissens-Graph erfasst (Fall → Anspruchsgrundlage →
+Definition → Subsumtion) und wie eine echte Gutachten-Prüfung
+durchwandert: Karte aufdecken, über Inline-Links in gestapelte Layer
+immer tiefer.
 
-## Creating a project
+## Kernideen
 
-If you're seeing this, you've probably already done this step. Congrats!
+- **Text = Wahrheit**: `[[Begriff|ziel_id]]`-Links im Kartentext erzeugen
+  beim Speichern automatisch die Kanten des Graphen. Es gibt keinen
+  zweiten Weg, Verknüpfungen anzulegen.
+- **Bahnhof-Effekt**: Geteilte Definitionen und Themen, auf die viele
+  Fälle verweisen — ein Knoten, viele Linien.
+- **Ein Austauschformat**: Import = Export = KI-Pipeline (JSON aus
+  nodes + edges).
 
-```sh
-# create a new project
-npx sv create my-app
-```
+## Stack
 
-To recreate this project with the same configuration:
+SvelteKit (Svelte 5, Runes) · TypeScript strict · better-sqlite3 · marked.
+Design: eigene Tokens (`src/lib/tokens.css`) + Scoped CSS, dunkel,
+reduziert. Bewusst ohne Graph-Library.
 
-```sh
-# recreate this project
-npx sv@0.16.1 create --template minimal --types ts --add prettier eslint tailwindcss="plugins:typography" --install npm .
-```
-
-## Developing
-
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
-
-```sh
-npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
-```
-
-## Building
-
-To create a production version of your app:
+## Entwickeln
 
 ```sh
-npm run build
+npm install
+npm run dev        # http://localhost:5173
+npm run check      # svelte-check
+npm run lint       # prettier + eslint
+npm run format
 ```
 
-You can preview the production build with `npm run preview`.
+Die Datenbank liegt in `data/facta.db` (gitignored). Backup: Verwalten →
+„Backup exportieren" (JSON). Schema-Änderungen: Server stoppen,
+`data/facta.db*` löschen, Server starten — die DB wird frisch nach
+`src/lib/server/db/schema.sql` gebaut.
 
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+Projektwissen für KI-Assistenten: `CLAUDE.md` · Planung: `ROADMAP.md`

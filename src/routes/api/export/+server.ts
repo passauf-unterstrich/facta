@@ -4,10 +4,10 @@ import type { RequestHandler } from './$types';
 // GET /api/export → die komplette Wissensbasis als JSON-Download.
 // Dein Backup-Knopf: Export-Format = Import-Format = KI-Pipeline-Format.
 export const GET: RequestHandler = () => {
-	const nodes = db.prepare('SELECT id, type, area, front, back, title, ref, mode FROM nodes ORDER BY id').all();
-	const edges = db
-		.prepare('SELECT from_id, to_id, label, position FROM edges ORDER BY id')
+	const nodes = db
+		.prepare('SELECT id, type, area, front, back, title, ref, mode FROM nodes ORDER BY id')
 		.all();
+	const edges = db.prepare('SELECT from_id, to_id, label, position FROM edges ORDER BY id').all();
 
 	const datum = new Date().toISOString().slice(0, 10);
 
