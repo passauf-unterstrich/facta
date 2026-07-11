@@ -88,6 +88,9 @@
 	function neueSchale() {
 		zeilen = [...zeilen, { label: '', ziel: null }];
 	}
+	function neueSection() {
+		zeilen = [...zeilen, { label: '', ziel: null, section: true }];
+	}
 	function loescheSchale(k: number) {
 		zeilen = zeilen.filter((_, i) => i !== k);
 	}
@@ -243,9 +246,7 @@
 	<div class="label-zeile">
 		<label class="feld-label" for="back-{node.id}">Rückseite</label>
 		<span class="mode-wrap">
-			<span class="mode-anzeige"
-				>{modeWert === 'open' ? 'Offen' : modeWert === 'agls' ? 'AGLs' : 'Schema'}</span
-			>
+			<span class="mode-anzeige">{modeWert === 'open' ? 'Offen' : 'Struktur'}</span>
 			<select
 				class="mode-wahl"
 				value={modeWert}
@@ -253,8 +254,7 @@
 				aria-label="Darstellungs-Modus"
 			>
 				<option value="open">Offen</option>
-				<option value="agls">AGLs</option>
-				<option value="schema">Schema</option>
+				<option value="struktur">Struktur</option>
 			</select>
 		</span>
 	</div>
@@ -284,36 +284,59 @@
 	{:else}
 		<div class="schalen">
 			{#each zeilen as zeile, k (k)}
-				<div class="schale">
-					<input
-						class="schale-label"
-						data-zeile={k}
-						data-feld="back"
-						bind:value={zeile.label}
-						placeholder="z.B. A. § 437 iVm. § 280 — SE wegen Sachmangel"
-					/>
-					{#if zeile.ziel}
-						<span class="ziel-chip">
-							{zeile.ziel}
-							<button class="chip-x" onclick={() => (zeile.ziel = null)} title="Verlinkung lösen"
-								>×</button
-							>
-						</span>
-					{:else}
-						<button
-							class="zeile-link"
-							onclick={() => verlinkeZeile('back', zeilen, k)}
-							disabled={!zeile.label.trim()}
+				{#if zeile.section}
+					<div class="section">
+						<input
+							class="section-label"
+							data-zeile={k}
+							data-feld="back"
+							bind:value={zeile.label}
+							placeholder="Section, z.B. Allgemeine Voraussetzungen"
+						/>
+						<button class="zeile-weg" onclick={() => loescheSchale(k)} aria-label="Section löschen"
+							>×</button
 						>
-							verlinken
-						</button>
-					{/if}
-					<button class="zeile-weg" onclick={() => loescheSchale(k)} aria-label="Schale löschen"
-						>×</button
-					>
-				</div>
+					</div>
+				{:else}
+					<div class="schale">
+						<input
+							class="schale-label"
+							data-zeile={k}
+							data-feld="back"
+							bind:value={zeile.label}
+							placeholder="z.B. A. § 437 iVm. § 280 — SE wegen Sachmangel"
+						/>
+						{#if zeile.ziel}
+							<span class="ziel-chip">
+								{zeile.ziel}
+								<button class="chip-x" onclick={() => (zeile.ziel = null)} title="Verlinkung lösen"
+									>×</button
+								>
+							</span>
+						{:else}
+							<button
+								class="zeile-link"
+								onclick={() => verlinkeZeile('back', zeilen, k)}
+								disabled={!zeile.label.trim()}
+							>
+								verlinken
+							</button>
+						{/if}
+						<button class="zeile-weg" onclick={() => loescheSchale(k)} aria-label="Schale löschen"
+							>×</button
+						>
+					</div>
+				{/if}
 			{/each}
-			<button class="schale-plus" onclick={neueSchale}>＋</button>
+			<div class="plus-zeile">
+				<button class="schale-plus" onclick={neueSchale}>＋</button>
+				<button class="section-plus" onclick={neueSection} title="Section (Zwischenüberschrift)">
+					<svg width="14" height="12" viewBox="0 0 14 12" fill="none" stroke="currentColor" stroke-width="1.3">
+						<path d="M1 3.5V2a1 1 0 0 1 1-1h3l1.5 1.5H12a1 1 0 0 1 1 1V10a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V3.5z" />
+					</svg>
+					Section
+				</button>
+			</div>
 		</div>
 	{/if}
 
@@ -599,6 +622,59 @@
 	.schale-plus:hover {
 		color: var(--text);
 		border-color: var(--text-fluester);
+	}
+	.plus-zeile {
+		display: flex;
+		gap: 0.5rem;
+		align-items: center;
+	}
+	.section-plus {
+		display: flex;
+		align-items: center;
+		gap: 0.4rem;
+		background: none;
+		border: 1px dashed var(--linie-stark);
+		border-radius: var(--radius-s);
+		padding: 0.35rem 0.8rem;
+		color: var(--text-fluester);
+		font-family: inherit;
+		font-size: 0.78rem;
+		cursor: pointer;
+		transition:
+			color 0.15s ease,
+			border-color 0.15s ease;
+	}
+	.section-plus:hover {
+		color: var(--text);
+		border-color: var(--text-fluester);
+	}
+
+	/* Section im Editor: kein Oval, sondern eine ruhige Trennzeile —
+	   spiegelt schon beim Bauen, wie es beim Lernen aussieht */
+	.section {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		margin-top: 0.5rem;
+		padding: 0 0.4rem;
+	}
+	.section-label {
+		flex: 1;
+		background: none;
+		border: none;
+		border-bottom: 1px dashed var(--linie-stark);
+		color: var(--text-fluester);
+		font-family: inherit;
+		font-size: 0.75rem;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+		padding: 0.3rem 0;
+	}
+	.section-label:focus {
+		outline: none;
+		border-bottom-color: var(--akzent);
+		color: var(--text-leise);
 	}
 
 	/* Chips im Editor: kompakter als Schalen, gelber Akzent */

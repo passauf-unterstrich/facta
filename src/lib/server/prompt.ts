@@ -23,7 +23,7 @@ fall — Der Fall selbst.
   ref:   Aktenzeichen; bei Lehrbuchfällen "fiktiv" (Pflicht)
   front: der Sachverhalt als Fließtext, kompakt, kursiv (*...*).
          Erkennungs-Signale darin als Themen-Links markieren (→ thema).
-  mode:  "agls"
+  mode:  "struktur"
   back:  EINE Link-Zeile pro geprüfter Anspruchsgrundlage:
          [[A. §§ 437 Nr. 3, 280 I BGB — SE wegen Sachmangel|agl_id]]
          Beschriftung = Gliederungsbuchstabe + Norm(en) + Kurzbezeichnung.
@@ -32,7 +32,7 @@ fall — Der Fall selbst.
 schema — Eine Anspruchsgrundlage / ein Prüfungsschema.
   title: kurzer Anzeigename (Pflicht), z.B. "Schema: c.i.c."
   front: Norm mit Kurzbezeichnung, z.B. "§ 280 I BGB — Schadensersatz"
-  mode:  "schema"
+  mode:  "struktur"
   back:  EINE Link-Zeile pro Tatbestandsmerkmal:
          [[I. Schuldverhältnis|def_schuldverhaeltnis]]
          Nicht verlinkbare Punkte als Zeile ohne Link. Schemata sind
@@ -59,7 +59,7 @@ simpel — Fallunabhängiges Wissen (Skript-Stoff, Merksätze).
 thema — Ein Erkennungs-Signal / wiederkehrendes Rechtsthema
   (z.B. "Arglist", "Sachmangel", "Minderjährigkeit", "Verzug").
   front: das Thema als Frage oder Stichwort
-  mode:  "agls"
+  mode:  "struktur"
   chips: optionale Vertiefungen zur Merkliste
   back:  MERKLISTE der Konsequenzen — woran man denken muss, wenn das
          Signal im Sachverhalt auftaucht (welche Normen, Anfechtung,
@@ -74,10 +74,15 @@ title und ref bei definition, subsumtion, simpel und thema: null.
 ━━━ 2 · MODES & CHIPS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 mode (Darstellung der RÜCKSEITE):
-"open"   Freitext mit Inline-Links an beliebiger Stelle.
-"agls"   NUR Link-Zeilen (+ Überschrift-Zeilen) — große Schalen.
-"schema" wie agls, für Tatbestandsmerkmale.
-In agls/schema gilt strikt: eine Zeile = ein Link oder Überschrift.
+"open"     Freitext mit Inline-Links an beliebiger Stelle.
+"struktur" NUR Zeilen: eine [[Link-Zeile]] pro Prüfungspunkt (Schale)
+           oder eine blanke Text-Zeile als SECTION (Zwischenüberschrift,
+           gruppiert die Schalen darunter). Beispiel:
+           Allgemeine Voraussetzungen
+           [[I. Kaufvertrag|def_kaufvertrag]]
+           [[II. Sachmangel|def_sachmangel]]
+           Spezielle Voraussetzungen SE
+           [[III. Vertretenmüssen|def_vertretenmuessen]]
 
 chips (eigenes Feld, bei JEDEM Kartentyp erlaubt):
 Kleine Verweis-Bubbles unter der Karte — der Bahnhof. Format wie
@@ -136,11 +141,11 @@ Vollständigkeit: lieber ein sauberer Kernbaum als zwanzig dünne Karten.
 {
   "nodes": [
     { "id": "fall_wochenendhaus", "type": "fall", "area": "zivilrecht",
-      "title": "SE wegen KV über Wochenendhaus", "ref": "BGH V ZR 33/21", "mode": "agls",
+      "title": "SE wegen KV über Wochenendhaus", "ref": "BGH V ZR 33/21", "mode": "struktur",
       "front": "*V verkauft K ein Haus, das baurechtlich nur als [[Wochenendhaus nutzbar|thema_sachmangel]] ist. Den Hinweis darauf hat V [[bewusst überdeckt|thema_arglist]]. Der KV enthält einen Haftungsausschluss.*",
       "back": "[[A. §§ 437 Nr. 3, 280 I BGB — SE wegen Sachmangel|agl_p437_se]]\\n[[B. § 823 II BGB iVm § 263 StGB|agl_p823_2_263]]" },
     { "id": "agl_p437_se", "type": "schema", "area": "zivilrecht",
-      "title": "Schema: Sachmangel-SE", "ref": null, "mode": "schema",
+      "title": "Schema: Sachmangel-SE", "ref": null, "mode": "struktur",
       "front": "§§ 437 Nr. 3, 280 I BGB — Schadensersatz wegen Sachmangels",
       "back": "[[I. Kaufvertrag|def_kaufvertrag]]\\n[[II. Sachmangel bei Gefahrübergang|def_sachmangel]]" },
     { "id": "def_sachmangel", "type": "definition", "area": "zivilrecht",

@@ -4,9 +4,9 @@
 export type KartenTyp = 'fall' | 'schema' | 'definition' | 'subsumtion' | 'simpel' | 'thema';
 
 // Wie die RÜCKSEITE dargestellt wird — der Text bleibt die Wahrheit,
-// der Mode ist nur die Brille: open = Freitext, agls/schema = eine
-// Link-Zeile pro Schale.
-export type KartenMode = 'open' | 'agls' | 'schema';
+// der Mode ist nur die Brille: open = Freitext, struktur = eine
+// Zeile pro Schale (Link) oder Section (Zeile ohne Link).
+export type KartenMode = 'open' | 'struktur';
 
 export type Karte = {
 	id: string;

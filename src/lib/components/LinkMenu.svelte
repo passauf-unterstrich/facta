@@ -69,7 +69,7 @@
 				front: neuFront,
 				back: '',
 				title: neuTyp === 'schema' || neuTyp === 'fall' ? neuFront : null,
-				mode: neuTyp === 'schema' ? 'schema' : neuTyp === 'fall' ? 'agls' : 'open'
+				mode: neuTyp === 'schema' || neuTyp === 'fall' ? 'struktur' : 'open'
 			})
 		});
 		if (res.ok) onfertig(id);

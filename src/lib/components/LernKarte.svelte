@@ -220,13 +220,24 @@
 	.schale-pfeil {
 		color: var(--text-fluester);
 	}
+	/* Section beim Lernen: dezente graue Trennzeile mit Linie —
+	   gruppiert die Schalen darunter, ohne Aufmerksamkeit zu kosten */
 	.schale-titel {
-		font-size: 0.8rem;
+		display: flex;
+		align-items: center;
+		gap: 0.7rem;
+		font-size: 0.72rem;
 		font-weight: 600;
 		text-transform: uppercase;
-		letter-spacing: 0.05em;
+		letter-spacing: 0.07em;
 		color: var(--text-fluester);
-		margin-top: 0.4rem;
+		margin-top: 0.5rem;
+	}
+	.schale-titel::after {
+		content: '';
+		flex: 1;
+		height: 1px;
+		background: var(--linie);
 	}
 
 	/* Chips: kleine gelbe Bubbles unter der Karte — der Bahnhof.

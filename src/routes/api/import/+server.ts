@@ -50,7 +50,10 @@ export const POST: RequestHandler = async ({ request }) => {
 				n.back ?? '',
 				n.title ?? null,
 				n.ref ?? null,
-				n.mode ?? 'open'
+				// Altdaten-Brücke: agls/schema aus früheren Exporten → struktur.
+				// Bewusst als string behandelt — alte Dateien kennen den
+				// aktuellen KartenMode-Typ nicht.
+				['agls', 'schema'].includes(n.mode as string) ? 'struktur' : (n.mode ?? 'open')
 			);
 		}
 		// Dann die Kanten — nur wenn beide Enden existieren.

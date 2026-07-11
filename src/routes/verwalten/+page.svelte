@@ -24,7 +24,7 @@
 				title: neuTitel.trim(),
 				front: '',
 				back: '',
-				mode: neuTyp === 'schema' ? 'schema' : neuTyp === 'fall' ? 'agls' : 'open'
+				mode: neuTyp === 'schema' || neuTyp === 'fall' ? 'struktur' : 'open'
 			})
 		});
 		if (res.ok) {

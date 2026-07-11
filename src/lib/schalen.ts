@@ -5,7 +5,7 @@
  * Parser und Serialisierer sind exakte Umkehrfunktionen: Der Text
  * bleibt die einzige Wahrheit, die Schalen sind nur seine Ansicht.
  */
-export type Zeile = { label: string; ziel: string | null };
+export type Zeile = { label: string; ziel: string | null; section?: boolean };
 
 export function parseZeilen(text: string): Zeile[] {
 	return text
@@ -13,7 +13,9 @@ export function parseZeilen(text: string): Zeile[] {
 		.filter((z) => z.trim() !== '')
 		.map((z) => {
 			const m = z.trim().match(/^\[\[([^\]|]+)\|([^\]]+)\]\]$/);
-			return m ? { label: m[1], ziel: m[2] } : { label: z.trim(), ziel: null };
+			return m
+				? { label: m[1], ziel: m[2] }
+				: { label: z.trim(), ziel: null, section: true };
 		});
 }
 

@@ -4,7 +4,7 @@ import type { Karte, KartenTyp } from '$lib/types';
 import type { RequestHandler } from './$types';
 
 const ERLAUBTE_TYPEN: KartenTyp[] = ['fall', 'schema', 'definition', 'subsumtion', 'simpel', 'thema'];
-const ERLAUBTE_MODES = ['open', 'agls', 'schema'];
+const ERLAUBTE_MODES = ['open', 'struktur'];
 
 // GET /api/nodes → alle Karten
 export const GET: RequestHandler = () => {
