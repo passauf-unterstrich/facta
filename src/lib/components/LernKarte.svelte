@@ -201,8 +201,11 @@
 		text-align: left;
 		background: var(--flaeche-hoch);
 		border: 1px solid var(--linie-stark);
-		border-radius: 999px;
+		/* 1.4rem = halbe Höhe einer einzeiligen Schale: wirkt dort wie
+		   eine Pille, wird bei mehrzeiligem Inhalt zum weichen Rechteck */
+		border-radius: 1.4rem;
 		padding: 0.85rem 1.25rem;
+		line-height: 1.5;
 		color: var(--text);
 		font-family: inherit;
 		font-size: 0.95rem;
@@ -267,8 +270,11 @@
 	.chip {
 		background: color-mix(in srgb, var(--typ-thema) 10%, var(--flaeche));
 		border: 1px solid color-mix(in srgb, var(--typ-thema) 30%, transparent);
-		border-radius: 999px;
+		/* Pille bei einer Zeile, weiches Rechteck bei mehreren */
+		border-radius: 0.95rem;
 		padding: 0.3rem 0.75rem;
+		text-align: left;
+		line-height: 1.45;
 		color: var(--text-leise);
 		font-family: inherit;
 		font-size: 0.78rem;

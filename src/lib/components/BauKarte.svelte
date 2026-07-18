@@ -668,7 +668,7 @@
 		gap: 0.6rem;
 		background: var(--bg);
 		border: 1px solid var(--linie);
-		border-radius: 999px;
+		border-radius: 1.3rem;
 		padding: 0.35rem 0.6rem 0.35rem 1rem;
 		transition: border-color 0.15s ease;
 	}
@@ -772,7 +772,7 @@
 		gap: 0.5rem;
 		background: var(--bg);
 		border: 1px solid color-mix(in srgb, var(--typ-thema) 25%, var(--linie));
-		border-radius: 999px;
+		border-radius: 1.1rem;
 		padding: 0.2rem 0.5rem 0.2rem 0.85rem;
 		transition: border-color 0.15s ease;
 	}
