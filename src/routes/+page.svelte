@@ -5,16 +5,41 @@
 	let { data } = $props();
 
 	let suche = $state('');
+	let gebiet = $state<string | null>(null); // null = Alle
 
-	// $derived = automatisch mitrechnende Werte: ändert sich `suche`,
-	// aktualisiert sich die Liste von selbst.
+	// Anzeige-Namen für bekannte Rechtsgebiete; unbekannte area-Werte
+	// erscheinen roh — nichts aus den Daten geht verloren.
+	const GEBIETS_NAMEN: Record<string, string> = {
+		zivilrecht: 'Zivilrecht',
+		strafrecht: 'Strafrecht',
+		oeffentliches_recht: 'Öffentliches Recht',
+		kapitalgesellschaftsrecht: 'KapGesR'
+	};
+	function gebietsName(a: string): string {
+		return GEBIETS_NAMEN[a] ?? a;
+	}
+
+	// Die Pillen entstehen aus den Daten: jede area, die tatsächlich
+	// vorkommt, bekommt einen Filter — in stabiler Reihenfolge.
+	const gebiete = $derived.by(() => {
+		const vorhanden = new Set(
+			data.nodes.map((n: Karte) => n.area).filter((a): a is string => !!a)
+		);
+		const bekannt = Object.keys(GEBIETS_NAMEN).filter((a) => vorhanden.has(a));
+		const unbekannt = [...vorhanden].filter((a) => !(a in GEBIETS_NAMEN)).sort();
+		return [...bekannt, ...unbekannt];
+	});
+
 	const gefiltert = $derived(
-		data.nodes.filter(
-			(n: Karte) =>
-				n.front.toLowerCase().includes(suche.toLowerCase()) ||
-				(n.title ?? '').toLowerCase().includes(suche.toLowerCase()) ||
-				n.id.toLowerCase().includes(suche.toLowerCase())
-		)
+		data.nodes.filter((n: Karte) => {
+			if (gebiet && n.area !== gebiet) return false;
+			const q = suche.toLowerCase();
+			return (
+				n.front.toLowerCase().includes(q) ||
+				(n.title ?? '').toLowerCase().includes(q) ||
+				n.id.toLowerCase().includes(q)
+			);
+		})
 	);
 	const faelle = $derived(gefiltert.filter((n: Karte) => n.type === 'fall'));
 </script>
@@ -26,6 +51,23 @@
 	</header>
 
 	<input class="suche" type="search" placeholder="Karten durchsuchen …" bind:value={suche} />
+
+	{#if gebiete.length > 0}
+		<div class="gebiete">
+			<button class="pille" class:aktiv={gebiet === null} onclick={() => (gebiet = null)}>
+				Alle
+			</button>
+			{#each gebiete as g (g)}
+				<button
+					class="pille"
+					class:aktiv={gebiet === g}
+					onclick={() => (gebiet = gebiet === g ? null : g)}
+				>
+					{gebietsName(g)}
+				</button>
+			{/each}
+		</div>
+	{/if}
 
 	{#if data.nodes.length === 0}
 		<div class="leer">
@@ -56,6 +98,9 @@
 						<span class="zeile-front">{klartext(node.title ?? node.front)}</span>
 					</a>
 				{/each}
+				{#if gefiltert.length === 0}
+					<p class="keine-treffer">Keine Karten in dieser Auswahl.</p>
+				{/if}
 			</div>
 		</section>
 	{/if}
@@ -72,7 +117,7 @@
 		padding: 4rem 1.5rem 6rem;
 		display: flex;
 		flex-direction: column;
-		gap: 2.5rem;
+		gap: 2rem;
 	}
 
 	.kopf {
@@ -90,7 +135,6 @@
 		font-size: 0.95rem;
 	}
 
-	/* Suche: ruhig, rund, wird beim Fokus wach */
 	.suche {
 		width: 100%;
 		background: var(--flaeche);
@@ -113,6 +157,44 @@
 		background: var(--flaeche-hoch);
 	}
 
+	/* Rechtsgebiete: Filter-Pillen wie in Apple Music — die aktive
+	   ist gefüllt, ein zweiter Tap hebt den Filter wieder auf */
+	.gebiete {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.45rem;
+		justify-content: center;
+		margin-top: -0.75rem;
+	}
+	.pille {
+		background: none;
+		border: 1px solid var(--linie);
+		border-radius: 999px;
+		padding: 0.35rem 0.95rem;
+		color: var(--text-leise);
+		font-family: inherit;
+		font-size: 0.82rem;
+		font-weight: 500;
+		cursor: pointer;
+		transition:
+			background 0.15s ease,
+			color 0.15s ease,
+			border-color 0.15s ease,
+			transform 0.1s ease;
+	}
+	.pille:hover {
+		border-color: var(--linie-stark);
+		color: var(--text);
+	}
+	.pille:active {
+		transform: scale(0.96);
+	}
+	.pille.aktiv {
+		background: var(--text);
+		border-color: var(--text);
+		color: var(--bg);
+	}
+
 	h2 {
 		font-size: 0.8rem;
 		font-weight: 600;
@@ -131,9 +213,6 @@
 		grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
 		gap: 0.9rem;
 	}
-
-	/* Fall-Kacheln: das "Gebackene" — feine Kontur, sanftes Anheben
-	   beim Hover, spürbares Eindrücken beim Klick */
 	.fall-karte {
 		display: flex;
 		flex-direction: column;
@@ -164,7 +243,6 @@
 		font-weight: 500;
 	}
 
-	/* Der Typ-Punkt: dezentes farbiges Signal statt bunter Rahmen */
 	.typ-punkt {
 		width: 7px;
 		height: 7px;
@@ -205,6 +283,13 @@
 		white-space: nowrap;
 		overflow: hidden;
 		text-overflow: ellipsis;
+	}
+	.keine-treffer {
+		padding: 1rem;
+		margin: 0;
+		font-size: 0.85rem;
+		color: var(--text-fluester);
+		text-align: center;
 	}
 
 	.leer {
