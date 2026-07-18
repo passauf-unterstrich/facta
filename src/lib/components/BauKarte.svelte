@@ -588,7 +588,7 @@
 	}
 	.vorschau :global(strong) {
 		font-weight: 600;
-		color: var(--text);
+		color: var(--typ-definition);
 	}
 	.vorschau :global(ul) {
 		padding-left: 1.25em;

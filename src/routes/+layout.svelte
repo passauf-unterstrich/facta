@@ -18,6 +18,17 @@
 		min-height: 100vh;
 		-webkit-font-smoothing: antialiased;
 	}
+	/* Betontes (**fett** via Cmd+B) leuchtet beim Lernen grün —
+	   das Wichtigste auf der Karte springt ins Auge. Gilt überall,
+	   wo gerenderter Karteninhalt steht. */
+	:global(.inhalt strong),
+	:global(.schale-text strong),
+	:global(.vorschau-front strong),
+	:global(.chip strong) {
+		color: var(--typ-definition);
+		font-weight: 600;
+	}
+
 	/* Formularelemente: Browser-Eigenleben abschalten, unsere Optik überall */
 	:global(select),
 	:global(button),
