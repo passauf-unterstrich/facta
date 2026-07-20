@@ -23,5 +23,20 @@ db.pragma('foreign_keys = ON');
 
 // Bauplan einlesen und Schränke aufstellen (passiert beim ersten
 // Serverstart; dank IF NOT EXISTS danach ein No-Op)
+// Sicherheitsnetz, in zwei Zügen:
+// 1. Checkpoint: das WAL-Notizbuch vollständig ins Hauptbuch
+//    einspielen — facta.db ist danach garantiert der Live-Stand.
+db.pragma('wal_checkpoint(TRUNCATE)');
+
+// 2. Tages-Schnappschuss der (jetzt aktuellen) DB nach data/backups/.
+import { copyFileSync, existsSync } from 'node:fs';
+const backupDir = join(dataDir, 'backups');
+mkdirSync(backupDir, { recursive: true });
+const dbPfad = join(dataDir, 'facta.db');
+const heutigesBackup = join(backupDir, `facta-${new Date().toISOString().slice(0, 10)}.db`);
+if (existsSync(dbPfad) && !existsSync(heutigesBackup)) {
+	copyFileSync(dbPfad, heutigesBackup);
+}
+
 const schema = readFileSync(join(here, 'schema.sql'), 'utf-8');
 db.exec(schema);
