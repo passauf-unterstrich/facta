@@ -13,7 +13,9 @@
 		zivilrecht: 'Zivilrecht',
 		strafrecht: 'Strafrecht',
 		oeffentliches_recht: 'Öffentliches Recht',
-		kapitalgesellschaftsrecht: 'KapGesR'
+		kapitalgesellschaftsrecht: 'KapGesR',
+		wissen_zivilrecht: 'Wissen ZR',
+		wissen_kapitalgesellschaftsrecht: 'Wissen KapGesR'
 	};
 	function gebietsName(a: string): string {
 		return GEBIETS_NAMEN[a] ?? a;

@@ -119,6 +119,8 @@
 				<option value="strafrecht">Strafrecht</option>
 				<option value="oeffentliches_recht">Öffentliches Recht</option>
 				<option value="kapitalgesellschaftsrecht">KapGesR</option>
+				<option value="wissen_zivilrecht">Wissen ZR</option>
+				<option value="wissen_kapitalgesellschaftsrecht">Wissen KapGesR</option>
 			</select>
 			<input
 				class="feld feld-breit"
