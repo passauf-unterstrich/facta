@@ -26,6 +26,8 @@
 
 	// Der Pfad startet einmal bei der Wurzel und lebt dann eigenständig —
 	// Abkopplung vom Prop ist gewollt.
+	let zeigeSachverhalt = $state(false);
+
 	// svelte-ignore state_referenced_locally
 	let pfad = $state<string[]>([data.start.id]);
 
@@ -93,7 +95,23 @@
 <div class="kopf">
 	<a class="zurueck" href={`/karte/${data.start.id}`}>‹ Zur Karte</a>
 	<h1>{klartext(data.start.title ?? data.start.front)}</h1>
+	{#if data.start.front.trim()}
+		<button
+			class="sv-toggle"
+			class:aktiv={zeigeSachverhalt}
+			onclick={() => (zeigeSachverhalt = !zeigeSachverhalt)}
+		>
+			Sachverhalt
+		</button>
+	{/if}
 </div>
+
+{#if zeigeSachverhalt && data.start.front.trim()}
+	<div class="sv-panel">
+		{#if data.start.ref}<div class="sv-ref">{data.start.ref}</div>{/if}
+		<div class="sv-text">{@html rendere(data.start.front)}</div>
+	</div>
+{/if}
 
 <div class="band" bind:this={band}>
 	{#each spalten as spalte, i (spalte.elternId)}
@@ -160,6 +178,75 @@
 		white-space: nowrap;
 		overflow: hidden;
 		text-overflow: ellipsis;
+	}
+
+	.sv-toggle {
+		background: none;
+		border: 1px solid var(--linie);
+		border-radius: 999px;
+		padding: 0.3rem 0.9rem;
+		color: var(--text-fluester);
+		font-family: inherit;
+		font-size: 0.78rem;
+		font-weight: 500;
+		cursor: pointer;
+		white-space: nowrap;
+		transition:
+			color 0.15s ease,
+			border-color 0.15s ease,
+			background 0.15s ease;
+	}
+	.sv-toggle:hover {
+		color: var(--text-leise);
+		border-color: var(--linie-stark);
+	}
+	.sv-toggle.aktiv {
+		color: var(--text);
+		background: var(--flaeche-hoch);
+		border-color: var(--linie-stark);
+	}
+
+	/* Sachverhalt-Panel: ruhige Fläche unter dem Kopf, klappt auf */
+	.sv-panel {
+		margin: 0 2rem 0.5rem;
+		background: var(--flaeche);
+		border: 1px solid var(--linie);
+		border-radius: var(--radius-l);
+		padding: 1.1rem 1.4rem;
+		max-height: 40vh;
+		overflow-y: auto;
+		animation: sv-auf 0.18s ease;
+	}
+	@keyframes sv-auf {
+		from {
+			opacity: 0;
+			transform: translateY(-6px);
+		}
+		to {
+			opacity: 1;
+			transform: translateY(0);
+		}
+	}
+	.sv-ref {
+		font-family: var(--mono);
+		font-size: 0.7rem;
+		color: var(--text-fluester);
+		margin-bottom: 0.5rem;
+	}
+	.sv-text {
+		font-size: 0.95rem;
+		line-height: 1.6;
+		color: var(--text-leise);
+	}
+	.sv-text :global(p) {
+		margin: 0 0 0.6em;
+	}
+	.sv-text :global(p:last-child) {
+		margin-bottom: 0;
+	}
+	.sv-text :global(strong) {
+		color: var(--typ-definition);
+		font-weight: 600;
 	}
 
 	.band {
