@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { klartext, rendere } from '$lib/markdown';
+	import { parseZeilen } from '$lib/schalen';
 	import type { Karte } from '$lib/types';
 
 	let { data } = $props();
@@ -15,43 +16,70 @@
 		return m;
 	});
 
-	// Der Pfad IST der Zustand: eine Kette gewählter IDs.
-	// Spalte i zeigt die Kinder von pfad[i].
+	// Verzweigt eine Karte weiter? (Struktur-Zeilen oder Kanten)
+	function verzweigt(id: string): boolean {
+		const n = nodeMap.get(id);
+		if (!n) return false;
+		if (n.mode !== 'open' && n.back.trim() !== '') return true;
+		return (kinderVon.get(id)?.length ?? 0) > 0;
+	}
+
 	// Der Pfad startet einmal bei der Wurzel und lebt dann eigenständig —
 	// Abkopplung vom Prop ist gewollt.
 	// svelte-ignore state_referenced_locally
 	let pfad = $state<string[]>([data.start.id]);
 
-	type Spalte = { elternId: string; eintraege: Karte[] };
+	// Ein Spalten-Eintrag: Section (Überschrift), verlinkte Schale
+	// (klickbar wenn verzweigt, sonst gedimmt) oder unverlinkte Schale.
+	type Eintrag = { label: string; ziel: string | null; section?: boolean };
+	type Spalte = { elternId: string; eintraege: Eintrag[] };
+
 	const spalten = $derived.by(() => {
-		// Spalte 0 ist die Wurzel: der Fall selbst, wie im Finder
-		// der Ausgangsordner sichtbar bleibt.
-		const s: Spalte[] = [{ elternId: '__wurzel', eintraege: [data.start] }];
+		const wurzel: Eintrag = {
+			label: klartext(data.start.title ?? data.start.front),
+			ziel: data.start.id
+		};
+		const s: Spalte[] = [{ elternId: '__wurzel', eintraege: [wurzel] }];
+
 		for (const id of pfad) {
-			const kinder = (kinderVon.get(id) ?? [])
-				.map((kid) => nodeMap.get(kid))
-				.filter((k): k is Karte => !!k);
-			if (kinder.length > 0) s.push({ elternId: id, eintraege: kinder });
+			const node = nodeMap.get(id);
+			if (!node) continue;
+
+			let eintraege: Eintrag[];
+			if (node.mode !== 'open' && node.back.trim() !== '') {
+				// Struktur-Karte: der TEXT ist die Wahrheit — ALLE Zeilen
+				// zeigen, auch Sections und unverlinkte Schalen.
+				eintraege = parseZeilen(node.back).map((z) => ({
+					label: klartext(z.label),
+					ziel: z.ziel,
+					section: z.section
+				}));
+			} else {
+				// Offene Karte: Kinder aus den Kanten
+				eintraege = (kinderVon.get(id) ?? [])
+					.map((kid) => nodeMap.get(kid))
+					.filter((k): k is Karte => !!k)
+					.map((k) => ({ label: klartext(k.title ?? k.front), ziel: k.id }));
+			}
+			if (eintraege.length > 0) s.push({ elternId: id, eintraege });
 		}
 		return s;
 	});
 
-	// Vorschau: die zuletzt gewählte Karte (Pfad-Ende, außer Start)
-	const gewaehlt = $derived(pfad.length > 1 ? (nodeMap.get(pfad[pfad.length - 1]) ?? null) : null);
+	const gewaehlt = $derived(
+		pfad.length > 1 ? (nodeMap.get(pfad[pfad.length - 1]) ?? null) : null
+	);
 
-	function waehle(spaltenIndex: number, id: string) {
-		// Wurzel-Klick: Pfad auf den Anfang zurücksetzen
+	function waehle(spaltenIndex: number, ziel: string) {
 		if (spaltenIndex === 0) {
 			pfad = [data.start.id];
 			return;
 		}
-		// Pfad bis zu dieser Spalte behalten, Wahl anhängen —
-		// alles Tiefere klappt damit automatisch zu (Akkordeon gratis)
-		pfad = [...pfad.slice(0, spaltenIndex), id];
+		pfad = [...pfad.slice(0, spaltenIndex), ziel];
 	}
 
-	function hatKinder(id: string): boolean {
-		return (kinderVon.get(id)?.length ?? 0) > 0;
+	function typVon(ziel: string | null): string {
+		return (ziel && nodeMap.get(ziel)?.type) || 'simpel';
 	}
 
 	// Neue Spalte erscheint → sanft zu ihr scrollen
@@ -70,16 +98,27 @@
 <div class="band" bind:this={band}>
 	{#each spalten as spalte, i (spalte.elternId)}
 		<div class="spalte">
-			{#each spalte.eintraege as eintrag (eintrag.id)}
-				<button
-					class="eintrag"
-					class:im-pfad={i === 0 ? true : pfad[i] === eintrag.id}
-					onclick={() => waehle(i, eintrag.id)}
-				>
-					<span class="typ-punkt" style:--punkt="var(--typ-{eintrag.type})"></span>
-					<span class="eintrag-text">{klartext(eintrag.title ?? eintrag.front)}</span>
-					{#if hatKinder(eintrag.id)}<span class="pfeil">›</span>{/if}
-				</button>
+			{#each spalte.eintraege as eintrag, j (j)}
+				{#if eintrag.section}
+					<div class="section">{eintrag.label}</div>
+				{:else if eintrag.ziel && verzweigt(eintrag.ziel)}
+					<button
+						class="eintrag"
+						class:im-pfad={i === 0 ? true : pfad[i] === eintrag.ziel}
+						onclick={() => waehle(i, eintrag.ziel!)}
+					>
+						<span class="typ-punkt" style:--punkt="var(--typ-{typVon(eintrag.ziel)})"></span>
+						<span class="eintrag-text">{eintrag.label}</span>
+						<span class="pfeil">›</span>
+					</button>
+				{:else}
+					<!-- Blatt (verlinkt ohne Verzweigung) oder unverlinkte
+					     Schale: sichtbar für den Überblick, gedimmt, nicht klickbar -->
+					<div class="eintrag blatt">
+						<span class="typ-punkt" style:--punkt="var(--typ-{typVon(eintrag.ziel)})"></span>
+						<span class="eintrag-text">{eintrag.label}</span>
+					</div>
+				{/if}
 			{/each}
 		</div>
 	{/each}
@@ -123,7 +162,6 @@
 		text-overflow: ellipsis;
 	}
 
-	/* Das Spaltenband: füllt den Rest der Höhe, scrollt horizontal */
 	.band {
 		display: flex;
 		height: calc(100vh - 4.5rem);
@@ -154,6 +192,27 @@
 		}
 	}
 
+	/* Section in der Spalte: graue Kapitälchen-Zeile mit Linie —
+	   gleiche Sprache wie im Lern-Modus */
+	.section {
+		display: flex;
+		align-items: center;
+		gap: 0.6rem;
+		font-size: 0.68rem;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.07em;
+		color: var(--text-fluester);
+		margin: 0.5rem 0 0.15rem;
+		padding: 0 0.8rem;
+	}
+	.section::after {
+		content: '';
+		flex: 1;
+		height: 1px;
+		background: var(--linie);
+	}
+
 	.eintrag {
 		display: flex;
 		align-items: center;
@@ -175,11 +234,21 @@
 		background: var(--flaeche);
 		color: var(--text);
 	}
-	/* Der aktive Pfad: gefüllt, hell — man sieht die Spur durch den Baum */
 	.eintrag.im-pfad {
 		background: var(--flaeche-hoch);
 		color: var(--text);
 	}
+
+	/* Blätter: gedimmt, aber gut lesbar — der Gesamtüberblick */
+	.eintrag.blatt {
+		cursor: default;
+		color: var(--text-fluester);
+	}
+	.eintrag.blatt:hover {
+		background: none;
+		color: var(--text-fluester);
+	}
+
 	.typ-punkt {
 		width: 6px;
 		height: 6px;
@@ -200,7 +269,6 @@
 		flex-shrink: 0;
 	}
 
-	/* Vorschau-Spalte: das Finder-Detailfenster */
 	.vorschau {
 		flex: 0 0 20rem;
 		padding: 1.25rem;
