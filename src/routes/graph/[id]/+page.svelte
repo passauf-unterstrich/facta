@@ -5,6 +5,11 @@
 
 	let { data } = $props();
 
+	let zeigeSachverhalt = $state(false);
+	// Ein angeklicktes Blatt (verlinkt, aber ohne Verzweigung): sein
+	// voller Text erscheint rechts im Detail-Panel.
+	let blattVorschau = $state<string | null>(null);
+
 	// Nachschlagewerke einmal bauen
 	const nodeMap = $derived(new Map(data.nodes.map((n) => [n.id, n])));
 	const kinderVon = $derived.by(() => {
@@ -16,7 +21,7 @@
 		return m;
 	});
 
-	// Verzweigt eine Karte weiter? (Struktur-Zeilen oder Kanten)
+	// Verzweigt eine Karte weiter?
 	function verzweigt(id: string): boolean {
 		const n = nodeMap.get(id);
 		if (!n) return false;
@@ -24,18 +29,9 @@
 		return (kinderVon.get(id)?.length ?? 0) > 0;
 	}
 
-	// Der Pfad startet einmal bei der Wurzel und lebt dann eigenständig —
-	// Abkopplung vom Prop ist gewollt.
-	let zeigeSachverhalt = $state(false);
-	// Ein angeklicktes Blatt (verlinkt, aber ohne Verzweigung): sein
-	// voller Text erscheint rechts in der Vorschau.
-	let blattVorschau = $state<string | null>(null);
-
 	// svelte-ignore state_referenced_locally
 	let pfad = $state<string[]>([data.start.id]);
 
-	// Ein Spalten-Eintrag: Section (Überschrift), verlinkte Schale
-	// (klickbar wenn verzweigt, sonst gedimmt) oder unverlinkte Schale.
 	type Eintrag = { label: string; ziel: string | null; section?: boolean };
 	type Spalte = { elternId: string; eintraege: Eintrag[] };
 
@@ -52,15 +48,12 @@
 
 			let eintraege: Eintrag[];
 			if (node.mode !== 'open' && node.back.trim() !== '') {
-				// Struktur-Karte: der TEXT ist die Wahrheit — ALLE Zeilen
-				// zeigen, auch Sections und unverlinkte Schalen.
 				eintraege = parseZeilen(node.back).map((z) => ({
 					label: klartext(z.label),
 					ziel: z.ziel,
 					section: z.section
 				}));
 			} else {
-				// Offene Karte: Kinder aus den Kanten
 				eintraege = (kinderVon.get(id) ?? [])
 					.map((kid) => nodeMap.get(kid))
 					.filter((k): k is Karte => !!k)
@@ -71,6 +64,9 @@
 		return s;
 	});
 
+	// Die gerade "im Fokus" stehende Karte: das angeklickte Blatt
+	// (falls eins gesetzt ist), sonst das Ende des Pfads. Sie erscheint
+	// rechts im Detail-Panel als Lese-Fläche.
 	const gewaehlt = $derived(
 		blattVorschau
 			? (nodeMap.get(blattVorschau) ?? null)
@@ -138,8 +134,6 @@
 						<span class="pfeil">›</span>
 					</button>
 				{:else if eintrag.ziel}
-					<!-- Blatt: verlinkt, aber ohne Verzweigung. Klickbar —
-					     zeigt seinen vollen Text rechts in der Vorschau. -->
 					<button
 						class="eintrag blatt"
 						class:im-pfad={blattVorschau === eintrag.ziel}
@@ -149,7 +143,6 @@
 						<span class="eintrag-text">{eintrag.label}</span>
 					</button>
 				{:else}
-					<!-- Unverlinkte Schale: kein Ziel, nur Überblick -->
 					<div class="eintrag blatt">
 						<span class="typ-punkt" style:--punkt="var(--typ-simpel)"></span>
 						<span class="eintrag-text">{eintrag.label}</span>
@@ -158,20 +151,41 @@
 			{/each}
 		</div>
 	{/each}
-
-	{#if gewaehlt}
-		<div class="spalte vorschau">
-			<div class="vorschau-typ">
-				<span class="typ-punkt" style:--punkt="var(--typ-{gewaehlt.type})"></span>
-				{gewaehlt.type}
-			</div>
-			<div class="vorschau-front">{@html rendere(gewaehlt.front)}</div>
-			<a class="vorschau-lernen" href={`/karte/${gewaehlt.id}`}>Lernen ›</a>
-		</div>
-	{/if}
 </div>
 
+{#if gewaehlt}
+	<aside class="detail">
+		<div class="detail-typ">
+			<span class="typ-punkt" style:--punkt="var(--typ-{gewaehlt.type})"></span>
+			<span>{gewaehlt.type}</span>
+			{#if gewaehlt.ref}<span class="detail-ref">{gewaehlt.ref}</span>{/if}
+		</div>
+		{#if gewaehlt.title}
+			<h2 class="detail-titel">{gewaehlt.title}</h2>
+		{/if}
+		<div class="detail-front">{@html rendere(gewaehlt.front)}</div>
+		{#if gewaehlt.back.trim()}
+			<div class="detail-back">{@html rendere(gewaehlt.back)}</div>
+		{/if}
+		{#if gewaehlt.chips.trim()}
+			<div class="detail-chips">
+				{#each parseZeilen(gewaehlt.chips) as chip, i (i)}
+					{#if chip.ziel}
+						<button class="chip" onclick={() => (blattVorschau = chip.ziel)}>
+							{chip.label}
+						</button>
+					{:else}
+						<span class="chip chip-passiv">{chip.label}</span>
+					{/if}
+				{/each}
+			</div>
+		{/if}
+	</aside>
+{/if}
+
 <style>
+	:global(body) { overflow: hidden; }
+
 	.kopf {
 		display: flex;
 		align-items: baseline;
@@ -185,9 +199,7 @@
 		white-space: nowrap;
 		transition: color 0.15s ease;
 	}
-	.zurueck:hover {
-		color: var(--text);
-	}
+	.zurueck:hover { color: var(--text); }
 	h1 {
 		font-size: 1.1rem;
 		font-weight: 600;
@@ -209,24 +221,18 @@
 		font-weight: 500;
 		cursor: pointer;
 		white-space: nowrap;
-		transition:
-			color 0.15s ease,
-			border-color 0.15s ease,
-			background 0.15s ease;
+		transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
 	}
-	.sv-toggle:hover {
-		color: var(--text-leise);
-		border-color: var(--linie-stark);
-	}
+	.sv-toggle:hover { color: var(--text-leise); border-color: var(--linie-stark); }
 	.sv-toggle.aktiv {
 		color: var(--text);
 		background: var(--flaeche-hoch);
 		border-color: var(--linie-stark);
 	}
 
-	/* Sachverhalt-Panel: ruhige Fläche unter dem Kopf, klappt auf */
 	.sv-panel {
 		margin: 0 2rem 0.5rem;
+		margin-right: calc(32rem + 2rem); /* Platz fürs Detail-Panel + Luft */
 		background: var(--flaeche);
 		border: 1px solid var(--linie);
 		border-radius: var(--radius-l);
@@ -236,14 +242,8 @@
 		animation: sv-auf 0.18s ease;
 	}
 	@keyframes sv-auf {
-		from {
-			opacity: 0;
-			transform: translateY(-6px);
-		}
-		to {
-			opacity: 1;
-			transform: translateY(0);
-		}
+		from { opacity: 0; transform: translateY(-6px); }
+		to { opacity: 1; transform: translateY(0); }
 	}
 	.sv-ref {
 		font-family: var(--mono);
@@ -256,27 +256,26 @@
 		line-height: 1.6;
 		color: var(--text-leise);
 	}
-	.sv-text :global(p) {
-		margin: 0 0 0.6em;
-	}
-	.sv-text :global(p:last-child) {
-		margin-bottom: 0;
-	}
+	.sv-text :global(p) { margin: 0 0 0.6em; }
+	.sv-text :global(p:last-child) { margin-bottom: 0; }
 	.sv-text :global(strong) {
 		color: var(--typ-definition);
 		font-weight: 600;
 	}
 
+	/* Band links: horizontal scrollbar, rechts Raum fürs Detail-Panel */
 	.band {
 		display: flex;
 		height: calc(100vh - 4.5rem);
 		overflow-x: auto;
+		overflow-y: hidden;
 		border-top: 1px solid var(--linie);
 		padding: 1.5rem 1rem;
 		gap: 0.5rem;
+		margin-right: 32rem;
 	}
 	.spalte {
-		flex: 0 0 18rem;
+		flex: 0 0 15rem;
 		max-height: 100%;
 		overflow-y: auto;
 		border-right: 1px solid var(--linie);
@@ -287,18 +286,10 @@
 		animation: spalte-auf 0.18s ease;
 	}
 	@keyframes spalte-auf {
-		from {
-			opacity: 0;
-			transform: translateX(-6px);
-		}
-		to {
-			opacity: 1;
-			transform: translateX(0);
-		}
+		from { opacity: 0; transform: translateX(-6px); }
+		to { opacity: 1; transform: translateX(0); }
 	}
 
-	/* Section in der Spalte: graue Kapitälchen-Zeile mit Linie —
-	   gleiche Sprache wie im Lern-Modus */
 	.section {
 		display: flex;
 		align-items: center;
@@ -331,32 +322,19 @@
 		font-size: 0.85rem;
 		text-align: left;
 		cursor: pointer;
-		transition:
-			background 0.1s ease,
-			color 0.1s ease;
+		transition: background 0.1s ease, color 0.1s ease;
 	}
-	.eintrag:hover {
-		background: var(--flaeche);
-		color: var(--text);
-	}
+	.eintrag:hover { background: var(--flaeche); color: var(--text); }
 	.eintrag.im-pfad {
 		background: var(--flaeche-hoch);
 		color: var(--text);
 	}
-
-	/* Blätter: gedimmt, aber gut lesbar — der Gesamtüberblick */
-	.eintrag.blatt {
-		color: var(--text-fluester);
-	}
-	/* verlinkte Blätter (button) reagieren wieder auf Hover;
-	   unverlinkte (div) bleiben passiv */
+	.eintrag.blatt { color: var(--text-fluester); }
 	button.eintrag.blatt:hover {
 		background: var(--flaeche);
 		color: var(--text-leise);
 	}
-	div.eintrag.blatt {
-		cursor: default;
-	}
+	div.eintrag.blatt { cursor: default; }
 
 	.typ-punkt {
 		width: 6px;
@@ -376,36 +354,95 @@
 		margin-top: 0.1rem;
 	}
 
-	.vorschau {
-		flex: 0 0 20rem;
-		padding: 1.25rem;
-		gap: 0.9rem;
+	/* Detail-Panel rechts: fest positioniert, atmet ruhig.
+	   Das ist die Lese-Fläche — Titel prominent, Text im Fluss. */
+	.detail {
+		position: fixed;
+		top: 4.5rem;
+		right: 0;
+		bottom: 0;
+		width: 32rem;
+		background: var(--flaeche);
+		border-left: 1px solid var(--linie);
+		padding: 2rem 2.25rem;
+		overflow-y: auto;
+		display: flex;
+		flex-direction: column;
+		gap: 1rem;
+		animation: detail-auf 0.2s ease;
 	}
-	.vorschau-typ {
+	@keyframes detail-auf {
+		from { opacity: 0; transform: translateX(8px); }
+		to { opacity: 1; transform: translateX(0); }
+	}
+	.detail-typ {
 		display: flex;
 		align-items: center;
-		gap: 0.45rem;
+		gap: 0.5rem;
 		font-family: var(--mono);
 		font-size: 0.7rem;
 		text-transform: uppercase;
 		letter-spacing: 0.08em;
 		color: var(--text-fluester);
 	}
-	.vorschau-front {
-		font-size: 0.95rem;
-		line-height: 1.55;
+	.detail-ref { margin-left: auto; font-size: 0.7rem; }
+	.detail-titel {
+		font-size: 1.25rem;
+		font-weight: 600;
+		letter-spacing: -0.01em;
+		color: var(--text);
+		margin: 0;
+		line-height: 1.35;
 	}
-	.vorschau-front :global(p) {
-		margin: 0 0 0.6em;
+	.detail-front {
+		font-size: 1rem;
+		line-height: 1.65;
+		color: var(--text);
 	}
-	.vorschau-lernen {
-		align-self: flex-start;
-		color: var(--akzent);
-		text-decoration: none;
-		font-size: 0.88rem;
-		font-weight: 500;
+	.detail-front :global(p) { margin: 0 0 0.75em; }
+	.detail-front :global(p:last-child) { margin-bottom: 0; }
+	.detail-front :global(strong) {
+		color: var(--typ-definition);
+		font-weight: 600;
 	}
-	.vorschau-lernen:hover {
-		color: var(--akzent-hover);
+	.detail-front :global(em) { font-style: italic; }
+	/* Rückseite: gestrichelte Linie als weiche Grenze */
+	.detail-back {
+		padding-top: 1.25rem;
+		margin-top: 0.5rem;
+		border-top: 1px dashed var(--linie-stark);
+		font-size: 0.98rem;
+		line-height: 1.65;
+		color: var(--text-leise);
 	}
+	.detail-back :global(p) { margin: 0 0 0.75em; }
+	.detail-back :global(strong) {
+		color: var(--typ-definition);
+		font-weight: 600;
+	}
+	.detail-chips {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.45rem;
+		margin-top: 0.75rem;
+		padding-top: 1rem;
+		border-top: 1px dashed var(--linie);
+	}
+	.chip {
+		background: color-mix(in srgb, var(--typ-thema) 10%, var(--flaeche));
+		border: 1px solid color-mix(in srgb, var(--typ-thema) 30%, transparent);
+		border-radius: 0.95rem;
+		padding: 0.3rem 0.75rem;
+		color: var(--text-leise);
+		font-family: inherit;
+		font-size: 0.78rem;
+		cursor: pointer;
+		text-align: left;
+		transition: border-color 0.15s ease, color 0.15s ease;
+	}
+	.chip:hover {
+		border-color: var(--typ-thema);
+		color: var(--text);
+	}
+	.chip-passiv { cursor: default; opacity: 0.7; }
 </style>
