@@ -215,7 +215,7 @@
 
 	.eintrag {
 		display: flex;
-		align-items: center;
+		align-items: flex-start;
 		gap: 0.65rem;
 		background: none;
 		border: none;
@@ -255,18 +255,16 @@
 		border-radius: 50%;
 		background: var(--punkt, var(--typ-simpel));
 		flex-shrink: 0;
+		margin-top: 0.35rem;
 	}
 	.eintrag-text {
 		flex: 1;
-		overflow: hidden;
-		display: -webkit-box;
-		-webkit-line-clamp: 2;
-		line-clamp: 2;
-		-webkit-box-orient: vertical;
+		line-height: 1.4;
 	}
 	.pfeil {
 		color: var(--text-fluester);
 		flex-shrink: 0;
+		margin-top: 0.1rem;
 	}
 
 	.vorschau {
