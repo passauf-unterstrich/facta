@@ -27,6 +27,9 @@
 	// Der Pfad startet einmal bei der Wurzel und lebt dann eigenständig —
 	// Abkopplung vom Prop ist gewollt.
 	let zeigeSachverhalt = $state(false);
+	// Ein angeklicktes Blatt (verlinkt, aber ohne Verzweigung): sein
+	// voller Text erscheint rechts in der Vorschau.
+	let blattVorschau = $state<string | null>(null);
 
 	// svelte-ignore state_referenced_locally
 	let pfad = $state<string[]>([data.start.id]);
@@ -69,10 +72,15 @@
 	});
 
 	const gewaehlt = $derived(
-		pfad.length > 1 ? (nodeMap.get(pfad[pfad.length - 1]) ?? null) : null
+		blattVorschau
+			? (nodeMap.get(blattVorschau) ?? null)
+			: pfad.length > 1
+				? (nodeMap.get(pfad[pfad.length - 1]) ?? null)
+				: null
 	);
 
 	function waehle(spaltenIndex: number, ziel: string) {
+		blattVorschau = null;
 		if (spaltenIndex === 0) {
 			pfad = [data.start.id];
 			return;
@@ -129,11 +137,21 @@
 						<span class="eintrag-text">{eintrag.label}</span>
 						<span class="pfeil">›</span>
 					</button>
-				{:else}
-					<!-- Blatt (verlinkt ohne Verzweigung) oder unverlinkte
-					     Schale: sichtbar für den Überblick, gedimmt, nicht klickbar -->
-					<div class="eintrag blatt">
+				{:else if eintrag.ziel}
+					<!-- Blatt: verlinkt, aber ohne Verzweigung. Klickbar —
+					     zeigt seinen vollen Text rechts in der Vorschau. -->
+					<button
+						class="eintrag blatt"
+						class:im-pfad={blattVorschau === eintrag.ziel}
+						onclick={() => (blattVorschau = eintrag.ziel)}
+					>
 						<span class="typ-punkt" style:--punkt="var(--typ-{typVon(eintrag.ziel)})"></span>
+						<span class="eintrag-text">{eintrag.label}</span>
+					</button>
+				{:else}
+					<!-- Unverlinkte Schale: kein Ziel, nur Überblick -->
+					<div class="eintrag blatt">
+						<span class="typ-punkt" style:--punkt="var(--typ-simpel)"></span>
 						<span class="eintrag-text">{eintrag.label}</span>
 					</div>
 				{/if}
@@ -328,12 +346,16 @@
 
 	/* Blätter: gedimmt, aber gut lesbar — der Gesamtüberblick */
 	.eintrag.blatt {
-		cursor: default;
 		color: var(--text-fluester);
 	}
-	.eintrag.blatt:hover {
-		background: none;
-		color: var(--text-fluester);
+	/* verlinkte Blätter (button) reagieren wieder auf Hover;
+	   unverlinkte (div) bleiben passiv */
+	button.eintrag.blatt:hover {
+		background: var(--flaeche);
+		color: var(--text-leise);
+	}
+	div.eintrag.blatt {
+		cursor: default;
 	}
 
 	.typ-punkt {
