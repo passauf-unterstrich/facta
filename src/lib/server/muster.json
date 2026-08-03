@@ -1,0 +1,510 @@
+{
+  "nodes": [
+    {
+      "id": "fall_holding_gruendung_verhindern_einheit",
+      "type": "fall",
+      "area": "kapitalgesellschaftsrecht",
+      "title": "Holding-Gründung verhindern",
+      "ref": "Einheit 13, Examinatorium",
+      "mode": "struktur",
+      "front": "Ein großer Aktionär (A1, 45%) einer AG und deren Vorstand stellen zusammen mit zwei großen Gesellschaftern einer GmbH (B1, 40% und B2, 36%) und deren Geschäftsführer einen Plan zur Gründung einer Holding auf.\n\nDie A-AG und die B-GmbH sollen unter dieser X-GmbH Holding zusammengefasst werden (beide sind auf gleichem Markt tätig und wirtschaftlich in Schieflage)\n\n1. X-GmbH wird von A1 und B1 (je 50%) gegründet\n\n2. Bei A-AG: Keine HV-Vorlage, bei B-GmbH: Billigung in GV mit Stimmen von B1 und B2\n\n3. A1 bringt eine 45% an der A-AG ein, Vorstand V kauft absprachegemäß von 50 Minderheitsaktionären mit Mitteln der A-AG weitere 6% und veräußert diese auch an A-AG\n\n3. B1 bringt seine 40% an der B-GmbH ein, B2 tritt 16% seiner Anteile ab\n\n\n**Aufgabenstellung:**\n\nA2 (10%) und B3 (24%) sind nicht einverstanden.\n\nFrage: Welche MITTEL hätten ex-ante zur Verfügung bestanden um zu vermeiden:\n\nFür A2:\n- Gegen Gründung der X-GmbH\n- Gegen Einbringung der Aktien des A1 / Erwerb der Aktien von Kleinaktionären + Weiterveräußerung\n\nFür B3:\n- Gegen Gründung der X-GmbH\n- Gegen Einbringung B1 / Abtretung B2",
+      "back": "[[A2) hätte die in Frage stehenden Maßnahmen verhindern können, wenn ihm ein entsprechender Rechtsbehelf zusteht|agl_a2_haette_die_in]]\n[[Anders als im Fall des A2) sieht sich B3) einem Gesellschafterbeschluss gegenübergestellt. Als Rechtsbehelf kommt deshalb vor einer gegen B1) und B2) gerichteten Unterlassungsklage zunächst eine Anfechtungsklage zur Beseitigung der legitimierenden Wirkung des Gesellschafterbeschlusses in Betracht.|agl_anders_als_im_fall]]",
+      "chips": ""
+    },
+    {
+      "id": "agl_a2_haette_die_in",
+      "type": "schema",
+      "area": "kapitalgesellschaftsrecht",
+      "title": "A2) hätte die in Frage stehenden Maßnahmen verhindern können, wenn ihm ein entsprechender Rechtsbehelf zusteht",
+      "ref": null,
+      "mode": "struktur",
+      "front": "Welche Rechtsbehelfe könnten A2 vorbeugend zustehen?",
+      "back": "[[Als Rechtsbehelf kommt zunächst eine gegen die A-AG gerichtete vorbeugende Unterlassungsklage in Betracht|agl_als_rechtsbehelf_kommt_zunaechst]]\n[[Einschlägig könnte ebenfalls eine gegen A1) gerichtete Unterlassungsklage sein|agl_einschlaegig_koennte_ebenfalls_eine]]",
+      "chips": ""
+    },
+    {
+      "id": "agl_als_rechtsbehelf_kommt_zunaechst",
+      "type": "schema",
+      "area": "kapitalgesellschaftsrecht",
+      "title": "Als Rechtsbehelf kommt zunächst eine gegen die A-AG gerichtete vorbeugende Unterlassungsklage in Betracht",
+      "ref": null,
+      "mode": "struktur",
+      "front": "Die vorbeugende Unterlassungsklage gegen die Gesellschaft könnte darauf gerichtet sein, der Gesellschaft aufzugeben, alles zu unterlassen, was zur Gründung der X-GmbH beiträgt, ferner es zu unterlassen, eigene Aktien zu erwerben und gezielt an A1 weiter zu veräußern.\n\nWas sind die Voraussetzungen?",
+      "back": "## I. Zulässigkeit\n[[1. Statthafte Klageart / Klagebefugnis|def_1_statthafte_klageart]]\n## II. Begründetheit\n[[1. Klagefrist|def_1_klagefrist]]\n[[2. Klagegegner|def_2_klagegegner]]\n[[3. Materielle Begründetheit|k_3_materielle_begruendetheit]]",
+      "chips": "Die gegen die A-AG gerichtete vorbeugende Unterlassungsklage ist zulässig, aber unbegründet.\nHinweis: Denkbar wäre es, dass A2) einen Unterlassungsanspruch der Gesellschaft gegen den Vorstand gemäß §§ 147, 148 AktG im eigenen Namen klageweise durchzusetzen kann. Hierzu müssten Unterlassungsansprüche „Ersatzansprüche“ im Sinne des § 148 I S. 1 AktG darstellen. Dies ist wegen des eindeutigen Wortlautes zweifelhaft, kann aber bejaht werden."
+    },
+    {
+      "id": "agl_anders_als_im_fall",
+      "type": "schema",
+      "area": "kapitalgesellschaftsrecht",
+      "title": "Anders als im Fall des A2) sieht sich B3) einem Gesellschafterbeschluss gegenübergestellt. Als Rechtsbehelf kommt deshalb vor einer gegen B1) und B2) gerichteten Unterlassungsklage zunächst eine Anfechtungsklage zur Beseitigung der legitimierenden Wirkung des Gesellschafterbeschlusses in Betracht.",
+      "ref": null,
+      "mode": "struktur",
+      "front": "Rechtsbehelfe des B3)",
+      "back": "[[I. Anfechtungsklage gegen den Gesellschafterbeschluss in der B-GmbH|agl_i_anfechtungsklage_gegen_den]]\n[[II. Unterlassungsklage gegen B1) und B2)|agl_ii_unterlassungsklage_gegen_b1]]",
+      "chips": ""
+    },
+    {
+      "id": "agl_einschlaegig_koennte_ebenfalls_eine",
+      "type": "schema",
+      "area": "kapitalgesellschaftsrecht",
+      "title": "Daneben kommt als Rechtsbehelf eine gegen A1) gerichtete vorbeugende Unterlassungsklage in Betracht",
+      "ref": null,
+      "mode": "struktur",
+      "front": "Dies setzt voraus:",
+      "back": "## I. Zulässigkeit\nBedenken gegen die Zulässigkeit einer Unterlassungsklage bestehen nicht. **Dass sich Aktionäre grundsätzlich gegen mögliche Treuepflichtverletzungen gegenüber Mitgesellschaftern wehren können, ist anerkannt.** Ob A2) in seinen Treuepflichten verletzt wurde, ist im Rahmen der Begründetheit zu prüfen.\n## II. Begründetheit\n[[Anspruch auf Unterlassung der Gründung der X-GmbH wegen **Verstoßes gegen ein ungeschriebenes Wettbewerbsverbot**|k_anspruch_auf_unterlassung_der]]\n[[Anspruch auf Unterlassung der Einbringung der Aktien|k_anspruch_auf_unterlassung_der_2]]",
+      "chips": "A2) kann von A1) weder ein Unterlassen der Gründung der X-GmbH noch der Einbringung der Aktien verlangen. Eine Unterlassungsklage wäre insoweit unbegründet."
+    },
+    {
+      "id": "agl_i_anfechtungsklage_gegen_den",
+      "type": "schema",
+      "area": "kapitalgesellschaftsrecht",
+      "title": "I. Anfechtungsklage gegen den Gesellschafterbeschluss in der B-GmbH",
+      "ref": null,
+      "mode": "struktur",
+      "front": "Erfolgsaussichten der Anfechtungsklage",
+      "back": "## I. zulässigkeit\n[[Statthafte Klageart|def_statthafte_klageart_anfechtungsklage_gmbh]]\n[[Örtliche und sachliche Zuständigkeit|def_oertliche_und_sachliche_zustaendigkeit]]\n## II. Formelle Begründetheit\nDie Anfechtungsfrist beträgt entsprechend § 246 Abs. 1 AktG ein Monat.\nB3 ist Gesellschafter. Er wäre nur dann nicht klagebefugt, wenn er in Kenntnis des Mangels dem Beschluss zugestimmt oder nachträglich auf die Anfechtung verzichtet hat. Dies ist nicht der Fall. B3 ist klagebefugt.\nKlagegegner ist analog § 246 II AktG die B-GmbH, vertreten durch ihren Geschäftsführer\n## III. Materielle Begründetheit\n[[Anfechtungsgrund|k_anfechtungsgrund]]",
+      "chips": ""
+    },
+    {
+      "id": "agl_ii_unterlassungsklage_gegen_b1",
+      "type": "schema",
+      "area": "kapitalgesellschaftsrecht",
+      "title": "II. Unterlassungsklage gegen B1) und B2)",
+      "ref": null,
+      "mode": "struktur",
+      "front": "Um das angestrebte Anspruchsziel zu erreichen, ist zudem eine gegen B1) und B2) gerichtete Unterlassungsklage erforderlich.",
+      "back": "## I. zuLässigkeit\nHinsichtlich der Zulässigkeit kann auf oben verweisen werden.\n## II. Begründetheit\n[[Anspruch auf Unterlassung der Gründung der X-GmbH|def_anspruch_auf_unterlassung_der]]\n[[Anspruch auf Unterlassen der Einbringung der Geschäftsanteile von B1) sowie der Abtretung der Geschäftsanteile von B2)|k_anspruch_auf_unterlassen_der]]",
+      "chips": "Eine insoweit gegen B1) und B2) gerichtete Unterlassungsklage hätte somit Erfolg."
+    },
+    {
+      "id": "def_1_klagefrist",
+      "type": "simpel",
+      "area": "kapitalgesellschaftsrecht",
+      "title": "1. Klagefrist (Unterlassungsklage des Aktionärs)",
+      "ref": null,
+      "mode": "open",
+      "front": "Fraglich ist, ob eine Frist zu beachten ist.",
+      "back": "Der BGH hat in der Holzmüller-Entscheidung geurteilt, dass der Anspruch (es ging um die Rückübertragung des Seehafenbetriebs) **ohne unangemessene Verzögerung** geltend zu machen ist. \n\nHat die Hauptversammlung einer Maßnahme des Vorstands zugestimmt und ist der Beschluss gesetz- oder satzungswidrig oder auf Erlangung unzulässiger Sondervorteile gerichtet, so kann ihn ein Aktionär nur innerhalb\nder Monatsfrist des § 246 AktG anfechten.\n\n**Eine Frist für die Unterlassungsklage hat der BGH nicht begründet.** In der Literatur wird vorgeschlagen, dass eine Klagefrist sich an § 246 Abs. 1 AktG orientieren sollte, wobei freilich auf die **Kenntniserlangung oder das Kennenmüssen des Eingriffs in die Mitgliedschaft** abzustellen sei.\n\nDie Klage kommt schließlich nur in Betracht, **wenn die Maßnahme noch nicht vollzogen ist.**",
+      "chips": "Hier hätte A2) die rechtlichen Mittel „rechtzeitig ergriffen“ und die Klage somit fristgerecht eingelegt."
+    },
+    {
+      "id": "def_1_statthafte_klageart",
+      "type": "simpel",
+      "area": "kapitalgesellschaftsrecht",
+      "title": null,
+      "ref": null,
+      "mode": "open",
+      "front": "1. Statthafte Klageart",
+      "back": "Ziel des A2: Maßnahmen durch \"rechtzeitig ergriffene rechtliche Mittel\" verhindern\n\nAnspruchsziel also: Vorbeugende Unterlassungsklage\n\nFraglich ist, ob eine solche Unterlassungsklage des einzelnen Aktionärs zulässig ist. Gegen die Zulässigkeit könnte eingewendet werden, dass die aktienrechtliche Zuständigkeitsordnung gestört wird. Denn nach der vom Aktiengesetz vorgesehenen Kompetenzverteilung zwischen dem Vorstand, Aufsichtsrat und der Hauptversammlung haben weder der einzelne Aktionär noch die Hauptversammlung die Befugnis, in Geschäftsführungsangelegenheiten des Vorstandes einzugreifen.\n\nDer BGH hat in der **Holzmüller-Entscheidung** eine auf die Verletzung der Mitgliedschaftsrechte gestützte Aktionärsklage auf Unterlassung zumindest dann für zulässig erachtet, **wenn zur Wahrung der Rechte des Aktionärs aktienrechtliche Behelfe nicht zur Verfügung stehen.** Denn jeder Aktionär hat einen **verbandsrechtlichen Anspruch** darauf, dass die Gesellschaft seine Mitgliedschaftsrechte achtet und alles unterlässt, was sie über das durch Gesetz oder Satzung gedeckte Maß hinaus beeinträchtigt. **Voraussetzung ist, dass der Gesellschafter in seinen Mitgliedschaftsrechten verletzt worden ist.**\n\nDies ist beispielsweise dann der Fall, wenn die Mitwirkungsrechte der Hauptversammlung und damit des einzelnen Aktionärs übergangen werden. Eine Verletzung des Mitgliedschaftsrechts **liegt dagegen nicht bei einer bloßen Pflichtverletzung des Vorstandes vor, die keine Herrschafts- oder Vermögensrechte des Aktionärs beeinträchtigt.**",
+      "chips": "Subsumption: Da A2) sich „übergangen und benachteiligt“ fühlt und sich damit auf eine Beeinträchtigung seines Mitgliedschaftsrechts beruft, ist eine vorbeugende Unterlassungsklage grundsätzlich statthaft."
+    },
+    {
+      "id": "def_2_klagegegner",
+      "type": "simpel",
+      "area": "kapitalgesellschaftsrecht",
+      "title": "2. Klagegegner (Unterlassungsklage des Aktionärs)",
+      "ref": null,
+      "mode": "open",
+      "front": "Die A-AG müsste richtiger Klagegegner sein.",
+      "back": "Klagegegner ist die Gesellschaft, soweit die Verwaltungsorgane in Ausführung ihrer Tätigkeit (Zurechnung) die Mitgliedschaftsrechte der Aktionäre verletzt haben.\n\nGgf. auch Verhalten eines Aktionärs, der in Absprache mit Vorstand steht.",
+      "chips": "Hier handeln Vorstand und Großaktionär gemeinsam. Deren Verhalten ist der A-AG zuzurechnen. Dies ist uneingeschränkt hinsichtlich des Verhaltens des Vorstands zu bejahen, kann aber auch bejaht werden, soweit A1 involviert ist, vorausetzt, A1 und V handeln auf der Grundlage einer gemeinsamen Absprache."
+    },
+    {
+      "id": "def_anspruch_auf_unterlassung_der",
+      "type": "simpel",
+      "area": "kapitalgesellschaftsrecht",
+      "title": null,
+      "ref": null,
+      "mode": "open",
+      "front": "Anspruch auf Unterlassung der Gründung der X-GmbH",
+      "back": "Ein Unterlassungsanspruch des B3) gegen B1) bezüglich der Gründung der X-GmbH könnte wiederum auf ein Wettbewerbsverbot des B1) gestützt werden.\n\nDass ein Mehrheitsgesellschafter, der auf die Gesellschaft einen beherrschenden Einfluss ausüben kann, **einem aus der mitgliedschaftlichen Treuepflicht bzw. § 117 HGB analog** hergeleiteten Wettbewerbsverbot unterliegen kann, hatte der BGH für die GmbH & Co. KG in dem Heumann-Ogilvy Urteil entschieden. \n\nFür den Mehrheitsgesellschafter wird ein Wettbewerbsverbot zumindest in der personalistischen GmbH überwiegend bejaht, wobei Einzelheiten weiterhin unklar sind.\n\nGeht man davon aus, dass grundsätzlich Wettbewerbsverbote des nicht geschäftsführenden GmbH-Gesellschafters bestehen können, so muss man sich damit auseinandersetzen, dass B1) und B2) für sich genommen keine Mehrheit der Geschäftsanteile an der B-GmbH halten.\n\nProblematisch ist ebenfalls, dass B1) nach Gründung der Gesellschaft die Anteile vollständig in die X-GmbH eingebracht hat und danach in keiner unmittelbaren gesellschaftsrechtlichen Beziehung zur B-GmbH steht. **Für die Annahme eines „nachvertraglichen“ Wettbewerbsverbots findet sich im GmbHG aber keine Grundlage.**",
+      "chips": ""
+    },
+    {
+      "id": "def_oertliche_und_sachliche_zustaendigkeit",
+      "type": "simpel",
+      "area": "kapitalgesellschaftsrecht",
+      "title": null,
+      "ref": null,
+      "mode": "open",
+      "front": "Örtliche und sachliche Zuständigkeit",
+      "back": "Örtlich und sachlich zuständig ist gemäß § 246 III S. 1 AktG analog das Landgericht, in dessen Bezirk die B-GmbH ihren Sitz hat.",
+      "chips": ""
+    },
+    {
+      "id": "def_statthafte_klageart_anfechtungsklage_gmbh",
+      "type": "simpel",
+      "area": "kapitalgesellschaftsrecht",
+      "title": "Statthafte Klageart (Anfechtungsklage GmbH)",
+      "ref": null,
+      "mode": "open",
+      "front": "Die Geltendmachung von rechtlichen Mängeln von Gesellschafterbeschlüssen ist im GmbHG nicht geregelt. Die aktienrechtlichen Anfechtungs- bzw. Nichtigkeitsregeln der §§ 241 ff. AktG könnten entsprechend anzuwenden sein, soweit nicht die Besonderheiten der GmbH eine Abweichung erfordern.",
+      "back": "Der Gesetzeber **hat das Anfechtungsregime der Rechtsfortbildung durch die Gerichte überlassen**. Es besteht daher eine planwidrige Regelungslücke.\n\nFraglich ist, ob die Interessenlage vergleichbar ist. In einer GmbH besteht ebenso wie in einer AG ein Bedürfnis für ein **differenzierendes Fehlerfolgenregime**, bei dem nur schwerwiegende Mängel zur Nichtigkeit führen, im Übrigen aber nur die Anfechtbarkeit begründen, so dass bei Fristablauf der Beschluss in Bestandskraft erwächst. Dies dient der **Rechtssicherheit**. \n\nEtwaigen Besonderheiten der GmbH, namentlich ihr **personalistischer Charakter**, können bei der Rechtsanwendung einzelner Normen, etwa zur Frist und zur Anfechtungsbefugnis, berücksichtigt werden.",
+      "chips": "B3) wendet sich gegen die Gründung der X-GmbH und die Einbringung der Geschäftsanteile von B1) in diese sowie die Abtretung der Geschäftsanteile von B2) an die GmbH. Um diese Maßnahmen zu verhindern, muss B3) sich wegen der legitimierenden Wirkung des Gesellschafterbeschlusses allerdings zunächst gegen den Beschluss wenden. Die Anfechtungsklage ist somit die statthafte Klageart."
+    },
+    {
+      "id": "k_3_materielle_begruendetheit",
+      "type": "simpel",
+      "area": "kapitalgesellschaftsrecht",
+      "title": "Materielle Begründetheit (Unterlassungslage gegen Gesellschaft)",
+      "ref": null,
+      "mode": "struktur",
+      "front": "Eine Unterlassungsklage des A2) ist begründet, wenn dieser **in eigenen Mitgliedschaftsrechten verletzt** worden ist.",
+      "back": "[[(+), wenn Aktionär einen verbandsrechtlichen Anspruch darauf hat, im Rahmen der Hauptversammlung über die in Frage stehenden Maßnahmen mitzuentscheiden|k_verbandsrechtlicher_anspruch_auf_mitwirkung]]\n[[(+), wenn ein verbandsrechtlicher Anspruch auf Unterlassen des Erwerbs der Aktien von den Kleinaktionären und deren Weiterveräußerung durch den Vorstand besteht|k_wenn_ein_verbandsrechtlicher_anspruch]]",
+      "chips": ""
+    },
+    {
+      "id": "k_a_erforderliche_stimmrechtsmehrheit",
+      "type": "simpel",
+      "area": "kapitalgesellschaftsrecht",
+      "title": "a) Erforderliche Stimmrechtsmehrheit",
+      "ref": null,
+      "mode": "open",
+      "front": "Der Beschluss wäre anfechtbar, wenn die erforderliche Stimmrechtsmehrheit nicht erreicht worden wäre. ",
+      "back": "Ob ein Gesellschafterbeschluss zur Legitimation von abhängigkeitsbegründenden Maßnahmen erforderlich ist, und mit welcher Stimmrechtsmehrheit ein solcher Beschluss zu fassen ist, ist umstritten. Soweit ein solcher Beschluss für erforderlich gehalten wird, wird überwiegend angenommen, dass hierfür eine qualifizierte Stimmrechtsmehrheit erforderlich ist, weil es sich um eine strukturändernde Maßnahme handelt. **Dies lässt sich mit der Erwägung begründen, dass Leitbild der GmbH die Unabhängigkeit ist.** Die Herbeiführung von Abhängigkeit betrifft die Grundlagen der Gesellschaft, sodass der Beschluss **entsprechend § 53 GmbHG** einer qualifizierten Mehrheit bedarf.\n\nHier hat nur B3) gegen den Gesellschafterbeschluss gestimmt, so dass eine qualifizierte Stimmrechtsmehrheit von 76 % gegeben ist. \n\nDenkbar wäre allerdings, dass sowohl B1) als auch B2) nach dem **Rechtsgedanken des § 47 IV GmbHG** vom Stimmrecht ausgeschlossen sind. Letztlich sprechen die besseren Argumente allerdings gegen die Annahme eines Stimmrechtsausschlusses, denn keiner der Tatbestände des § 47 I GmbHG ist nach dem Wortlaut der Norm gegeben. Eine entsprechende Anwendung mit der diffusen Begründung eines Interessenkonflikts muss ausscheiden. \n\nFerner ist der Minderheitsgesellschafter ausreichend dadurch geschützt, dass der Beschluss einer Inhaltskontrolle zu unterziehen ist (dazu sogleich). Es wird daher auch zunächst nicht geprüft, ob ein Treuepflichtverstoß in der Stimmrechtsausübung liegt.",
+      "chips": ""
+    },
+    {
+      "id": "k_a_konzernrechtliche_abhaengigkeit_der",
+      "type": "simpel",
+      "area": "kapitalgesellschaftsrecht",
+      "title": "a) Konzernrechtliche Abhängigkeit der A-AG von der X-GmbH entstanden",
+      "ref": null,
+      "mode": "open",
+      "front": "Zu prüfen ist zunächst, ob die A-AG durch die Gründung der X-GmbH, der Einbringung der Aktien von A1) und der Veräußerung der Aktien durch den Vorstand von der X-GmbH konzernrechtlich abhängig wurde.",
+      "back": "A1) hatte 45 % der Anteile in die X-GmbH eingebracht; der Vorstand hatte weitere 6 % der Anteile an die X-GmbH veräußert. <u>Die Wirksamkeit der Aktienübertragung an die X-GmbH unterstellt</u>, **würde die Holding mehr als 50 % der Aktien an der A-AG halten**. Von einer konzernrechtlichen Abhängigkeit der A-AG wäre wegen der **Abhängigkeitsvermutung gemäß § 17 II AktG** in diesem Fall auszugehen.\n\nDenkbar wäre es allerdings, dass die Veräußerung der vom Vorstand erworbenen Aktien wegen eines Verstoßes gegen das Verbot des Erwerbs eigener Aktien gem. §§ 71 ff. AktG unwirksam ist. Allerdings stellt **§ 71 IV AktG** klar, dass der Erwerb eigener Aktien auch bei einem Verstoß gegen § 71 AktG dinglich wirksam ist.",
+      "chips": "Die A-AG wurde infolge der Einbringung der Aktien des A1 in die X-GmbH sowie der Veräußerung der Aktien aus dem Streubesitz durch den Vorstand von der X-GmbH konzernrechtlich abhängig (§ 17 AktG)"
+    },
+    {
+      "id": "k_a_zulaessigkeit_des_erwerbs",
+      "type": "simpel",
+      "area": "kapitalgesellschaftsrecht",
+      "title": null,
+      "ref": null,
+      "mode": "open",
+      "front": "a) Zulässigkeit des Erwerbs eigener Aktien (§ 71 AktG)",
+      "back": "**Der Erwerb eigener Aktien durch die Gesellschaft ist aus Gründen des Kapitalschutzes grundsätzlich unzulässig.** \n\nLediglich wenn eine der Ausnahmetatbestände des § 71 I Nr. 1 – 8 AktG eingreift, ist der Vorstand zum Aktienerwerb befugt. \n\nDa **keine Hinweise für eine Ermächtigung der Hauptversammlung gemäß § 71 Nr. 8 AktG** vorliegen, kommt als Erlaubnistatbestand **lediglich § 71 I Nr. 1 AktG in Betracht**. \n\nDer hierfür erforderliche unmittelbar bevorstehende **„schwere Schaden“ muss beachtlich sein**. Es liegen insoweit keine konkreten Anhaltspunkte vor, die den Schluss auf einen unmittelbar bevorstehenden schweren Schaden der Gesellschaft rechtfertigen. Der Vorstand war somit nicht berechtigt, für die Gesellschaft aus dem Streubesitz Aktien zu erwerben.",
+      "chips": "(a.A. vertretbar)"
+    },
+    {
+      "id": "k_anfechtungsgrund",
+      "type": "simpel",
+      "area": "kapitalgesellschaftsrecht",
+      "title": "Anfechtungsgrund",
+      "ref": null,
+      "mode": "struktur",
+      "front": "Ein Gesellschafterbeschluss kann gem. § 243 I AktG <u>analog</u> wegen Verletzung des Gesetzes oder der Satzung angefochten werden. Die Anfechtung kann auf Verfahrensverstöße und Inhaltsmängel gestützt werden.",
+      "back": "[[a) Erforderliche Stimmrechtsmehrheit|k_a_erforderliche_stimmrechtsmehrheit]]\n[[b) Materielle Inhaltskontrolle des Gesellschafterbeschlusses|k_b_materielle_inhaltskontrolle_des]]",
+      "chips": "Nimmt man an, dass der Gesellschafterbeschluss unverhältnismäßig ist, liegt ein Anfechtungsgrund vor. Die Anfechtungsklage ist in diesem Fall zulässig und begründet. Als Rechtsfolge ist der Gesellschafterbeschluss ex tunc nichtig und verliert seine legitimierende Wirkung."
+    },
+    {
+      "id": "k_anspruch_auf_unterlassen_der",
+      "type": "simpel",
+      "area": "kapitalgesellschaftsrecht",
+      "title": null,
+      "ref": null,
+      "mode": "open",
+      "front": "Anspruch auf Unterlassen der Einbringung der Geschäftsanteile von B1) sowie der Abtretung der Geschäftsanteile von B2)",
+      "back": "Möglich wäre es allerdings, dass die Einbringung der Geschäftsanteile von B1) in die X-GmbH und die Abtretung der Geschäftsanteile von B2) einen Treuepflichtverstoß gegenüber B3) darstellt, da hierdurch die B-GmbH von der X-GmbH abhängig wurde (s.o.). Gegen einen drohenden Treuepflichtverstoß könnte sich B3) im Wege der Unterlassungsklage zur Wehr setzten.\n\nNach einer in der Literatur verbreiteten Ansicht hat zumindest in der personalistisch\nstrukturierten GmbH der Gesellschafter alles zu unterlassen, was die Selbstständigkeit der Gesellschaft beeinträchtigen könnte, weil grundsätzlich jede Abhängigkeit die Gefahr einer nachhaltigen Schädigung der Gesellschaft und schwer wiegende Eingriffe in die Rechte der Mitgesellschafter heraufbeschwört (s.o.).\n\n**Abhängigkeitsbegründende Maßnahmen, die nicht durch einen Gesellschafterbeschluss legitimiert sind, sind dann treuwidrig.** \n\nProblematisch ist, dass die Einbringung der Anteile des B1) allein noch keine Mehrheitsbeteiligung der X-GmbH an der B-GmbH zu Folge hat. Erst in Kombination mit der Abtretung der 16 % von B2) gehaltenen Stimmrechte hält die Holding über 50 % der Anteile an der B-GmbH. Allerdings ist in diesem Zusammenhang zu beachten, dass die Gesellschafter einheitlich über alle Maßnahmen abgestimmt haben. **Dies spricht dafür, die Einbringung der Geschäftsanteile durch B1) und die Abtretung der Geschäftsanteile als einen einheitlichen Vorgang zu betrachten, der insgesamt eine Abhängigkeit der B-GmbH herbeiführt.** \n\nAus diesem Grunde hatten B1) und B2) ihre mitgliedschaftlichen Treuepflichten gegenüber B3) verletzt, indem sie die Gesellschaftsanteile in die X GmbH eingebracht bzw. Anteile an diese abgetreten haben.",
+      "chips": ""
+    },
+    {
+      "id": "k_anspruch_auf_unterlassung_der",
+      "type": "simpel",
+      "area": "kapitalgesellschaftsrecht",
+      "title": "Anspruch auf Unterlassung der Gründung der X-GmbH wegen Verstoßes gegen ein ungeschriebenes Wettbewerbsverbot",
+      "ref": null,
+      "mode": "open",
+      "front": "Denkbar wäre es, dass A1) als 45 %iger Aktionär der A-AG einem **aus der mitgliedschaftlichen Treuepflicht abgeleiteten Wettbewerbsverbot** unterliegt. In diesem Fall könnte sich ein Wettbewerbsverstoß auch als Treuepflichtverletzung gegenüber den Mitaktionären darstellen.",
+      "back": "Dass Treuepflichten in der Aktiengesellschaft auch im Verhältnis der Aktionäre untereinander bestehen, ist nach der Linotype- und der Girmes-Entscheidung des BGH allgemein anerkannt, denn **auch in einer AG besteht das Bedürfnis für Rücksichtsnahme- und Loyalitätspflichten, da die Mehrheit die Befugnis hat, zugleich für die Minderheit zu entscheiden.**\n\nAusdrücklich haben die Parteien kein Wettbewerbsverbot vereinbart. Fraglich ist allerdings, ob ein solches aus der mitgliedschaftlichen Treuepflicht hergeleitet werden kann. Diese Frage wurde **zuletzt von dem BGH in einem Beschluss vom 25.6.2008 offen gelassen** (In diesem Beschluss hatte der BGH ebenfalls klargestellt, dass ein aktienrechtliches Wettbewerbsverbot zu Lasten eines vor Erwerb der Mehrheit bereits als Wettbewerber tätigen Unternehmens nicht existiert. Nach Ansicht des BGH scheidet ein Wettbewerbsverbot eines Mehrheitsaktionärs aus, wenn die Wettbewerbssituation bereits bei Erwerb der Mehrheitsbeteiligung bestand), **kann allerdings durchaus für einen Mehrheitsgesellschafter bzw. Unternehmer im konzernrechtlichen Sinne angenommen werden.** \n\nUnabhängig davon, ob ein Wettbewerbsverbot des Mehrheitsaktionärs anzuerkennen ist, stellt sich hier das Problem, dass A1) **nur mit 45 % an der A-AG beteiligt** ist. Ein Wettbewerbsverstoß wäre in dem Zeitpunkt der Gesellschaftsgründung der X-GmbH deshalb wohl auch nach der Ansicht abzulehnen, die ungeschriebene Wettbewerbsverbote eines Aktionärs grundsätzlich für denkbar hält. \n\n**Hinzu kommt, dass A1) sämtliche Anteile in die X-GmbH einbringt und somit in keiner unmittelbaren gesellschaftsrechtlichen Beziehung zur A-AG steht.** ",
+      "chips": "Ein Wettbewerbsverstoß des A1) ist somit abzulehnen."
+    },
+    {
+      "id": "k_anspruch_auf_unterlassung_der_2",
+      "type": "simpel",
+      "area": "kapitalgesellschaftsrecht",
+      "title": "Anspruch auf Unterlassung der Einbringung der Aktien",
+      "ref": null,
+      "mode": "open",
+      "front": "In Betracht kommt ein Anspruch des A2) gegen A1) auf Unterlassen der Einbringung der Aktien in die X-GmbH. Rechtlicher Anknüpfungspunkt wäre wiederum die mitgliedschaftliche Treuepflicht, die Aktionäre sich auch untereinander schulden (s.o.).",
+      "back": "Ein Treuepflichtverstoß könnte darin gesehen werden, dass infolge der Einbringung der Aktien durch A1) und der Veräußerung der Aktien durch V die X-GmbH 51 % der Anteile an der A-AG hält und diese somit von der Holding-Gesellschaft konzernrechtlich abhängig ist (s.o.). \n\n**Wie schon oben ausgeführt, ist die Aktiengesellschaft allerdings konzernoffen angelegt.** Nach dem aktienrechtlichen Schutzsystem der §§ 311 ff. AktG wird die faktische Konzernierung gebilligt oder zumindest jedoch geduldet. Hiermit wäre es nicht vereinbar, wenn jede abhängigkeitsbegründende Maßnahme eines Aktionärs eine Treuepflichtverletzung gegenüber den Mitgesellschaftern darstellen würde. Eine Treuepflichtverletzung scheidet insoweit aus. \n\nWenn man eine treuepflichtgestütze Konzerbildungskontrolle annehmen will, so ist zu berücksichtigen, dass A1) 45 % (keine Mehrheitsbeteiligung) in die X-GmbH einbringt. Erst in Kombination mit den vom Vorstand veräußerten 6 % der Anteile hält die X-GmbH die Mehrheit der Stimmrechte. **Fraglich ist, ob die Übertragung der Anteile von A1) und V) als einheitlicher Vorgang zu bewerten ist bzw. ob die von V) übertragenen Aktien dem A1) „zugerechnet“ werden können.** Dies kann man unter den o.a. Prämissen (gemeinsame Absprache) bejahen.",
+      "chips": ""
+    },
+    {
+      "id": "k_art_32_vi_se",
+      "type": "simpel",
+      "area": "kapitalgesellschaftsrecht",
+      "title": "Art. 32 VI SE-VO analog",
+      "ref": null,
+      "mode": "open",
+      "front": "Nach dieser Vorschrift bedarf die Holding-Gründung in Form einer SE der Zustimmung der Versammlungen von Aktionären und Gesellschaftern einer AG bzw. GmbH. \n\nDie Holding-Gründung erfolgt hier ebenfalls als Sachgründung gegen Anteilstausch. Die Gesellschafter werden Aktionäre der SE, sofern sie ihre Anteile tauschen, vgl. Art. 33 Abs. 1 SE-VO. Die Gründungsgesellschaften erlöschen nicht, wenn die SE entsteht, sondern bleiben als deren Töchter erhalten.\n\nIn konzeptioneller Hinsicht stimmen die Verfahren also überein, mit der Ausnahme, dass im zu beurteilenden SV nicht alle Aktionäre bzw. Gesellschafter die Gelegenheit erhielten, sich an der Holding zu beteiligen. Dies spricht aber nicht per se gegen eine Analogie.",
+      "back": "Eine Analogie setzt aber auch voraus, dass eine **planwidrige Regelungslücke** besteht. Dies ist zu verneinen. \n\nDie Regelung in der SE-VO ist vor dem Hintergrund des numerus clauus von Gründungen einer SE zu verstehen. Für das deutsche Aktienrecht können daher keine Schlussfolgerungen gezogen werden. **Der Gesetzgeber hätte dies zudem für die deutsche AG regeln können, hat Regelungen aber nicht vorgesehen.**",
+      "chips": "Eine Analogie scheidet daher aus."
+    },
+    {
+      "id": "k_b_erfordernis_eines_zustimmungsbeschlusses",
+      "type": "simpel",
+      "area": "kapitalgesellschaftsrecht",
+      "title": "b) Erfordernis eines Zustimmungsbeschlusses (Analogie)",
+      "ref": null,
+      "mode": "open",
+      "front": "Da die A-AG von der X-GmbH abhängig wurde, ist zu erörtern, ob abhängigkeitsbegründende Maßnahmen eines Beschlusses der Hauptversammlung bedürfen (**Konzerneingangskontrolle**)\n\nDies ließe sich vor allem mit einer Analogie zu § 293 Abs. 1 AktG begründen, der für Unternehmensverträge eine Zustimmung der HV verlangt.",
+      "back": "Dies wird **zumindest bei der <u>Publikums</u>-Aktiengesellschaft überwiegend abgelehnt**. Denn nach der Konzeption der §§ 311 ff. AktG haben die außenstehenden Aktionäre die Begründung des Abhängigkeitsverhältnisses und die **einfache faktische Konzernierung** ihrer Gesellschaft **grundsätzlich hinzunehmen**.\n\nHierfür spricht, dass nach der gesetzgeberischen Konstruktion die Mitgesellschafter **lediglich bei Abschluss eines Unternehmensvertrages zur Mitwirkung berufen** sind (§ 293 I AktG). \n\nIm Übrigen ist das **Aktiengesetz konzernoffen angelegt**; die Minderheitsgesellschafter sind (zumindest im einfachen, nicht qualifizierten Konzern) auch **ausreichend durch den Nachteilsausgleich** gem. §§ 311, 317 AktG sowie durch die **Veräußerbarkeit der Aktien** geschützt.",
+      "chips": ""
+    },
+    {
+      "id": "k_b_liegt_dann_auch",
+      "type": "simpel",
+      "area": "kapitalgesellschaftsrecht",
+      "title": "b) Liegt dann auch eine Beeinträchtigung der Mitgliedsrechte einzelner Aktionäre vor?",
+      "ref": null,
+      "mode": "open",
+      "front": "Fraglich ist, ob A2) hierdurch in eigenen Mitgliedsrechten beeinträchtigt ist. ",
+      "back": "Es handelt sich beim Erwerb und der Weiterveräußerung der Aktien um eine **Pflichtverletzung des Vorstands aus Geschäftsführung**, die **weder die mitgliedschaftsrechtlichen Mitverwaltungsrechte** **noch die Vermögensrechte tangiert**.\n\nAllerdings könnte die Verletzung eines Mitgliedschaftsrechts zu bejahen sein, wenn man annimmt, dass jeder Aktionär **analog § 186 I AktG **<u>oder</u> **entsprechend § 53a AktG **einen mitgliedschaftlichen Anspruch auf **verhältnismäßigen Bezug der von der Gesellschaft erworbenen Aktien** hat.\n\nEine Analogie zu § 186 I AktG ist abzulehnen. Eine planwidrige Regelungslücke liegt insoweit nicht vor.\n\nAus § 53a AktG könnte ein Anspruch auf aktive Gleichbehandlung folgen. Diese Auslegung ist im Grundsatz anerkannt. Ihre **Grenze findet die Pflicht zu aktiver Gleichbehandlung darin, dass rechtswidrige Bevorzugungen einzelner Aktionäre für andere Aktionäre keinen Anspruch auf einen gleichartigen rechtswidrigen Vorteil begründen können.** <u>**Eine „Gleichbehandlung im Unrecht“ ist nicht anzuerkennen.**</u>\n\nA2) hat somit keinen verbandsrechtlichen Anspruch auf Unterlassung des Erwerbs bzw. der Weiterveräußerung der Aktien durch den Vorstand.",
+      "chips": "(a.A. vertretbar)"
+    },
+    {
+      "id": "k_b_materielle_inhaltskontrolle_des",
+      "type": "simpel",
+      "area": "kapitalgesellschaftsrecht",
+      "title": "b) Materielle Inhaltskontrolle des Gesellschafterbeschlusses",
+      "ref": null,
+      "mode": "open",
+      "front": "Darf das Gericht den Gesellschafterbeschluss auch materiell kontrollieren?",
+      "back": "Für die Aufhebung eines statutarisch vereinbarten Wettbewerbsverbotes hatte der BGH in dem Süssen-Urteil entschieden, dass der Aufhebungsbeschluss einer vollständigen materiellen Inhaltskontrolle unterliegt. \n\nDie Gefahr der Abhängigkeit bestehe für die abhängige GmbH nach Ansicht des Gerichts darin, dass **von der Herrschaftsmacht „jederzeit zum Nachteil der Gesellschaft Gebrauch gemacht werden kann** … Da in solchen Fällen **jeder objektiver Maßstab** für die jeweils sachgerechte Maßnahme und damit für die Frage einer Benachteiligung und deren Ausgleich **fehlt**, stellt die Abhängigkeit eine derart starke Gefahr für die Leistungs- und Wettbewerbsfähigkeit und damit den Bestand des Unternehmens dar, dass die Zustimmung zu einer Abhängigkeit führenden Befreiung vom Wettbewerbsverbot nicht im freien Ermessen der Mehrheit liegt. Sie ist vielmehr **grundsätzlich rechtswidrig, falls sie nicht durch sachliche Gründe im Interesse der Gesellschaft gerechtfertigt ist**. Diese zu formellen, der Mehrheit, hinzutretende sachliche Wirksamkeitsvoraussetzung der Befreiung vom Wettbewerbsverbot **schließt die Abwägung der Interessen und die Verhältnismäßigkeit von Mittel und Zweck ein**“.\n\nDiese für die Aufhebung eines vertraglich vereinbarten Wettbewerbsverbotes eines Gesellschafters aufgestellten Grundsätze einer Konzernbildungskontrolle im GmbH-Recht können auf den hier zu beurteilenden Fall übertragen werden. Denn auch wenn die Gesellschafter **keine ausdrücklichen Vorkehrungen zur Konzernbildungskontrolle** getroffen haben (Vinkulierung von Geschäftsanteilen, Wettbewerbsverbote), so besteht **in der personalistisch strukturierten GmbH ein berechtigtes Interesse jedes Gesellschafters an der Wahrung der Unabhängigkeit der Gesellschaft.**\n\nHier hielt die X-GmbH nach Einbringung der Geschäftsanteile des B1) und der Abtretung der Anteile des B2) 56 % der Stimmrechte an der B-GmbH. Da damit die Vermutung des § 17 II AktG eingreift, kann davon ausgegangen werden, dass die B-GmbH von der X-GmbH konzernrechtlich abhängig ist.\n\nFraglich ist, ob der angegriffene Beschluss hinsichtlich des verfolgten Zweckes und mit Blick auf die Interessen der Gesellschaft geeignet, erforderlich und angemessen, daher verhältnismäßig, ist. Für eine Verhältnismäßigkeit kann die wirtschaftlich schwierige Lage der B-GmbH angeführt werden, die eine Zusammenfassung unter einheitlicher Leitung nahe legt. **Allerdings haben B1) und B2) nicht substantiiert nahegelegt, warum die konkreten Maßnahmen aus Gesellschaftssicht erforderlich waren.** Die besseren Argumente sprechen deshalb dafür, dass der Gesellschafterbeschluss unverhältnismäßig ist und einer materiellen Inhaltskontrolle nicht standhält.",
+      "chips": "Hinweis: Eine andere Ansicht ist vertretbar"
+    },
+    {
+      "id": "k_konzerneingangskontrolle",
+      "type": "simpel",
+      "area": "kapitalgesellschaftsrecht",
+      "title": "Konzerneingangskontrolle (ungeschriebene HV-Zuständigkeit)",
+      "ref": null,
+      "mode": "struktur",
+      "front": "Es könnte **zum Schutz der Minderheitsaktionäre** ein **Hauptversammlungsbeschluss für alle Maßnahmen** erforderlich sein, die eine **konzernrechtliche Abhängigkeit** der Gesellschaft gemäß § 17 AktG herbeiführen. \n\nDies könnte vor allem damit begründet werden, dass das **aktienrechtliche Schutzsystem** im faktischen Konzern (§§ 311 ff. AktG) **nicht ausreichend **ist und **analog § 293 Abs. 1 AktG** (Unternehmensvertrag) ein HV-Beschluss erforderlich ist.\n\nDazu müsste (a) zunächst überhaupt eine konzernrechtliche Abhängigkeit entstanden sein und (b) in diesen Fällen tatsächlich ein Zustimmungsbeschluss erforderlich sein",
+      "back": "[[a) Konzernrechtliche Abhängigkeit der A-AG von der X-GmbH entstanden|k_a_konzernrechtliche_abhaengigkeit_der]]\n[[b) Erfordernis eines Zustimmungsbeschlusses (Analogie)|k_b_erfordernis_eines_zustimmungsbeschlusses]]",
+      "chips": ""
+    },
+    {
+      "id": "k_mediatisierung_von_einflussrechten_holzmueller",
+      "type": "simpel",
+      "area": "kapitalgesellschaftsrecht",
+      "title": "Mediatisierung von Einflussrechten (Holzmüller/Gelatine)",
+      "ref": null,
+      "mode": "open",
+      "front": "Allerdings könnte sich unter dem Gesichtspunkt der Holzmüller-Judikatur eine ungeschriebene HV-Zuständigkeit ergeben.",
+      "back": "In Rechtsprechung und Literatur ist weitgehend anerkannt, dass der\nHauptversammlung trotz der Kompetenzordnung in § 119 Abs. 1 AktG auch **ungeschriebene Kompetenzen** zustehen können und müssen, um den Minderheitenschutz **für vom Gesetz nicht erfasste Strukturmaßnahmen** genüge zutun.\n\nEs gibt **grundlegende Entscheidungen**, die durch die Außenvertretungsmacht des Vorstandes, seine gem. § 82 Abs. 2 AktG begrenzte Geschäftsführungsbefugnis wie auch den Wortlaut der Satzung **formal noch gedeckt** sind, gleichwohl aber so **tief in die Mitgliedsrechte der Aktionäre** und deren i**m Anteilseigentum verkörpertes Vermögeninteresse** eingreifen, dass der Vorstand **vernünftigerweise nicht annehmen kann, er dürfe sie ausschließlich in eigener Verantwortung treffen,** ohne die Hauptversammlung zu beteiligen. \n\nDies ist dann zu bejahen, wenn die Maßnahme einen **schwerwiegenden Eingriff in die Mitgliedsrechte der Aktionäre** und deren im Aktieneigentum verkörperten Vermögensinteressen darstellt. \n\nDiese im Gesetz nicht ausdrücklich vorgesehene Mitwirkung der Hauptversammlung bei Geschäftsführungsmaßnahmen kann indes **nur ausnahmsweise und in engen Grenzen** in Betracht kommen, wenn diese Maßnahmen an die Kernkompetenz der Hauptversammlung rühren, über die Verfassung der Gesellschaft zu bestimmen, und in ihren Auswirkungen einem **Zustand entsprechen, der allein durch eine Satzungsänderung herbeigeführt werden kann**. \n\nZu bejahen ist dies bei einer **Mediatisierung von Einflussrechten**, vorausgesetzt, dass diese en **wesentlichen Teil des Gesellschaftsvermögens** betrifft.",
+      "chips": "Der hier zur beurteilende SV ist vergleichbar mit demjenigen, den das LG München I in der Sache Linde/Praxair (AG 2019, 225; OLG-Entscheidung: AG 2022, 47) zu beurteilen hatte. Auch wenn das Gericht dort noch andere Argumente anführte (es ging um einen Aktientausch) im Rahmen eines Übernahmeangebots), die hier nicht einschlägig sind, lässt sich doch festhalten, dass ebenso wie dort ein Mediatisierungseffekt ausscheidet, weil lediglich die Aktionärsstruktur der beherrschten Gesellschaft geändert wurde. Das eingesetzte Betriebsvermögen bleibt unverändert.\nEine Zustimmungspflicht der Hauptversammlung besteht nicht. A2) ist insoweit nicht wegen fehlender Mitwirkung in seinen Herrschaftsrechten beeinträchtigt."
+    },
+    {
+      "id": "k_p_119_i_aktg",
+      "type": "simpel",
+      "area": "kapitalgesellschaftsrecht",
+      "title": null,
+      "ref": null,
+      "mode": "open",
+      "front": "§ 119 I AktG (Nr. 2, Nr. 6, Nr. 7)",
+      "back": "Unmittelbar einschlägig ist keine der in § 119 I AktG aufgeführten Maßnahmen. Insbesondere **erfolgen weder Gewinnausschüttungen** **noch Kapitalmaßnahmen**. Die **Kapitalziffer der Gesellschaft bleibt unverändert!**\n\nIn Betracht kommt **allenfalls eine Satzungsänderung** gemäß § 119 I Nr. 5 AktG, sofern durch die in Frage stehenden Maßnahmen die A-AG von der X-GmbH abhängig wurde. Allerdings stellt das **Entstehen** eines Abhängigkeitsverhältnisses iSd **§ 17 AktG** **weder rechtlich noch faktisch eine Satzungsänderung **dar, so dass der Zustimmungskatalog des § 119 I AktG nicht eingreift.",
+      "chips": "Zustimmungskatalog des § 119 I AktG greift nicht"
+    },
+    {
+      "id": "k_verbandsrechtlicher_anspruch_auf_mitwirkung",
+      "type": "simpel",
+      "area": "kapitalgesellschaftsrecht",
+      "title": "Verbandsrechtlicher Anspruch auf Mitwirkung",
+      "ref": null,
+      "mode": "struktur",
+      "front": "Fraglich ist in Bezug auf das Begehren, die Mitwirkung an der Gründung der X-GmbH zu unterlassen, **ob die HV zuständig wäre**. In diesem Fall wäre das Mitgliedsrecht von A betroffen.\n\n-> Gesetzliche oder richterrechtliche HV-Zuständigkeit",
+      "back": "[[§ 119 I AktG (Nr. 2, Nr. 6, Nr. 7)|k_p_119_i_aktg]]\n[[Konzerneingangskontrolle|k_konzerneingangskontrolle]]\n[[Mediatisierung von Einflussrechten (Holzmüller/Gelatine)|k_mediatisierung_von_einflussrechten_holzmueller]]\n[[Art. 32 VI SE-VO analog|k_art_32_vi_se]]",
+      "chips": ""
+    },
+    {
+      "id": "k_wenn_ein_verbandsrechtlicher_anspruch",
+      "type": "simpel",
+      "area": "kapitalgesellschaftsrecht",
+      "title": "Verbandsrechtlicher Anspruch auf Unterlassen von Erwerb und Veräußerung eigener Aktien",
+      "ref": null,
+      "mode": "struktur",
+      "front": "Denkbar wäre es, dass A2) einen verbandsrechtlichen Anspruch auf Unterlassung des Erwerbs der Aktien aus dem Streubesitz und der Weiterveräußerung der Aktien an die X-GmbH hat.",
+      "back": "[[a) Zulässigkeit des Erwerbs eigener Aktien (§ 71 AktG)|k_a_zulaessigkeit_des_erwerbs]]\n[[b) Liegt dann auch eine Beeinträchtigung der Mitgliedsrechte einzelner Aktionäre vor?|k_b_liegt_dann_auch]]",
+      "chips": ""
+    }
+  ],
+  "edges": [
+    {
+      "from_id": "k_konzerneingangskontrolle",
+      "to_id": "k_a_konzernrechtliche_abhaengigkeit_der",
+      "label": null,
+      "position": 0
+    },
+    {
+      "from_id": "k_konzerneingangskontrolle",
+      "to_id": "k_b_erfordernis_eines_zustimmungsbeschlusses",
+      "label": null,
+      "position": 1
+    },
+    {
+      "from_id": "k_wenn_ein_verbandsrechtlicher_anspruch",
+      "to_id": "k_a_zulaessigkeit_des_erwerbs",
+      "label": null,
+      "position": 0
+    },
+    {
+      "from_id": "k_wenn_ein_verbandsrechtlicher_anspruch",
+      "to_id": "k_b_liegt_dann_auch",
+      "label": null,
+      "position": 1
+    },
+    {
+      "from_id": "agl_als_rechtsbehelf_kommt_zunaechst",
+      "to_id": "def_1_statthafte_klageart",
+      "label": null,
+      "position": 0
+    },
+    {
+      "from_id": "agl_als_rechtsbehelf_kommt_zunaechst",
+      "to_id": "def_1_klagefrist",
+      "label": null,
+      "position": 1
+    },
+    {
+      "from_id": "agl_als_rechtsbehelf_kommt_zunaechst",
+      "to_id": "def_2_klagegegner",
+      "label": null,
+      "position": 2
+    },
+    {
+      "from_id": "agl_als_rechtsbehelf_kommt_zunaechst",
+      "to_id": "k_3_materielle_begruendetheit",
+      "label": null,
+      "position": 3
+    },
+    {
+      "from_id": "fall_holding_gruendung_verhindern_einheit",
+      "to_id": "agl_a2_haette_die_in",
+      "label": null,
+      "position": 0
+    },
+    {
+      "from_id": "fall_holding_gruendung_verhindern_einheit",
+      "to_id": "agl_anders_als_im_fall",
+      "label": null,
+      "position": 1
+    },
+    {
+      "from_id": "agl_i_anfechtungsklage_gegen_den",
+      "to_id": "def_statthafte_klageart_anfechtungsklage_gmbh",
+      "label": null,
+      "position": 0
+    },
+    {
+      "from_id": "agl_i_anfechtungsklage_gegen_den",
+      "to_id": "def_oertliche_und_sachliche_zustaendigkeit",
+      "label": null,
+      "position": 1
+    },
+    {
+      "from_id": "agl_i_anfechtungsklage_gegen_den",
+      "to_id": "k_anfechtungsgrund",
+      "label": null,
+      "position": 2
+    },
+    {
+      "from_id": "k_anfechtungsgrund",
+      "to_id": "k_a_erforderliche_stimmrechtsmehrheit",
+      "label": null,
+      "position": 0
+    },
+    {
+      "from_id": "k_anfechtungsgrund",
+      "to_id": "k_b_materielle_inhaltskontrolle_des",
+      "label": null,
+      "position": 1
+    },
+    {
+      "from_id": "agl_anders_als_im_fall",
+      "to_id": "agl_i_anfechtungsklage_gegen_den",
+      "label": null,
+      "position": 0
+    },
+    {
+      "from_id": "agl_anders_als_im_fall",
+      "to_id": "agl_ii_unterlassungsklage_gegen_b1",
+      "label": null,
+      "position": 1
+    },
+    {
+      "from_id": "agl_ii_unterlassungsklage_gegen_b1",
+      "to_id": "def_anspruch_auf_unterlassung_der",
+      "label": null,
+      "position": 0
+    },
+    {
+      "from_id": "agl_ii_unterlassungsklage_gegen_b1",
+      "to_id": "k_anspruch_auf_unterlassen_der",
+      "label": null,
+      "position": 1
+    },
+    {
+      "from_id": "agl_a2_haette_die_in",
+      "to_id": "agl_als_rechtsbehelf_kommt_zunaechst",
+      "label": null,
+      "position": 0
+    },
+    {
+      "from_id": "agl_a2_haette_die_in",
+      "to_id": "agl_einschlaegig_koennte_ebenfalls_eine",
+      "label": null,
+      "position": 1
+    },
+    {
+      "from_id": "agl_einschlaegig_koennte_ebenfalls_eine",
+      "to_id": "k_anspruch_auf_unterlassung_der",
+      "label": null,
+      "position": 0
+    },
+    {
+      "from_id": "agl_einschlaegig_koennte_ebenfalls_eine",
+      "to_id": "k_anspruch_auf_unterlassung_der_2",
+      "label": null,
+      "position": 1
+    },
+    {
+      "from_id": "k_3_materielle_begruendetheit",
+      "to_id": "k_verbandsrechtlicher_anspruch_auf_mitwirkung",
+      "label": null,
+      "position": 0
+    },
+    {
+      "from_id": "k_3_materielle_begruendetheit",
+      "to_id": "k_wenn_ein_verbandsrechtlicher_anspruch",
+      "label": null,
+      "position": 1
+    },
+    {
+      "from_id": "k_verbandsrechtlicher_anspruch_auf_mitwirkung",
+      "to_id": "k_p_119_i_aktg",
+      "label": null,
+      "position": 0
+    },
+    {
+      "from_id": "k_verbandsrechtlicher_anspruch_auf_mitwirkung",
+      "to_id": "k_konzerneingangskontrolle",
+      "label": null,
+      "position": 1
+    },
+    {
+      "from_id": "k_verbandsrechtlicher_anspruch_auf_mitwirkung",
+      "to_id": "k_mediatisierung_von_einflussrechten_holzmueller",
+      "label": null,
+      "position": 2
+    },
+    {
+      "from_id": "k_verbandsrechtlicher_anspruch_auf_mitwirkung",
+      "to_id": "k_art_32_vi_se",
+      "label": null,
+      "position": 3
+    }
+  ]
+}
