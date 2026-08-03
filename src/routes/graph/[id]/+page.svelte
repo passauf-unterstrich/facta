@@ -137,7 +137,11 @@
 					<button
 						class="eintrag blatt"
 						class:im-pfad={blattVorschau === eintrag.ziel}
-						onclick={() => (blattVorschau = eintrag.ziel)}
+						onclick={() => {
+							// Tiefere Spalten kollabieren, damit rechts und links dasselbe Ende zeigen
+							pfad = pfad.slice(0, i);
+							blattVorschau = eintrag.ziel;
+						}}
 					>
 						<span class="typ-punkt" style:--punkt="var(--typ-{typVon(eintrag.ziel)})"></span>
 						<span class="eintrag-text">{eintrag.label}</span>
