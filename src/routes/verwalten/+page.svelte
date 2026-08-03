@@ -2,7 +2,7 @@
 	import { invalidateAll, goto } from '$app/navigation';
 	import { klartext } from '$lib/markdown';
 	import { baueId } from '$lib/id';
-	import type { KartenTyp } from '$lib/types';
+	import type { Karte, KartenTyp } from '$lib/types';
 
 	let { data } = $props();
 
@@ -28,7 +28,6 @@
 			})
 		});
 		if (res.ok) {
-			// Direkt in den Bauen-Modus der neuen Karte springen
 			goto(`/karte/${id}?modus=bauen`);
 		} else {
 			const antwort = await res.json().catch(() => null);
@@ -38,7 +37,6 @@
 
 	// --- Import ---
 	let importStatus = $state('');
-
 	async function importiere(event: Event) {
 		const input = event.target as HTMLInputElement;
 		const datei = input.files?.[0];
@@ -65,18 +63,14 @@
 		}
 	}
 
-	// --- KI-Prompt ---
-	// Safari verlangt: Clipboard-Schreiben muss DIREKT auf den Klick
-	// folgen, ohne await dazwischen. Also Prompt vorab laden.
+	// --- KI-Prompt (Safari: kein await zwischen Klick und writeText) ---
 	let promptStatus = $state('');
 	let promptText = $state('');
-
 	$effect(() => {
 		fetch('/api/prompt')
 			.then((r) => r.text())
 			.then((t) => (promptText = t));
 	});
-
 	async function kopierePrompt() {
 		try {
 			await navigator.clipboard.writeText(promptText);
@@ -94,6 +88,60 @@
 		await fetch(`/api/nodes/${id}`, { method: 'DELETE' });
 		await invalidateAll();
 	}
+
+	// --- Fall-Gruppierung ---
+	// Von jeder fall-Karte aus per Kanten alle erreichbaren Karten
+	// sammeln. Rest = "Freistehende Karten", nach area gruppiert.
+	type Gruppe = { fall: Karte; karten: Karte[] };
+	const gruppen = $derived.by(() => {
+		const nodesById = new Map(data.nodes.map((n) => [n.id, n]));
+		const kanten = new Map<string, string[]>();
+		for (const e of data.edges) {
+			if (!kanten.has(e.from_id)) kanten.set(e.from_id, []);
+			kanten.get(e.from_id)!.push(e.to_id);
+		}
+		const faelle = data.nodes.filter((n) => n.type === 'fall');
+		const gs: Gruppe[] = [];
+		const zugeordnet = new Set<string>();
+		for (const fall of faelle) {
+			const besucht = new Set<string>();
+			const stapel = [fall.id];
+			while (stapel.length > 0) {
+				const id = stapel.pop()!;
+				if (besucht.has(id)) continue;
+				besucht.add(id);
+				for (const kind of kanten.get(id) ?? []) stapel.push(kind);
+			}
+			const karten = [...besucht]
+				.map((id) => nodesById.get(id))
+				.filter((n): n is Karte => !!n && n.id !== fall.id);
+			gs.push({ fall, karten });
+			besucht.forEach((id) => zugeordnet.add(id));
+		}
+		return { gs, frei: data.nodes.filter((n) => !zugeordnet.has(n.id)) };
+	});
+
+	const freiNachArea = $derived.by(() => {
+		const m = new Map<string, Karte[]>();
+		for (const n of gruppen.frei) {
+			const a = n.area ?? '_';
+			if (!m.has(a)) m.set(a, []);
+			m.get(a)!.push(n);
+		}
+		return [...m.entries()].sort(([a], [b]) => a.localeCompare(b));
+	});
+
+	const GEBIET_NAMEN: Record<string, string> = {
+		zivilrecht: 'Zivilrecht',
+		strafrecht: 'Strafrecht',
+		oeffentliches_recht: 'Öffentliches Recht',
+		kapitalgesellschaftsrecht: 'KapGesR',
+		wissen_zivilrecht: 'Wissen ZR',
+		wissen_kapitalgesellschaftsrecht: 'Wissen KapGesR',
+		_: 'Ohne Gebiet'
+	};
+
+	let offen = $state<Record<string, boolean>>({});
 </script>
 
 <div class="seite">
@@ -144,33 +192,86 @@
 			<a class="knopf-grau" href="/api/export" download>Backup exportieren</a>
 			<button class="knopf-grau" onclick={kopierePrompt}>KI-Prompt kopieren</button>
 		</div>
-		{#if importStatus}
-			<p class="status">{importStatus}</p>
-		{/if}
-		{#if promptStatus}
-			<p class="status">{promptStatus}</p>
-		{/if}
+		{#if importStatus}<p class="status">{importStatus}</p>{/if}
+		{#if promptStatus}<p class="status">{promptStatus}</p>{/if}
 	</section>
 
 	<section class="block">
-		<h2>Alle Karten <span class="zahl">{data.nodes.length}</span></h2>
-		<div class="liste">
-			{#each data.nodes as node (node.id)}
-				<div class="zeile">
-					<span class="typ-punkt" style:--punkt="var(--typ-{node.type})"></span>
-					<a class="zeile-front" href={`/karte/${node.id}`}>{klartext(node.title ?? node.front)}</a>
-					<span class="zeile-id">{node.id}</span>
+		<h2>Fälle <span class="zahl">{gruppen.gs.length}</span></h2>
+		{#each gruppen.gs as g (g.fall.id)}
+			<div class="fall-block">
+				<div class="fall-kopf" role="button" tabindex="0"
+					onclick={() => (offen[g.fall.id] = !offen[g.fall.id])}
+					onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); offen[g.fall.id] = !offen[g.fall.id]; } }}>
+					<span class="pfeil" class:auf={offen[g.fall.id]}>›</span>
+					<span class="typ-punkt" style:--punkt="var(--typ-fall)"></span>
+					<a class="fall-titel" href={`/karte/${g.fall.id}`} onclick={(e) => e.stopPropagation()}>
+						{klartext(g.fall.title ?? g.fall.front)}
+					</a>
+					<span class="fall-zahl">{g.karten.length} Karten</span>
 					<button
 						class="loeschen"
-						onclick={() => loesche(node.id, klartext(node.title ?? node.front))}
+						onclick={(e) => {
+							e.stopPropagation();
+							loesche(g.fall.id, klartext(g.fall.title ?? g.fall.front));
+						}}
 						aria-label="Löschen"
-					>
-						×
-					</button>
+					>×</button>
+				</div>
+				{#if offen[g.fall.id]}
+					<div class="fall-liste">
+						{#each g.karten as node (node.id)}
+							<div class="zeile zeile-eingerueckt">
+								<span class="typ-punkt" style:--punkt="var(--typ-{node.type})"></span>
+								<a class="zeile-front" href={`/karte/${node.id}`}>
+									{klartext(node.title ?? node.front)}
+								</a>
+								<span class="zeile-id">{node.id}</span>
+								<button
+									class="loeschen"
+									onclick={() => loesche(node.id, klartext(node.title ?? node.front))}
+									aria-label="Löschen"
+								>×</button>
+							</div>
+						{/each}
+					</div>
+				{/if}
+			</div>
+		{/each}
+		{#if gruppen.gs.length === 0}
+			<p class="status">Noch keine Fälle. Nach dem Import erscheinen sie hier.</p>
+		{/if}
+	</section>
+
+	{#if gruppen.frei.length > 0}
+		<section class="block">
+			<h2>Freistehende Karten <span class="zahl">{gruppen.frei.length}</span></h2>
+			{#each freiNachArea as [area, karten] (area)}
+				<div class="area-block">
+					<div class="area-kopf">
+						{GEBIET_NAMEN[area] ?? area}
+						<span class="fall-zahl">{karten.length}</span>
+					</div>
+					<div class="fall-liste">
+						{#each karten as node (node.id)}
+							<div class="zeile zeile-eingerueckt">
+								<span class="typ-punkt" style:--punkt="var(--typ-{node.type})"></span>
+								<a class="zeile-front" href={`/karte/${node.id}`}>
+									{klartext(node.title ?? node.front)}
+								</a>
+								<span class="zeile-id">{node.id}</span>
+								<button
+									class="loeschen"
+									onclick={() => loesche(node.id, klartext(node.title ?? node.front))}
+									aria-label="Löschen"
+								>×</button>
+							</div>
+						{/each}
+					</div>
 				</div>
 			{/each}
-		</div>
-	</section>
+		</section>
+	{/if}
 </div>
 
 <style>
@@ -182,19 +283,14 @@
 		flex-direction: column;
 		gap: 2rem;
 	}
-	.leiste {
-		display: flex;
-	}
+	.leiste { display: flex; }
 	.zurueck {
 		color: var(--text-fluester);
 		text-decoration: none;
 		font-size: 0.85rem;
 		transition: color 0.15s ease;
 	}
-	.zurueck:hover {
-		color: var(--text);
-	}
-
+	.zurueck:hover { color: var(--text); }
 	h1 {
 		font-size: 1.5rem;
 		font-weight: 700;
@@ -209,20 +305,10 @@
 		color: var(--text-fluester);
 		margin: 0 0 0.9rem;
 	}
-	.zahl {
-		font-weight: 400;
-		margin-left: 0.3rem;
-	}
-	.block {
-		display: flex;
-		flex-direction: column;
-	}
+	.zahl { font-weight: 400; margin-left: 0.3rem; }
+	.block { display: flex; flex-direction: column; }
 
-	.neu-zeile {
-		display: flex;
-		gap: 0.5rem;
-		flex-wrap: wrap;
-	}
+	.neu-zeile { display: flex; gap: 0.5rem; flex-wrap: wrap; }
 	.feld {
 		background: var(--flaeche);
 		border: 1px solid var(--linie);
@@ -232,17 +318,9 @@
 		font-family: inherit;
 		font-size: 0.88rem;
 	}
-	.feld:focus {
-		outline: none;
-		border-color: var(--akzent);
-	}
-	.feld-schmal {
-		flex: 0 0 auto;
-	}
-	.feld-breit {
-		flex: 1;
-		min-width: 12rem;
-	}
+	.feld:focus { outline: none; border-color: var(--akzent); }
+	.feld-schmal { flex: 0 0 auto; }
+	.feld-breit { flex: 1; min-width: 12rem; }
 
 	.knopf-blau {
 		background: var(--akzent);
@@ -254,26 +332,13 @@
 		font-size: 0.88rem;
 		font-weight: 500;
 		cursor: pointer;
-		transition:
-			background 0.15s ease,
-			transform 0.1s ease,
-			opacity 0.15s ease;
+		transition: background 0.15s ease, transform 0.1s ease, opacity 0.15s ease;
 	}
-	.knopf-blau:hover {
-		background: var(--akzent-hover);
-	}
-	.knopf-blau:active {
-		transform: scale(0.97);
-	}
-	.knopf-blau:disabled {
-		opacity: 0.4;
-		cursor: default;
-	}
+	.knopf-blau:hover { background: var(--akzent-hover); }
+	.knopf-blau:active { transform: scale(0.97); }
+	.knopf-blau:disabled { opacity: 0.4; cursor: default; }
 
-	.daten-zeile {
-		display: flex;
-		gap: 0.5rem;
-	}
+	.daten-zeile { display: flex; gap: 0.5rem; }
 	.knopf-grau {
 		display: inline-block;
 		background: var(--flaeche-hoch);
@@ -287,22 +352,53 @@
 		cursor: pointer;
 		transition: background 0.15s ease;
 	}
-	.knopf-grau:hover {
-		background: var(--linie-stark);
-	}
-	.status {
-		font-size: 0.85rem;
-		color: var(--text-leise);
-		margin: 0.75rem 0 0;
-	}
+	.knopf-grau:hover { background: var(--linie-stark); }
+	.status { font-size: 0.85rem; color: var(--text-leise); margin: 0.75rem 0 0; }
 
-	.liste {
-		display: flex;
-		flex-direction: column;
+	/* Fall-Block: klappbarer Container mit Baum drunter */
+	.fall-block {
 		border: 1px solid var(--linie);
 		border-radius: var(--radius-m);
+		margin-bottom: 0.5rem;
 		overflow: hidden;
 	}
+	.fall-kopf {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+		padding: 0.7rem 1rem;
+		color: var(--text);
+		font-size: 0.9rem;
+		cursor: pointer;
+		transition: background 0.1s ease;
+	}
+	.fall-kopf:hover { background: var(--flaeche); }
+	.pfeil {
+		color: var(--text-fluester);
+		transition: transform 0.15s ease;
+		flex-shrink: 0;
+	}
+	.pfeil.auf { transform: rotate(90deg); }
+	.fall-titel {
+		flex: 1;
+		color: var(--text);
+		text-decoration: none;
+		font-weight: 500;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+	.fall-titel:hover { color: var(--akzent); }
+	.fall-zahl {
+		font-size: 0.75rem;
+		color: var(--text-fluester);
+		flex-shrink: 0;
+	}
+	.fall-liste {
+		border-top: 1px solid var(--linie);
+		background: color-mix(in srgb, var(--flaeche) 40%, transparent);
+	}
+
 	.zeile {
 		display: flex;
 		align-items: center;
@@ -311,9 +407,8 @@
 		border-bottom: 1px solid var(--linie);
 		font-size: 0.9rem;
 	}
-	.zeile:last-child {
-		border-bottom: none;
-	}
+	.zeile:last-child { border-bottom: none; }
+	.zeile-eingerueckt { padding-left: 2.5rem; }
 	.typ-punkt {
 		width: 7px;
 		height: 7px;
@@ -329,10 +424,7 @@
 		overflow: hidden;
 		text-overflow: ellipsis;
 	}
-	.zeile-front:hover {
-		color: var(--akzent);
-	}
-	/* Im Maschinenraum ist die ID zu Hause — hier darf sie stehen */
+	.zeile-front:hover { color: var(--akzent); }
 	.zeile-id {
 		font-family: var(--mono);
 		font-size: 0.7rem;
@@ -349,7 +441,24 @@
 		padding: 0 0.2rem;
 		transition: color 0.15s ease;
 	}
-	.loeschen:hover {
-		color: #ff453a;
+	.loeschen:hover { color: #ff453a; }
+
+	/* Freistehende: nach area gruppiert */
+	.area-block {
+		margin-bottom: 0.75rem;
+		border: 1px solid var(--linie);
+		border-radius: var(--radius-m);
+		overflow: hidden;
+	}
+	.area-kopf {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+		padding: 0.55rem 1rem;
+		font-size: 0.75rem;
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+		color: var(--text-fluester);
+		background: color-mix(in srgb, var(--flaeche) 60%, transparent);
 	}
 </style>
