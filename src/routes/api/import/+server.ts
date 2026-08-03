@@ -39,6 +39,18 @@ export const POST: RequestHandler = async ({ request }) => {
 	// bis die Merge-API (Roadmap) Duplikate intelligent auflöst.
 	const kollisionen = nodes.map((n) => n.id).filter((id) => existiert.get(id));
 
+	// Liest alle [[Begriff|ziel_id]]-Links aus einem Text — dieselbe
+	// Logik wie in /api/nodes: der Text ist die einzige Wahrheit für Kanten.
+	function zielIdsAusText(text: string): Set<string> {
+		const regex = /\[\[[^\]|]+\|([^\]]+)\]\]/g;
+		const ids = new Set<string>();
+		let treffer;
+		while ((treffer = regex.exec(text)) !== null) {
+			ids.add(treffer[1].trim());
+		}
+		return ids;
+	}
+
 	const importiere = db.transaction(() => {
 		// Erst alle Karten (müssen existieren, bevor Kanten auf sie zeigen)
 		for (const n of nodes) {
@@ -57,6 +69,21 @@ export const POST: RequestHandler = async ({ request }) => {
 				['agls', 'schema'].includes(n.mode as string) ? 'struktur' : (n.mode ?? 'open')
 			);
 		}
+		// Wenn das JSON keine expliziten edges liefert (Standard-Fall
+		// unserer KI-Pipeline), Kanten aus den [[Links]] in front/back/chips
+		// ableiten — dieselbe Regel wie /api/nodes.
+		if (edges.length === 0) {
+			for (const n of nodes) {
+				const gesamt = [n.front, n.back ?? '', n.chips ?? ''].join('\n');
+				let pos = 0;
+				for (const zielId of zielIdsAusText(gesamt)) {
+					if (zielId !== n.id) {
+						edges.push({ from_id: n.id, to_id: zielId, label: null, position: pos++ });
+					}
+				}
+			}
+		}
+
 		// Dann die Kanten — nur wenn beide Enden existieren.
 		// Kaputte Kanten im JSON werden gezählt statt alles zu sprengen.
 		let uebersprungen = 0;
