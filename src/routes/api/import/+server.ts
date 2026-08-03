@@ -48,6 +48,7 @@ export const POST: RequestHandler = async ({ request }) => {
 				n.area ?? null,
 				n.front,
 				n.back ?? '',
+				n.chips ?? '',
 				n.title ?? null,
 				n.ref ?? null,
 				// Altdaten-Brücke: agls/schema aus früheren Exporten → struktur.
