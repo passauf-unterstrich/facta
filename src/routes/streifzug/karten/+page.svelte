@@ -108,7 +108,7 @@
 	<nav class="leiste">
 		<button class="zurueck" onclick={beenden}>‹ Bibliothek</button>
 		<div class="titel-block">
-			<span class="modus">Karten-Streifzug</span>
+			<span class="modus">Zufällige Karten</span>
 			{#if gebietFilter}
 				<span class="filter">aus {GEBIET_NAMEN[gebietFilter] ?? gebietFilter}</span>
 			{/if}
@@ -127,7 +127,7 @@
 		</div>
 	{:else if index >= reihenfolge.length}
 		<div class="hinweis">
-			<p>Streifzug durch. {reihenfolge.length} Karten gesehen.</p>
+			<p>Alle {reihenfolge.length} Karten durch.</p>
 			<div class="knopf-zeile">
 				<button class="knopf" onclick={starten}>Neu starten</button>
 				<button class="knopf knopf-primaer" onclick={beenden}>Zur Bibliothek</button>

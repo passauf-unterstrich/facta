@@ -44,7 +44,7 @@
 		<p>Keine Fälle im aktuellen Filter.</p>
 		<button class="knopf" onclick={() => goto('/')}>Zurück</button>
 	{:else}
-		<p class="lade">Fall-Streifzug startet …</p>
+		<p class="lade">Zufälliger Fall startet …</p>
 	{/if}
 </div>
 
