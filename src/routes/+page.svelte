@@ -112,6 +112,20 @@
 		</div>
 	{/if}
 
+	{#if data.nodes.length > 0}
+		<div class="streifzug-zeile">
+			<a class="streifzug-pille" href={`/streifzug/karten${gebiet ? `?area=${gebiet}` : ''}`}>
+				Karten-Streifzug
+			</a>
+			<a class="streifzug-pille" href={`/streifzug/faelle${gebiet ? `?area=${gebiet}` : ''}`}>
+				Fall-Streifzug
+			</a>
+			{#if gebiet}
+				<span class="streifzug-hinweis">aus {gebietsName(gebiet)}</span>
+			{/if}
+		</div>
+	{/if}
+
 	{#if data.nodes.length === 0}
 		<div class="leer">
 			<p>Noch keine Karten.</p>
@@ -274,6 +288,37 @@
 	}
 	.pille:hover { border-color: var(--linie-stark); color: var(--text); }
 	.pille:active { transform: scale(0.96); }
+	/* Streifzug-Knöpfe: eigene Optik, damit klar wird — das ist Aktion, kein Filter */
+	.streifzug-zeile {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.6rem;
+		justify-content: center;
+		align-items: center;
+		margin-top: -0.5rem;
+	}
+	.streifzug-pille {
+		background: var(--flaeche);
+		border: 1px solid var(--linie-stark);
+		border-radius: 999px;
+		padding: 0.45rem 1.1rem;
+		color: var(--text);
+		text-decoration: none;
+		font-family: inherit;
+		font-size: 0.85rem;
+		font-weight: 500;
+		transition: background 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
+	}
+	.streifzug-pille:hover {
+		background: var(--flaeche-hoch);
+		border-color: var(--text-fluester);
+	}
+	.streifzug-pille:active { transform: scale(0.97); }
+	.streifzug-hinweis {
+		font-size: 0.78rem;
+		color: var(--text-fluester);
+	}
+
 	.pille.aktiv {
 		background: var(--text);
 		border-color: var(--text);
