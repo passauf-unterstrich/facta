@@ -5,12 +5,33 @@
 	import KinderListe from '$lib/components/KinderListe.svelte';
 	import LinkMenu from '$lib/components/LinkMenu.svelte';
 	import type { Karte, Kind, BauDaten } from '$lib/types';
+	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 
 	let { data } = $props();
 
 	// Default ist Lernen — außer die URL wünscht explizit anderes
 	// (z.B. Sprung von "Erstellen & bauen" aus der Verwaltung)
+	// Fall-Streifzug: wenn ?streifzug=id1,id2,id3 in der URL steht,
+	// erscheint oben ein HUD, das zum nächsten Fall springt.
+	const streifzugRest = $derived.by(() => {
+		const raw = page.url.searchParams.get('streifzug');
+		return raw ? raw.split(',').filter(Boolean) : [];
+	});
+	const streifzugAktiv = $derived(page.url.searchParams.has('streifzug'));
+	function naechsterFall() {
+		if (streifzugRest.length === 0) {
+			goto('/');
+			return;
+		}
+		const [naechster, ...rest] = streifzugRest;
+		const query = rest.length > 0 ? `?streifzug=${rest.join(',')}` : '';
+		goto(`/karte/${naechster}${query}`);
+	}
+	function streifzugBeenden() {
+		goto('/');
+	}
+
 	let modus = $state<'lernen' | 'bauen'>(
 		page.url.searchParams.get('modus') === 'bauen' ? 'bauen' : 'lernen'
 	);
@@ -222,6 +243,19 @@
 	<a class="hud-link" href={`/graph/${data.node.id}`}>Graph</a>
 </div>
 
+{#if streifzugAktiv}
+	<div class="streifzug-hud">
+		<span class="streifzug-label">Zufälliger Fall</span>
+		{#if streifzugRest.length > 0}
+			<button class="streifzug-knopf" onclick={naechsterFall}>Nächster Fall ›</button>
+			<span class="streifzug-rest">noch {streifzugRest.length}</span>
+		{:else}
+			<span class="streifzug-rest">letzter Fall</span>
+			<button class="streifzug-knopf" onclick={streifzugBeenden}>Beenden</button>
+		{/if}
+	</div>
+{/if}
+
 <style>
 	.seite {
 		max-width: 44rem;
@@ -371,5 +405,47 @@
 			opacity: 1;
 			transform: translateY(0) scale(1);
 		}
+	}
+
+	/* Streifzug-HUD: sitzt oben rechts, ruhig, informativ */
+	.streifzug-hud {
+		position: fixed;
+		top: 1rem;
+		right: 1rem;
+		z-index: 100;
+		display: flex;
+		align-items: center;
+		gap: 0.6rem;
+		background: color-mix(in srgb, var(--flaeche) 85%, transparent);
+		backdrop-filter: blur(12px);
+		-webkit-backdrop-filter: blur(12px);
+		border: 1px solid var(--linie);
+		border-radius: 999px;
+		padding: 0.35rem 0.5rem 0.35rem 0.9rem;
+		box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+	}
+	.streifzug-label {
+		font-size: 0.72rem;
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+		color: var(--text-fluester);
+		font-weight: 500;
+	}
+	.streifzug-knopf {
+		background: var(--akzent);
+		color: white;
+		border: none;
+		border-radius: 999px;
+		padding: 0.3rem 0.9rem;
+		font-family: inherit;
+		font-size: 0.78rem;
+		font-weight: 500;
+		cursor: pointer;
+		transition: background 0.15s ease;
+	}
+	.streifzug-knopf:hover { background: var(--akzent-hover); }
+	.streifzug-rest {
+		font-size: 0.72rem;
+		color: var(--text-fluester);
 	}
 </style>
