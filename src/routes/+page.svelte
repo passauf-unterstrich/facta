@@ -115,10 +115,10 @@
 	{#if data.nodes.length > 0}
 		<div class="streifzug-zeile">
 			<a class="streifzug-pille" href={`/streifzug/karten${gebiet ? `?area=${gebiet}` : ''}`}>
-				Karten-Streifzug
+				Zufällige Karte
 			</a>
 			<a class="streifzug-pille" href={`/streifzug/faelle${gebiet ? `?area=${gebiet}` : ''}`}>
-				Fall-Streifzug
+				Zufälliger Fall
 			</a>
 			{#if gebiet}
 				<span class="streifzug-hinweis">aus {gebietsName(gebiet)}</span>
