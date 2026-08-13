@@ -1,5 +1,37 @@
 <script lang="ts">
-	let { data, form } = $props();
+	let { data } = $props();
+	let fehlermeldung = $state('');
+	let laedt = $state(false);
+
+	async function anmelden(event: SubmitEvent) {
+		event.preventDefault();
+		fehlermeldung = '';
+		laedt = true;
+
+		const formular = event.currentTarget as HTMLFormElement;
+		const passwort = String(new FormData(formular).get('password') ?? '');
+		const next = new URLSearchParams(window.location.search).get('next');
+
+		try {
+			const response = await fetch('/api/login', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ passwort, next })
+			});
+			const ergebnis = (await response.json()) as { message?: string; next?: string };
+
+			if (!response.ok) {
+				fehlermeldung = ergebnis.message ?? 'Die Anmeldung ist fehlgeschlagen.';
+				return;
+			}
+
+			window.location.assign(ergebnis.next ?? '/');
+		} catch {
+			fehlermeldung = 'Die Anmeldung konnte nicht übertragen werden.';
+		} finally {
+			laedt = false;
+		}
+	}
 </script>
 
 <svelte:head>
@@ -14,10 +46,10 @@
 		<h1>Facta</h1>
 		<p class="erklaerung">Melde dich an, um deine Lernkarten zu öffnen.</p>
 
-		{#if !data.konfiguriert || form?.nichtKonfiguriert}
+		{#if !data.konfiguriert}
 			<p class="fehler">Der Zugang ist noch nicht vollständig konfiguriert.</p>
 		{:else}
-			<form method="POST">
+			<form onsubmit={anmelden}>
 				<label for="password">Passwort</label>
 				<input
 					id="password"
@@ -26,8 +58,8 @@
 					autocomplete="current-password"
 					required
 				/>
-				{#if form?.falsch}<p class="fehler">Das Passwort stimmt nicht.</p>{/if}
-				<button type="submit">Öffnen</button>
+				{#if fehlermeldung}<p class="fehler" aria-live="polite">{fehlermeldung}</p>{/if}
+				<button type="submit" disabled={laedt}>{laedt ? 'Wird geöffnet …' : 'Öffnen'}</button>
 			</form>
 		{/if}
 	</section>
@@ -119,6 +151,10 @@
 	}
 	button:active {
 		transform: scale(0.985);
+	}
+	button:disabled {
+		opacity: 0.65;
+		cursor: wait;
 	}
 	.fehler {
 		margin: 0;

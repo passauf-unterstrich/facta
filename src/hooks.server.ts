@@ -13,9 +13,9 @@ function sichereAntwort(response: Response): Response {
 
 export const handle: Handle = async ({ event, resolve }) => {
 	const pfad = event.url.pathname;
-	const istLogin = pfad === '/login';
+	const istOeffentlich = pfad === '/login' || pfad === '/api/login';
 
-	if (!istLogin && !pruefeSitzung(event.cookies.get(AUTH_COOKIE))) {
+	if (!istOeffentlich && !pruefeSitzung(event.cookies.get(AUTH_COOKIE))) {
 		if (pfad.startsWith('/api/')) {
 			return sichereAntwort(
 				new Response(JSON.stringify({ message: 'Anmeldung erforderlich' }), {

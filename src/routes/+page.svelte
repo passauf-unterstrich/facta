@@ -21,6 +21,15 @@
 		return GEBIET_NAMEN[a] ?? a;
 	}
 
+	async function abmelden() {
+		await fetch('/logout', {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: '{}'
+		});
+		window.location.assign('/login');
+	}
+
 	// Filter-Pillen aus den Daten
 	const gebiete = $derived.by(() => {
 		const vorhanden = new Set(
@@ -90,9 +99,7 @@
 	<header class="kopf">
 		<div class="kopf-aktionen">
 			<a class="kopf-link" href="/verwalten" title="Verwalten">Verwalten</a>
-			<form method="POST" action="/logout">
-				<button class="kopf-link" type="submit">Abmelden</button>
-			</form>
+			<button class="kopf-link" type="button" onclick={abmelden}>Abmelden</button>
 		</div>
 		<h1>Facta</h1>
 		<p class="untertitel">Dein vernetztes Wissen für die Fallbearbeitung.</p>
@@ -244,9 +251,6 @@
 		display: flex;
 		align-items: center;
 		gap: 0.45rem;
-	}
-	.kopf-aktionen form {
-		margin: 0;
 	}
 	.kopf-link {
 		color: var(--text-fluester);
