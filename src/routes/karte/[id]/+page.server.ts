@@ -1,11 +1,19 @@
 import { error } from '@sveltejs/kit';
-import { holeKarte, holeKinder } from '$lib/server/db/queries';
+import {
+	holeKarteSupabase,
+	holeKinderSupabase
+} from '$lib/server/db/supabase-queries';
 import type { PageServerLoad } from './$types';
 
-// Lädt die Startkarte samt Kindern — direkt aus der DB, vor dem Rendern.
-export const load: PageServerLoad = ({ params }) => {
-	const node = holeKarte(params.id);
-	if (!node) throw error(404, `Karte "${params.id}" nicht gefunden`);
+// Lädt die Startkarte samt Kindern — aus Supabase, vor dem Rendern.
+export const load: PageServerLoad = async ({ params }) => {
+	const node = await holeKarteSupabase(params.id);
 
-	return { node, children: holeKinder(params.id) };
+	if (!node) {
+		throw error(404, `Karte "${params.id}" nicht gefunden`);
+	}
+
+	const children = await holeKinderSupabase(params.id);
+
+	return { node, children };
 };
