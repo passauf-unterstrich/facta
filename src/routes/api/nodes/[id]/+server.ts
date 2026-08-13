@@ -1,41 +1,89 @@
 import { json, error } from '@sveltejs/kit';
-import { db } from '$lib/server/db';
-import { holeKarte, holeKinder } from '$lib/server/db/queries';
+import { supabase } from '$lib/server/supabase';
+import { holeKarteSupabase, holeKinderSupabase } from '$lib/server/db/supabase-queries';
 import type { RequestHandler } from './$types';
 
-// GET /api/nodes/[id] → die Karte + ihre Kinder (Zielkarten ihrer Links)
-export const GET: RequestHandler = ({ params }) => {
-	const node = holeKarte(params.id!);
-	if (!node) throw error(404, `Karte "${params.id}" nicht gefunden`);
+// GET /api/nodes/[id] → die Karte + ihre Kinder
+export const GET: RequestHandler = async ({ params }) => {
+	const id = params.id!;
 
-	return json({ node, children: holeKinder(params.id!) });
+	const node = await holeKarteSupabase(id);
+	if (!node) {
+		throw error(404, `Karte "${id}" nicht gefunden`);
+	}
+
+	const children = await holeKinderSupabase(id);
+
+	return json({ node, children });
 };
 
 // DELETE /api/nodes/[id] → Karte löschen.
-// Text = Wahrheit gilt auch beim Löschen: In allen Karten, die auf
-// diese verlinken, wird [[Wort|id]] zu blankem Wort entschärft —
-// keine toten Links. Kanten sterben per ON DELETE CASCADE.
-export const DELETE: RequestHandler = ({ params }) => {
+// Text = Wahrheit gilt auch beim Löschen:
+// In allen Karten, die auf diese Karte verlinken,
+// wird [[Wort|id]] zu blankem Wort entschärft.
+export const DELETE: RequestHandler = async ({ params }) => {
 	const id = params.id!;
 
-	const loesche = db.transaction(() => {
-		const betroffene = db
-			.prepare('SELECT id, front, back FROM nodes WHERE (front LIKE ? OR back LIKE ?) AND id != ?')
-			.all(`%|${id}]]%`, `%|${id}]]%`, id) as Array<{ id: string; front: string; back: string }>;
+	// 1. Prüfen, ob die Karte existiert.
+	const { data: vorhanden, error: findError } = await supabase
+		.from('nodes')
+		.select('id')
+		.eq('id', id)
+		.maybeSingle();
 
-		// IDs sind per Konstruktion [a-z0-9_] — regex-sicher.
-		const linkRegex = new RegExp(`\\[\\[([^\\]|]+)\\|${id}\\]\\]`, 'g');
-		const update = db.prepare(
-			"UPDATE nodes SET front = ?, back = ?, updated_at = datetime('now') WHERE id = ?"
-		);
-		for (const n of betroffene) {
-			update.run(n.front.replace(linkRegex, '$1'), n.back.replace(linkRegex, '$1'), n.id);
+	if (findError) {
+		throw error(500, findError.message);
+	}
+
+	if (!vorhanden) {
+		throw error(404, `Karte "${id}" nicht gefunden`);
+	}
+
+	// 2. Alle Karten finden, die auf diese Karte verlinken.
+	const { data: betroffene, error: affectedError } = await supabase
+		.from('nodes')
+		.select('id, front, back')
+		.or(`front.like.%|${id}]]%,back.like.%|${id}]]%`)
+		.neq('id', id);
+
+	if (affectedError) {
+		throw error(500, affectedError.message);
+	}
+
+	// IDs sind per Konstruktion [a-z0-9_] — regex-sicher.
+	const linkRegex = new RegExp(`\\[\\[([^\\]|]+)\\|${id}\\]\\]`, 'g');
+
+	// 3. Links in betroffenen Karten entschärfen.
+	for (const n of betroffene ?? []) {
+		const front = n.front.replace(linkRegex, '$1');
+		const back = n.back.replace(linkRegex, '$1');
+
+		if (front !== n.front || back !== n.back) {
+			const { error: updateError } = await supabase
+				.from('nodes')
+				.update({
+					front,
+					back,
+					updated_at: new Date().toISOString()
+				})
+				.eq('id', n.id);
+
+			if (updateError) {
+				throw error(500, updateError.message);
+			}
 		}
+	}
 
-		return db.prepare('DELETE FROM nodes WHERE id = ?').run(id).changes;
-	});
+	// 4. Karte löschen.
+	// Die Foreign Keys in edges sorgen für ON DELETE CASCADE.
+	const { error: deleteError } = await supabase
+		.from('nodes')
+		.delete()
+		.eq('id', id);
 
-	if (loesche() === 0) throw error(404, `Karte "${params.id}" nicht gefunden`);
+	if (deleteError) {
+		throw error(500, deleteError.message);
+	}
 
 	return json({ ok: true });
 };
