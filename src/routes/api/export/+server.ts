@@ -1,21 +1,36 @@
-import { db } from '$lib/server/db';
+import { supabase } from '$lib/server/supabase';
 import type { RequestHandler } from './$types';
 
 // GET /api/export → die komplette Wissensbasis als JSON-Download.
-// Dein Backup-Knopf: Export-Format = Import-Format = KI-Pipeline-Format.
-export const GET: RequestHandler = () => {
-	const nodes = db
-		.prepare('SELECT id, type, area, front, back, chips, title, ref, mode FROM nodes ORDER BY id')
-		.all();
-	const edges = db.prepare('SELECT from_id, to_id, label, position FROM edges ORDER BY id').all();
+// Export-Format = Import-Format = KI-Pipeline-Format.
+export const GET: RequestHandler = async () => {
+	const { data: nodes, error: nodesError } = await supabase
+		.from('nodes')
+		.select('id, type, area, front, back, chips, title, ref, mode')
+		.order('id');
+
+	if (nodesError) {
+		throw new Error(nodesError.message);
+	}
+
+	const { data: edges, error: edgesError } = await supabase
+		.from('edges')
+		.select('from_id, to_id, label, position')
+		.order('id');
+
+	if (edgesError) {
+		throw new Error(edgesError.message);
+	}
 
 	const datum = new Date().toISOString().slice(0, 10);
 
-	return new Response(JSON.stringify({ nodes, edges }, null, 2), {
-		headers: {
-			'Content-Type': 'application/json',
-			// Sagt dem Browser: nicht anzeigen, als Datei speichern
-			'Content-Disposition': `attachment; filename="facta-export-${datum}.json"`
+	return new Response(
+		JSON.stringify({ nodes, edges }, null, 2),
+		{
+			headers: {
+				'Content-Type': 'application/json',
+				'Content-Disposition': `attachment; filename="facta-export-${datum}.json"`
+			}
 		}
-	});
+	);
 };
