@@ -1,9 +1,4 @@
-import { readFileSync } from 'node:fs';
-import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
-
-const here = dirname(fileURLToPath(import.meta.url));
-const muster = readFileSync(join(here, 'muster.json'), 'utf-8');
+import muster from './muster.json?raw';
 
 // Bewusst schlanker Prompt: EIN Muster (ein echter, vom Nutzer selbst
 // aufgebauter Fall), eine klare Regel — die KI reproduziert den Stil.
