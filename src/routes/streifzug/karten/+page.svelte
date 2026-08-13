@@ -1,10 +1,9 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import { goto, invalidateAll } from '$app/navigation';
+	import { goto } from '$app/navigation';
 	import { onMount } from 'svelte';
 	import LernKarte from '$lib/components/LernKarte.svelte';
-	import type { Karte, Kind } from '$lib/types';
-	import { klartext } from '$lib/markdown';
+	import type { Karte, KartenAuswahl, Kind } from '$lib/types';
 
 	let { data } = $props();
 
@@ -20,14 +19,13 @@
 
 	// Kandidaten: alle Karten, ggf. gefiltert nach area
 	const kandidaten = $derived(
-		data.nodes.filter((n: Karte) => !gebietFilter || n.area === gebietFilter)
+		data.nodes.filter((n: KartenAuswahl) => !gebietFilter || n.area === gebietFilter)
 	);
 
 	// Der Streifzug: eine Reihenfolge (Array von IDs) + aktueller Index.
 	// Beides im sessionStorage, damit ein Reload nichts verwirft.
 	let reihenfolge = $state<string[]>([]);
 	let index = $state(0);
-	// svelte-ignore state_referenced_locally
 	let aufgedeckt = $state(false);
 
 	// Aktuelle Karte + Kinder (fürs LernKarte-typMap)

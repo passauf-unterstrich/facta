@@ -1,16 +1,13 @@
 import { supabase } from '$lib/server/supabase';
-import type { Karte } from '$lib/types';
+import { ladeAlleSeiten } from '$lib/server/db/supabase-pages';
+import type { KartenAuswahl } from '$lib/types';
 import type { PageServerLoad } from './$types';
 
 // Alle Karten laden — der Client filtert nach ?area= und mischt.
 export const load: PageServerLoad = async () => {
-	const { data: nodes, error } = await supabase
-		.from('nodes')
-		.select('*');
+	const nodes = await ladeAlleSeiten<KartenAuswahl>((von, bis) =>
+		supabase.from('nodes').select('id, area').order('id').range(von, bis)
+	);
 
-	if (error) {
-		throw error;
-	}
-
-	return { nodes: nodes as Karte[] };
+	return { nodes };
 };

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { baueId } from '$lib/id';
-	import type { Karte, KartenTyp } from '$lib/types';
+	import type { KartenVorschau, KartenTyp } from '$lib/types';
 
 	let {
 		markText,
@@ -28,7 +28,7 @@
 		thema: 'definition'
 	};
 
-	let alle = $state<Karte[]>([]);
+	let alle = $state<KartenVorschau[]>([]);
 	// svelte-ignore state_referenced_locally
 	let suche = $state(markText);
 	let zeigeNeu = $state(false);

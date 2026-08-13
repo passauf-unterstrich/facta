@@ -21,35 +21,38 @@ Server-Hosting und FSRS-Spaced-Repetition.
 ## Tech-Stack
 
 SvelteKit (Svelte 5, Runes erzwungen) · TypeScript strict ·
-better-sqlite3 · marked. Tailwind v4 ist installiert und liefert den
+Supabase/Postgres · marked. Tailwind v4 ist installiert und liefert den
 CSS-Reset (Preflight) — Komponenten stylen aber mit Scoped CSS + Tokens
 aus src/lib/tokens.css. Keine neuen Dependencies ohne triftigen Grund —
 bewusst KEINE Graph-Library (Finder-Spalten sind pures CSS).
 
 ## Architektur
 
-Browser (Svelte) ⇄ API-Routen (+server.ts) ⇄ $lib/server/db ⇄ SQLite
+Browser (Svelte) ⇄ SvelteKit/Vercel ⇄ Supabase/Postgres
 
-- Datenbank: data/facta.db (gitignored, NIE committen). Backup über
-  /api/export. Schema-Änderung = Server aus → data/facta.db* löschen →
-  Server an (Hausmeister in db/index.ts baut nach schema.sql neu).
-- Seiten laden über +page.server.ts-load (direkter DB-Zugriff via
-  $lib/server/db/queries.ts), Mutationen über fetch + invalidateAll().
+- Zugangsdaten liegen ausschließlich in `.env` bzw. den Vercel-Variablen
+  `SUPABASE_URL` und `SUPABASE_SECRET_KEY`; niemals committen oder an den
+  Browser geben. Backup über `/api/export`.
+- Schema- und RPC-Änderungen werden im Supabase SQL Editor ausgeführt und
+  als nachvollziehbarer SQL-Befehl dokumentiert.
+- Seiten laden über `+page.server.ts`; Mutationen laufen über API-Routen.
+  Große Tabellen immer seitenweise über
+  `$lib/server/db/supabase-pages.ts` lesen, weil Supabase Antworten begrenzt.
 - Geteilte Helfer: $lib/id.ts (baueId), $lib/schalen.ts (parseZeilen/
   serialisiere), $lib/markdown.ts (rendere/rendereInline/klartext),
-  $lib/server/db/queries.ts (holeKarte/holeKinder). Duplikate dieser
+  $lib/server/db/supabase-queries.ts (holeKarte/holeKinder). Duplikate dieser
   Logik NIE wieder inline anlegen.
 
 ## Datenmodell
 
-Sechs Kartentypen (TS-Union + CHECK in SQLite): fall, schema,
+Sechs Kartentypen (TS-Union + Constraint in Postgres): fall, schema,
 definition, subsumtion, simpel, thema.
 
 - title = Anzeigename für Menüs (Regel überall: title ?? front),
   ref = Aktenzeichen (nur fall), mode = Darstellung der Rückseite.
-- mode: open (Freitext) · agls/schema (eine Link-Zeile pro Schale) ·
-  chips (Link-Zeilen als Bubbles). In Schalen-Modi ist back stets die
-  Serialisierung der Schalen.
+- mode: open (Freitext) · struktur (eine Link-Zeile pro Schale). Das
+  separate Feld chips enthält Link-Zeilen für Bubbles. Im Strukturmodus
+  ist back stets die Serialisierung der Schalen.
 - thema = Erkennungs-Signal (Arglist, Sachmangel …). Signalwörter im
   Sachverhalt sind Links auf Themen-Karten und werden GELB gerendert
   (Renderer bekommt eine typMap id→typ). Themen-Rückseite = Merkliste
@@ -62,7 +65,9 @@ definition, subsumtion, simpel, thema.
    ausgehenden Kanten löschen, aus dem Text neu aufbauen. Auch DELETE
    respektiert das: Links auf die gelöschte Karte werden serverseitig
    zu blankem Text entschärft. NIEMALS einen zweiten Weg einführen.
-2. **Alles Schreibende in Transaktionen** (db.transaction).
+2. **Zusammengehörige Schreibvorgänge atomar halten.** Der Komplettimport
+   läuft über die Supabase-RPC `import_facta`; neue mehrstufige Schreibwege
+   ebenfalls als RPC/Transaktion bauen.
 3. **IDs sind Maschinensache**: im Lern-UI unsichtbar. Auto-Generierung
    zentral in $lib/id.ts (fall_/agl_/def_/sub_/k_/thema_, Umlaute→ae/oe,
    §→p, Kollision→_2).
@@ -90,13 +95,13 @@ definition, subsumtion, simpel, thema.
   Klick ohne await), Löschen mit confirm.
 - API: GET/POST /api/nodes (POST = Upsert + Kanten-Sync, leere front
   erlaubt), GET/DELETE /api/nodes/[id] (DELETE entschärft Links),
-  POST /api/import (Transaktion), GET /api/export, GET /api/prompt
+  POST /api/import (Supabase-RPC/Transaktion), GET /api/export, GET /api/prompt
 
 ## Bekannte Stolpersteine
 
 - Svelte: :global() darf nur EINEN Selektor enthalten
 - Safari-Clipboard: kein await zwischen Klick und writeText
-- ESLint bewusst aus (dokumentiert): no-navigation-without-resolve,
+- Zwei ESLint-Regeln bewusst aus (dokumentiert): no-navigation-without-resolve,
   no-at-html-tags (eigene DB; bei Multi-User Sanitizer in markdown.ts)
 - BauKarte koppelt Entwurf bewusst vom node-Prop ab (svelte-ignore
   state_referenced_locally); frisch via {#key id:updated_at}

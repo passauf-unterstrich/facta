@@ -2,7 +2,7 @@
 	import { invalidateAll, goto } from '$app/navigation';
 	import { klartext } from '$lib/markdown';
 	import { baueId } from '$lib/id';
-	import type { Karte, KartenTyp } from '$lib/types';
+	import type { KartenVorschau, KartenTyp } from '$lib/types';
 
 	let { data } = $props();
 
@@ -92,7 +92,7 @@
 	// --- Fall-Gruppierung ---
 	// Von jeder fall-Karte aus per Kanten alle erreichbaren Karten
 	// sammeln. Rest = "Freistehende Karten", nach area gruppiert.
-	type Gruppe = { fall: Karte; karten: Karte[] };
+	type Gruppe = { fall: KartenVorschau; karten: KartenVorschau[] };
 	const gruppen = $derived.by(() => {
 		const nodesById = new Map(data.nodes.map((n) => [n.id, n]));
 		const kanten = new Map<string, string[]>();
@@ -114,7 +114,7 @@
 			}
 			const karten = [...besucht]
 				.map((id) => nodesById.get(id))
-				.filter((n): n is Karte => !!n && n.id !== fall.id);
+				.filter((n): n is KartenVorschau => !!n && n.id !== fall.id);
 			gs.push({ fall, karten });
 			besucht.forEach((id) => zugeordnet.add(id));
 		}
@@ -122,7 +122,7 @@
 	});
 
 	const freiNachArea = $derived.by(() => {
-		const m = new Map<string, Karte[]>();
+		const m = new Map<string, KartenVorschau[]>();
 		for (const n of gruppen.frei) {
 			const a = n.area ?? '_';
 			if (!m.has(a)) m.set(a, []);

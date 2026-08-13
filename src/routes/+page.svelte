@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { Karte } from '$lib/types';
+	import type { KartenVorschau } from '$lib/types';
 	import { klartext } from '$lib/markdown';
 
 	let { data } = $props();
@@ -24,7 +24,7 @@
 	// Filter-Pillen aus den Daten
 	const gebiete = $derived.by(() => {
 		const vorhanden = new Set(
-			data.nodes.map((n: Karte) => n.area).filter((a): a is string => !!a)
+			data.nodes.map((n: KartenVorschau) => n.area).filter((a): a is string => !!a)
 		);
 		const bekannt = Object.keys(GEBIET_NAMEN).filter((a) => vorhanden.has(a));
 		const unbekannt = [...vorhanden].filter((a) => !(a in GEBIET_NAMEN)).sort();
@@ -33,7 +33,7 @@
 
 	// Suche + Gebietsfilter
 	const gefiltert = $derived(
-		data.nodes.filter((n: Karte) => {
+		data.nodes.filter((n: KartenVorschau) => {
 			if (gebiet && n.area !== gebiet) return false;
 			const q = suche.toLowerCase();
 			return (
@@ -43,11 +43,11 @@
 			);
 		})
 	);
-	const faelle = $derived(gefiltert.filter((n: Karte) => n.type === 'fall'));
+	const faelle = $derived(gefiltert.filter((n: KartenVorschau) => n.type === 'fall'));
 
 	// Gruppierung: von jedem Fall aus per Kanten alle Kinder sammeln.
 	// Nicht zugeordnete Karten landen unter "Freistehend", nach Gebiet.
-	type Gruppe = { fall: Karte; karten: Karte[] };
+	type Gruppe = { fall: KartenVorschau; karten: KartenVorschau[] };
 	const gruppen = $derived.by(() => {
 		const nodesById = new Map(gefiltert.map((n) => [n.id, n]));
 		const kanten = new Map<string, string[]>();
@@ -68,7 +68,7 @@
 			}
 			const karten = [...besucht]
 				.map((id) => nodesById.get(id))
-				.filter((n): n is Karte => !!n && n.id !== fall.id);
+				.filter((n): n is KartenVorschau => !!n && n.id !== fall.id);
 			gs.push({ fall, karten });
 			besucht.forEach((id) => zugeordnet.add(id));
 		}
@@ -76,7 +76,7 @@
 	});
 
 	const freiNachArea = $derived.by(() => {
-		const m = new Map<string, Karte[]>();
+		const m = new Map<string, KartenVorschau[]>();
 		for (const n of gruppen.frei) {
 			const a = n.area ?? '_';
 			if (!m.has(a)) m.set(a, []);

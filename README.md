@@ -18,7 +18,7 @@ immer tiefer.
 
 ## Stack
 
-SvelteKit (Svelte 5, Runes) · TypeScript strict · better-sqlite3 · marked.
+SvelteKit (Svelte 5, Runes) · TypeScript strict · Supabase/Postgres · marked.
 Design: eigene Tokens (`src/lib/tokens.css`) + Scoped CSS, dunkel,
 reduziert. Bewusst ohne Graph-Library.
 
@@ -32,9 +32,9 @@ npm run lint       # prettier + eslint
 npm run format
 ```
 
-Die Datenbank liegt in `data/facta.db` (gitignored). Backup: Verwalten →
-„Backup exportieren" (JSON). Schema-Änderungen: Server stoppen,
-`data/facta.db*` löschen, Server starten — die DB wird frisch nach
-`src/lib/server/db/schema.sql` gebaut.
+Die zentrale Datenbank liegt in Supabase. Lokal werden `SUPABASE_URL` und
+`SUPABASE_SECRET_KEY` über eine nicht eingecheckte `.env` bereitgestellt.
+Backup: Verwalten → „Backup exportieren" (JSON). Schema- und RPC-Änderungen
+werden kontrolliert im Supabase SQL Editor ausgeführt.
 
 Projektwissen für KI-Assistenten: `CLAUDE.md` · Planung: `ROADMAP.md`

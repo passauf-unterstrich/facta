@@ -35,6 +35,10 @@ export default defineConfig(
 	},
 	{
 		rules: {
+			// Maps und Sets werden in Facta innerhalb von $derived neu aufgebaut
+			// und danach nur gelesen. SvelteMap/SvelteSet brächten dort keine
+			// zusätzliche Reaktivität, aber unnötigen Laufzeitaufwand.
+			'svelte/prefer-svelte-reactivity': 'off',
 			// Facta läuft immer an der Domain-Wurzel — resolve() für jeden
 			// Link wäre Aufwand ohne Nutzen. Bewusst deaktiviert.
 			'svelte/no-navigation-without-resolve': 'off',

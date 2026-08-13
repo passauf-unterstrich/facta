@@ -91,7 +91,7 @@
 	// Neue Spalte erscheint → sanft zu ihr scrollen
 	let band: HTMLElement | null = $state(null);
 	$effect(() => {
-		pfad.length;
+		void pfad.length;
 		band?.scrollTo({ left: band.scrollWidth, behavior: 'smooth' });
 	});
 </script>

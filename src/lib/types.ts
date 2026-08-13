@@ -25,6 +25,11 @@ export type Karte = {
 	updated_at: string;
 };
 
+// Schlanke Varianten für Übersichten und den Zufallsmodus. Große Rückseiten
+// werden erst übertragen, wenn eine konkrete Karte geöffnet wird.
+export type KartenVorschau = Pick<Karte, 'id' | 'type' | 'area' | 'front' | 'title'>;
+export type KartenAuswahl = Pick<Karte, 'id' | 'area'>;
+
 export type Kante = {
 	id: number;
 	from_id: string;
@@ -32,6 +37,8 @@ export type Kante = {
 	label: string | null;
 	position: number | null;
 };
+
+export type KantenVorschau = Pick<Kante, 'id' | 'from_id' | 'to_id'>;
 
 // Ein Kind = Zielkarte plus die Infos der Kante, die dorthin führt.
 export type Kind = Karte & {

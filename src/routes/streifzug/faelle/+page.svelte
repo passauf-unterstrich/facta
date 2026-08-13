@@ -2,20 +2,14 @@
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
 	import { onMount } from 'svelte';
-	import type { Karte } from '$lib/types';
+	import type { KartenAuswahl } from '$lib/types';
 
 	let { data } = $props();
 
 	const gebietFilter = $derived(page.url.searchParams.get('area'));
-	const GEBIET_NAMEN: Record<string, string> = {
-		zivilrecht: 'Zivilrecht',
-		strafrecht: 'Strafrecht',
-		oeffentliches_recht: 'Öffentliches Recht',
-		kapitalgesellschaftsrecht: 'KapGesR'
-	};
 
 	const kandidaten = $derived(
-		data.faelle.filter((n: Karte) => !gebietFilter || n.area === gebietFilter)
+		data.faelle.filter((n: KartenAuswahl) => !gebietFilter || n.area === gebietFilter)
 	);
 
 	function mischen<T>(arr: T[]): T[] {
