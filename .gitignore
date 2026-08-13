@@ -22,3 +22,7 @@ Thumbs.db
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 data/
+
+data-backup-aktuell/
+data-backup-vor-supabase/
+data/facta-before-supabase.sqlite
