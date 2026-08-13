@@ -7,6 +7,12 @@ export default defineConfig({
 	plugins: [
 		tailwindcss(),
 		sveltekit({
+			csrf: {
+				// Vercel kann die interne Request-URL anders rekonstruieren als die
+				// oeffentliche Produktionsadresse. Nur Factas echte Domain darf
+				// deshalb zusaetzlich Formulare absenden.
+				trustedOrigins: ['https://facta-one.vercel.app']
+			},
 			compilerOptions: {
 				// Force runes mode for the project, except for libraries. Can be removed in svelte 6.
 				runes: ({ filename }) =>
