@@ -32,8 +32,10 @@ npm run lint       # prettier + eslint
 npm run format
 ```
 
-Die zentrale Datenbank liegt in Supabase. Lokal werden `SUPABASE_URL` und
-`SUPABASE_SECRET_KEY` über eine nicht eingecheckte `.env` bereitgestellt.
+Die zentrale Datenbank liegt in Supabase. Lokal werden `SUPABASE_URL`,
+`SUPABASE_SECRET_KEY`, `FACTA_PASSWORD` und `FACTA_SESSION_SECRET` über eine
+nicht eingecheckte `.env` bereitgestellt. Der serverseitige Passwortschutz
+sperrt sämtliche Seiten und API-Endpunkte; Sitzungen laufen nach 30 Tagen ab.
 Backup: Verwalten → „Backup exportieren" (JSON). Schema- und RPC-Änderungen
 werden kontrolliert im Supabase SQL Editor ausgeführt.
 

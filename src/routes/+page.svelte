@@ -88,7 +88,12 @@
 
 <div class="seite">
 	<header class="kopf">
-		<a class="verwalten-link" href="/verwalten" title="Verwalten">Verwalten</a>
+		<div class="kopf-aktionen">
+			<a class="kopf-link" href="/verwalten" title="Verwalten">Verwalten</a>
+			<form method="POST" action="/logout">
+				<button class="kopf-link" type="submit">Abmelden</button>
+			</form>
+		</div>
 		<h1>Facta</h1>
 		<p class="untertitel">Dein vernetztes Wissen für die Fallbearbeitung.</p>
 	</header>
@@ -151,12 +156,25 @@
 				<h2>Kartenbäume nach Fall</h2>
 				{#each gruppen.gs as g (g.fall.id)}
 					<div class="fall-block">
-						<div class="fall-kopf" role="button" tabindex="0"
+						<div
+							class="fall-kopf"
+							role="button"
+							tabindex="0"
 							onclick={() => (offen[g.fall.id] = !offen[g.fall.id])}
-							onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); offen[g.fall.id] = !offen[g.fall.id]; } }}>
+							onkeydown={(e) => {
+								if (e.key === 'Enter' || e.key === ' ') {
+									e.preventDefault();
+									offen[g.fall.id] = !offen[g.fall.id];
+								}
+							}}
+						>
 							<span class="pfeil" class:auf={offen[g.fall.id]}>›</span>
 							<span class="typ-punkt" style:--punkt="var(--typ-fall)"></span>
-							<a class="fall-titel" href={`/karte/${g.fall.id}`} onclick={(e) => e.stopPropagation()}>
+							<a
+								class="fall-titel"
+								href={`/karte/${g.fall.id}`}
+								onclick={(e) => e.stopPropagation()}
+							>
 								{klartext(g.fall.title ?? g.fall.front)}
 							</a>
 							<span class="fall-zahl">{g.karten.length} Karten</span>
@@ -218,11 +236,19 @@
 		text-align: center;
 		position: relative;
 	}
-	/* Verwalten oben rechts: still, immer erreichbar */
-	.verwalten-link {
+	/* Leise Verwaltungsaktionen oben rechts */
+	.kopf-aktionen {
 		position: absolute;
 		top: 0;
 		right: 0;
+		display: flex;
+		align-items: center;
+		gap: 0.45rem;
+	}
+	.kopf-aktionen form {
+		margin: 0;
+	}
+	.kopf-link {
 		color: var(--text-fluester);
 		text-decoration: none;
 		font-size: 0.82rem;
@@ -230,9 +256,15 @@
 		padding: 0.4rem 0.8rem;
 		border-radius: 999px;
 		border: 1px solid var(--linie);
-		transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+		background: transparent;
+		font-family: inherit;
+		cursor: pointer;
+		transition:
+			color 0.15s ease,
+			border-color 0.15s ease,
+			background 0.15s ease;
 	}
-	.verwalten-link:hover {
+	.kopf-link:hover {
 		color: var(--text);
 		border-color: var(--linie-stark);
 		background: var(--flaeche);
@@ -258,9 +290,13 @@
 		color: var(--text);
 		font-family: inherit;
 		font-size: 0.95rem;
-		transition: border-color 0.15s ease, background 0.15s ease;
+		transition:
+			border-color 0.15s ease,
+			background 0.15s ease;
 	}
-	.suche::placeholder { color: var(--text-fluester); }
+	.suche::placeholder {
+		color: var(--text-fluester);
+	}
 	.suche:focus {
 		outline: none;
 		border-color: var(--akzent);
@@ -284,10 +320,19 @@
 		font-size: 0.82rem;
 		font-weight: 500;
 		cursor: pointer;
-		transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
+		transition:
+			background 0.15s ease,
+			color 0.15s ease,
+			border-color 0.15s ease,
+			transform 0.1s ease;
 	}
-	.pille:hover { border-color: var(--linie-stark); color: var(--text); }
-	.pille:active { transform: scale(0.96); }
+	.pille:hover {
+		border-color: var(--linie-stark);
+		color: var(--text);
+	}
+	.pille:active {
+		transform: scale(0.96);
+	}
 	/* Streifzug-Knöpfe: eigene Optik, damit klar wird — das ist Aktion, kein Filter */
 	.streifzug-zeile {
 		display: flex;
@@ -307,13 +352,18 @@
 		font-family: inherit;
 		font-size: 0.85rem;
 		font-weight: 500;
-		transition: background 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
+		transition:
+			background 0.15s ease,
+			border-color 0.15s ease,
+			transform 0.1s ease;
 	}
 	.streifzug-pille:hover {
 		background: var(--flaeche-hoch);
 		border-color: var(--text-fluester);
 	}
-	.streifzug-pille:active { transform: scale(0.97); }
+	.streifzug-pille:active {
+		transform: scale(0.97);
+	}
 	.streifzug-hinweis {
 		font-size: 0.78rem;
 		color: var(--text-fluester);
@@ -349,7 +399,10 @@
 		padding: 1.1rem 1.2rem;
 		text-decoration: none;
 		color: var(--text);
-		transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+		transition:
+			border-color 0.15s ease,
+			transform 0.15s ease,
+			box-shadow 0.15s ease;
 	}
 	.fall-karte:hover {
 		border-color: var(--linie-stark);
@@ -360,7 +413,11 @@
 		transform: translateY(0) scale(0.985);
 		box-shadow: none;
 	}
-	.fall-front { font-size: 0.95rem; line-height: 1.45; font-weight: 500; }
+	.fall-front {
+		font-size: 0.95rem;
+		line-height: 1.45;
+		font-weight: 500;
+	}
 
 	.typ-punkt {
 		width: 7px;
@@ -387,13 +444,17 @@
 		cursor: pointer;
 		transition: background 0.1s ease;
 	}
-	.fall-kopf:hover { background: var(--flaeche); }
+	.fall-kopf:hover {
+		background: var(--flaeche);
+	}
 	.pfeil {
 		color: var(--text-fluester);
 		transition: transform 0.15s ease;
 		flex-shrink: 0;
 	}
-	.pfeil.auf { transform: rotate(90deg); }
+	.pfeil.auf {
+		transform: rotate(90deg);
+	}
 	.fall-titel {
 		flex: 1;
 		color: var(--text);
@@ -403,7 +464,9 @@
 		overflow: hidden;
 		text-overflow: ellipsis;
 	}
-	.fall-titel:hover { color: var(--akzent); }
+	.fall-titel:hover {
+		color: var(--akzent);
+	}
 	.fall-zahl {
 		font-size: 0.75rem;
 		color: var(--text-fluester);
@@ -424,8 +487,12 @@
 		border-bottom: 1px solid var(--linie);
 		transition: background 0.1s ease;
 	}
-	.unter-zeile:last-child { border-bottom: none; }
-	.unter-zeile:hover { background: var(--flaeche); }
+	.unter-zeile:last-child {
+		border-bottom: none;
+	}
+	.unter-zeile:hover {
+		background: var(--flaeche);
+	}
 	.zeile-front {
 		flex: 1;
 		white-space: nowrap;
@@ -456,7 +523,10 @@
 		padding: 4rem 0;
 		color: var(--text-leise);
 	}
-	.leer-hinweis { color: var(--text-fluester); font-size: 0.85rem; }
+	.leer-hinweis {
+		color: var(--text-fluester);
+		font-size: 0.85rem;
+	}
 	.keine-treffer {
 		padding: 2rem 0;
 		margin: 0;
