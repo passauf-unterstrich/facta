@@ -109,11 +109,16 @@
 	// --- Fall-Gruppierung ---
 	// Von jeder fall-Karte aus per Kanten alle erreichbaren Karten
 	// sammeln. Rest = "Freistehende Karten", nach area gruppiert.
-	type Gruppe = { fall: KartenVorschau; karten: KartenVorschau[] };
+	type BaumAst = { karte: KartenVorschau; kinder: BaumAst[] };
+	type BaumEintrag = {
+		karte: KartenVorschau;
+		pfad: Array<'weiter' | 'leer' | 'zweig' | 'ende'>;
+	};
+	type Gruppe = { fall: KartenVorschau; karten: KartenVorschau[]; baum: BaumEintrag[] };
 	const gruppen = $derived.by(() => {
 		const nodesById = new Map(data.nodes.map((n) => [n.id, n]));
 		const kanten = new Map<string, string[]>();
-		for (const e of data.edges) {
+		for (const e of [...data.edges].sort((a, b) => a.id - b.id)) {
 			if (!kanten.has(e.from_id)) kanten.set(e.from_id, []);
 			kanten.get(e.from_id)!.push(e.to_id);
 		}
@@ -121,18 +126,44 @@
 		const gs: Gruppe[] = [];
 		const zugeordnet = new Set<string>();
 		for (const fall of faelle) {
-			const besucht = new Set<string>();
-			const stapel = [fall.id];
-			while (stapel.length > 0) {
-				const id = stapel.pop()!;
-				if (besucht.has(id)) continue;
-				besucht.add(id);
-				for (const kind of kanten.get(id) ?? []) stapel.push(kind);
+			const besucht = new Set<string>([fall.id]);
+
+			// Aus dem bestehenden Graphen einen eindeutigen Darstellungsbaum bauen.
+			// Querverweise bleiben in der Datenbank erhalten, erscheinen hier aber
+			// nur an der ersten strukturellen Stelle. Das verhindert Dopplungen und Zyklen.
+			function baueAeste(elternId: string): BaumAst[] {
+				const aeste: BaumAst[] = [];
+				for (const kindId of kanten.get(elternId) ?? []) {
+					if (besucht.has(kindId)) continue;
+					const karte = nodesById.get(kindId);
+					if (!karte) continue;
+					besucht.add(kindId);
+					const ast: BaumAst = { karte, kinder: [] };
+					aeste.push(ast);
+					ast.kinder = baueAeste(kindId);
+				}
+				return aeste;
 			}
-			const karten = [...besucht]
-				.map((id) => nodesById.get(id))
-				.filter((n): n is KartenVorschau => !!n && n.id !== fall.id);
-			gs.push({ fall, karten });
+
+			const aeste = baueAeste(fall.id);
+			const baum: BaumEintrag[] = [];
+			function verflache(auswahl: BaumAst[], ahnenlinien: boolean[] = []) {
+				for (const [index, ast] of auswahl.entries()) {
+					const istLetzter = index === auswahl.length - 1;
+					baum.push({
+						karte: ast.karte,
+						pfad: [
+							...ahnenlinien.map((weiter) => (weiter ? ('weiter' as const) : ('leer' as const))),
+							istLetzter ? 'ende' : 'zweig'
+						]
+					});
+					verflache(ast.kinder, [...ahnenlinien, !istLetzter]);
+				}
+			}
+			verflache(aeste);
+
+			const karten = baum.map((eintrag) => eintrag.karte);
+			gs.push({ fall, karten, baum });
 			besucht.forEach((id) => zugeordnet.add(id));
 		}
 		return { gs, frei: data.nodes.filter((n) => !zugeordnet.has(n.id)) };
@@ -271,17 +302,29 @@
 					>
 				</div>
 				{#if offen[g.fall.id]}
-					<div class="fall-liste">
-						{#each g.karten as node (node.id)}
-							<div class="zeile zeile-eingerueckt">
-								<span class="typ-punkt" style:--punkt="var(--typ-{node.type})"></span>
-								<a class="zeile-front" href={`/karte/${node.id}`}>
-									{klartext(node.title ?? node.front)}
+					<div class="fall-liste baum-liste">
+						{#each g.baum as eintrag (eintrag.karte.id)}
+							<div class="zeile baum-zeile">
+								<span class="baum-spur" aria-hidden="true">
+									{#each eintrag.pfad as segment}
+										<span class="baum-linie {segment}"></span>
+									{/each}
+								</span>
+								<span
+									class="typ-punkt"
+									style:--punkt="var(--typ-{eintrag.karte.type})"
+								></span>
+								<a class="zeile-front" href={`/karte/${eintrag.karte.id}`}>
+									{klartext(eintrag.karte.title ?? eintrag.karte.front)}
 								</a>
-								<span class="zeile-id">{node.id}</span>
+								<span class="zeile-id">{eintrag.karte.id}</span>
 								<button
 									class="loeschen"
-									onclick={() => loesche(node.id, klartext(node.title ?? node.front))}
+									onclick={() =>
+										loesche(
+											eintrag.karte.id,
+											klartext(eintrag.karte.title ?? eintrag.karte.front)
+										)}
 									aria-label="Löschen">×</button
 								>
 							</div>
@@ -577,6 +620,9 @@
 		border-top: 1px solid var(--linie);
 		background: color-mix(in srgb, var(--flaeche) 40%, transparent);
 	}
+	.baum-liste {
+		--ast-breite: 1.05rem;
+	}
 
 	.zeile {
 		display: flex;
@@ -591,6 +637,50 @@
 	}
 	.zeile-eingerueckt {
 		padding-left: 2.5rem;
+	}
+	.baum-zeile {
+		gap: 0.55rem;
+		padding-left: 1rem;
+	}
+	.baum-spur {
+		display: flex;
+		align-self: stretch;
+		flex: 0 0 auto;
+		margin-block: -0.6rem;
+	}
+	.baum-linie {
+		position: relative;
+		width: var(--ast-breite);
+		min-width: var(--ast-breite);
+	}
+	.baum-linie.weiter::before,
+	.baum-linie.zweig::before,
+	.baum-linie.ende::before,
+	.baum-linie.zweig::after,
+	.baum-linie.ende::after {
+		position: absolute;
+		content: '';
+		background: var(--linie-stark);
+	}
+	.baum-linie.weiter::before,
+	.baum-linie.zweig::before {
+		top: 0;
+		bottom: 0;
+		left: 50%;
+		width: 1px;
+	}
+	.baum-linie.ende::before {
+		top: 0;
+		bottom: 50%;
+		left: 50%;
+		width: 1px;
+	}
+	.baum-linie.zweig::after,
+	.baum-linie.ende::after {
+		top: 50%;
+		left: 50%;
+		right: 0;
+		height: 1px;
 	}
 	.typ-punkt {
 		width: 7px;
@@ -685,6 +775,13 @@
 		}
 		.knopf-grau {
 			min-height: 3.8rem;
+		}
+		.baum-liste {
+			--ast-breite: 0.78rem;
+		}
+		.baum-zeile {
+			padding-left: 0.65rem;
+			gap: 0.45rem;
 		}
 		.portal-karte {
 			padding: 0.8rem 0.9rem;
