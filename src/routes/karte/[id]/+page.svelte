@@ -7,6 +7,7 @@
 	import type { Karte, Kind, BauDaten } from '$lib/types';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
+	import { onMount } from 'svelte';
 
 	let { data } = $props();
 
@@ -19,22 +20,33 @@
 		return raw ? raw.split(',').filter(Boolean) : [];
 	});
 	const streifzugAktiv = $derived(page.url.searchParams.has('streifzug'));
+	const gebietFilter = $derived(page.url.searchParams.get('area'));
+	const bibliothekLink = $derived(
+		gebietFilter ? `/?area=${encodeURIComponent(gebietFilter)}` : '/'
+	);
+	function zielLink(art: 'karte' | 'graph', id: string, rest = streifzugRest): string {
+		const params = new URLSearchParams();
+		if (streifzugAktiv) params.set('streifzug', rest.join(','));
+		if (gebietFilter) params.set('area', gebietFilter);
+		const query = params.toString();
+		return `/${art}/${id}${query ? `?${query}` : ''}`;
+	}
 	function naechsterFall() {
 		if (streifzugRest.length === 0) {
-			goto('/');
+			goto(bibliothekLink);
 			return;
 		}
 		const [naechster, ...rest] = streifzugRest;
-		const query = rest.length > 0 ? `?streifzug=${rest.join(',')}` : '';
-		goto(`/karte/${naechster}${query}`);
+		goto(zielLink('karte', naechster, rest));
 	}
 	function streifzugBeenden() {
-		goto('/');
+		goto(bibliothekLink);
 	}
 
-	let modus = $state<'lernen' | 'bauen'>(
-		page.url.searchParams.get('modus') === 'bauen' ? 'bauen' : 'lernen'
-	);
+	let modus = $state<'lernen' | 'bauen'>('lernen');
+	onMount(() => {
+		if (data.rolle === 'owner' && page.url.searchParams.get('modus') === 'bauen') modus = 'bauen';
+	});
 	let zeigeVerknuepft = $state(false);
 
 	// Lern-Zustand (Ableitung: gehört zur Karten-ID)
@@ -140,7 +152,7 @@
 
 <div class="seite">
 	<nav class="leiste">
-		<a class="zurueck" href="/">‹ Bibliothek</a>
+		<a class="zurueck" href={bibliothekLink}>‹ Bibliothek</a>
 
 		{#if data.children.length > 0}
 			<button
@@ -167,7 +179,8 @@
 			<BauKarte
 				node={data.node}
 				onsave={(daten) => speichere(data.node, daten)}
-				onlinkstart={(feld, start, ende, text, daten) => linkStart(-1, feld, start, ende, text, daten)}
+				onlinkstart={(feld, start, ende, text, daten) =>
+					linkStart(-1, feld, start, ende, text, daten)}
 			/>
 		{/key}
 		{#if link && link.ebene === -1}
@@ -216,7 +229,8 @@
 					<BauKarte
 						node={layer.node}
 						onsave={(daten) => speichere(layer.node, daten)}
-						onlinkstart={(feld, start, ende, text, daten) => linkStart(i, feld, start, ende, text, daten)}
+						onlinkstart={(feld, start, ende, text, daten) =>
+							linkStart(i, feld, start, ende, text, daten)}
 						onschliessen={schliesseOberste}
 					/>
 				{/key}
@@ -239,18 +253,20 @@
 
 <div class="modus-hud">
 	<button class:aktiv={modus === 'lernen'} onclick={() => (modus = 'lernen')}>Lernen</button>
-	<button class:aktiv={modus === 'bauen'} onclick={() => (modus = 'bauen')}>Bauen</button>
-	<a class="hud-link" href={`/graph/${data.node.id}`}>Graph</a>
+	{#if data.rolle === 'owner'}
+		<button class:aktiv={modus === 'bauen'} onclick={() => (modus = 'bauen')}>Bauen</button>
+	{/if}
+	<a class="hud-link" href={zielLink('graph', data.node.id)}>Graph</a>
 </div>
 
 {#if streifzugAktiv}
 	<div class="streifzug-hud">
-		<span class="streifzug-label">Zufälliger Fall</span>
+		<span class="streifzug-label">Zufälliger Baum</span>
 		{#if streifzugRest.length > 0}
-			<button class="streifzug-knopf" onclick={naechsterFall}>Nächster Fall ›</button>
+			<button class="streifzug-knopf" onclick={naechsterFall}>Nächster Baum ›</button>
 			<span class="streifzug-rest">noch {streifzugRest.length}</span>
 		{:else}
-			<span class="streifzug-rest">letzter Fall</span>
+			<span class="streifzug-rest">letzter Baum</span>
 			<button class="streifzug-knopf" onclick={streifzugBeenden}>Beenden</button>
 		{/if}
 	</div>
@@ -443,7 +459,9 @@
 		cursor: pointer;
 		transition: background 0.15s ease;
 	}
-	.streifzug-knopf:hover { background: var(--akzent-hover); }
+	.streifzug-knopf:hover {
+		background: var(--akzent-hover);
+	}
 	.streifzug-rest {
 		font-size: 0.72rem;
 		color: var(--text-fluester);

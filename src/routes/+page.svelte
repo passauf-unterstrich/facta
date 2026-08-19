@@ -1,11 +1,13 @@
 <script lang="ts">
 	import type { KartenVorschau } from '$lib/types';
 	import { klartext } from '$lib/markdown';
+	import { goto } from '$app/navigation';
+	import { page } from '$app/state';
 
 	let { data } = $props();
 
 	let suche = $state('');
-	let gebiet = $state<string | null>(null);
+	let gebiet = $state<string | null>(page.url.searchParams.get('area'));
 	let offen = $state<Record<string, boolean>>({});
 
 	const GEBIET_NAMEN: Record<string, string> = {
@@ -19,6 +21,17 @@
 	};
 	function gebietsName(a: string): string {
 		return GEBIET_NAMEN[a] ?? a;
+	}
+	function waehleGebiet(neu: string | null) {
+		gebiet = neu;
+		goto(neu ? `/?area=${encodeURIComponent(neu)}` : '/', {
+			replaceState: true,
+			noScroll: true,
+			keepFocus: true
+		});
+	}
+	function kartenLink(id: string): string {
+		return `/karte/${id}${gebiet ? `?area=${encodeURIComponent(gebiet)}` : ''}`;
 	}
 
 	async function abmelden() {
@@ -98,25 +111,31 @@
 <div class="seite">
 	<header class="kopf">
 		<div class="kopf-aktionen">
-			<a class="kopf-link" href="/verwalten" title="Verwalten">Verwalten</a>
+			{#if data.rolle === 'owner'}
+				<a class="kopf-link" href="/verwalten" title="Verwalten">Verwalten</a>
+			{/if}
 			<button class="kopf-link" type="button" onclick={abmelden}>Abmelden</button>
 		</div>
 		<h1>Facta</h1>
-		<p class="untertitel">Dein vernetztes Wissen für die Fallbearbeitung.</p>
+		<p class="untertitel">
+			{data.rolle === 'guest'
+				? `${data.portalName} · Nur Lernen und Graph`
+				: 'Dein vernetztes Wissen für die Fallbearbeitung.'}
+		</p>
 	</header>
 
 	<input class="suche" type="search" placeholder="Karten durchsuchen …" bind:value={suche} />
 
 	{#if gebiete.length > 0}
 		<div class="gebiete">
-			<button class="pille" class:aktiv={gebiet === null} onclick={() => (gebiet = null)}>
+			<button class="pille" class:aktiv={gebiet === null} onclick={() => waehleGebiet(null)}>
 				Alle
 			</button>
 			{#each gebiete as g (g)}
 				<button
 					class="pille"
 					class:aktiv={gebiet === g}
-					onclick={() => (gebiet = gebiet === g ? null : g)}
+					onclick={() => waehleGebiet(gebiet === g ? null : g)}
 				>
 					{gebietsName(g)}
 				</button>
@@ -130,7 +149,7 @@
 				Zufällige Karte
 			</a>
 			<a class="streifzug-pille" href={`/streifzug/faelle${gebiet ? `?area=${gebiet}` : ''}`}>
-				Zufälliger Fall
+				Zufälliger Baum
 			</a>
 			{#if gebiet}
 				<span class="streifzug-hinweis">aus {gebietsName(gebiet)}</span>
@@ -149,7 +168,7 @@
 				<h2>Fälle</h2>
 				<div class="fall-grid">
 					{#each faelle as fall (fall.id)}
-						<a class="fall-karte" href={`/karte/${fall.id}`}>
+						<a class="fall-karte" href={kartenLink(fall.id)}>
 							<span class="typ-punkt" style:--punkt="var(--typ-fall)"></span>
 							<span class="fall-front">{klartext(fall.title ?? fall.front)}</span>
 						</a>
@@ -179,7 +198,7 @@
 							<span class="typ-punkt" style:--punkt="var(--typ-fall)"></span>
 							<a
 								class="fall-titel"
-								href={`/karte/${g.fall.id}`}
+								href={kartenLink(g.fall.id)}
 								onclick={(e) => e.stopPropagation()}
 							>
 								{klartext(g.fall.title ?? g.fall.front)}
@@ -189,7 +208,7 @@
 						{#if offen[g.fall.id]}
 							<div class="unter-liste">
 								{#each g.karten as node (node.id)}
-									<a class="unter-zeile" href={`/karte/${node.id}`}>
+									<a class="unter-zeile" href={kartenLink(node.id)}>
 										<span class="typ-punkt" style:--punkt="var(--typ-{node.type})"></span>
 										<span class="zeile-front">{klartext(node.title ?? node.front)}</span>
 									</a>
@@ -212,7 +231,7 @@
 						</div>
 						<div class="unter-liste">
 							{#each karten as node (node.id)}
-								<a class="unter-zeile" href={`/karte/${node.id}`}>
+								<a class="unter-zeile" href={kartenLink(node.id)}>
 									<span class="typ-punkt" style:--punkt="var(--typ-{node.type})"></span>
 									<span class="zeile-front">{klartext(node.title ?? node.front)}</span>
 								</a>
@@ -537,5 +556,16 @@
 		text-align: center;
 		font-size: 0.9rem;
 		color: var(--text-fluester);
+	}
+
+	@media (max-width: 560px) {
+		.seite {
+			padding-top: 1.5rem;
+		}
+		.kopf-aktionen {
+			position: static;
+			justify-content: center;
+			margin-bottom: 1.1rem;
+		}
 	}
 </style>

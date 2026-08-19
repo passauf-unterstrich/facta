@@ -89,6 +89,23 @@
 		await invalidateAll();
 	}
 
+	async function loescheBaum(id: string, titel: string, anzahl: number) {
+		if (
+			!confirm(
+				`Den gesamten Baum „${titel}“ mit ${anzahl} Karten wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.`
+			)
+		)
+			return;
+		const res = await fetch(`/api/admin/tree/${id}`, { method: 'DELETE' });
+		const antwort = await res.json();
+		if (!res.ok) {
+			alert(antwort.message ?? 'Baum konnte nicht gelöscht werden.');
+			return;
+		}
+		alert(`${antwort.nodes} Karten wurden als zusammenhängender Baum gelöscht.`);
+		await invalidateAll();
+	}
+
 	// --- Fall-Gruppierung ---
 	// Von jeder fall-Karte aus per Kanten alle erreichbaren Karten
 	// sammeln. Rest = "Freistehende Karten", nach area gruppiert.
@@ -191,6 +208,7 @@
 			</label>
 			<a class="knopf-grau" href="/api/export" download>Backup exportieren</a>
 			<button class="knopf-grau" onclick={kopierePrompt}>KI-Prompt kopieren</button>
+			<a class="knopf-grau" href="/verwalten/gast">Gastportal verwalten</a>
 		</div>
 		{#if importStatus}<p class="status">{importStatus}</p>{/if}
 		{#if promptStatus}<p class="status">{promptStatus}</p>{/if}
@@ -200,9 +218,18 @@
 		<h2>Fälle <span class="zahl">{gruppen.gs.length}</span></h2>
 		{#each gruppen.gs as g (g.fall.id)}
 			<div class="fall-block">
-				<div class="fall-kopf" role="button" tabindex="0"
+				<div
+					class="fall-kopf"
+					role="button"
+					tabindex="0"
 					onclick={() => (offen[g.fall.id] = !offen[g.fall.id])}
-					onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); offen[g.fall.id] = !offen[g.fall.id]; } }}>
+					onkeydown={(e) => {
+						if (e.key === 'Enter' || e.key === ' ') {
+							e.preventDefault();
+							offen[g.fall.id] = !offen[g.fall.id];
+						}
+					}}
+				>
 					<span class="pfeil" class:auf={offen[g.fall.id]}>›</span>
 					<span class="typ-punkt" style:--punkt="var(--typ-fall)"></span>
 					<a class="fall-titel" href={`/karte/${g.fall.id}`} onclick={(e) => e.stopPropagation()}>
@@ -210,13 +237,20 @@
 					</a>
 					<span class="fall-zahl">{g.karten.length} Karten</span>
 					<button
+						class="baum-loeschen"
+						onclick={(e) => {
+							e.stopPropagation();
+							loescheBaum(g.fall.id, klartext(g.fall.title ?? g.fall.front), g.karten.length + 1);
+						}}>Baum löschen</button
+					>
+					<button
 						class="loeschen"
 						onclick={(e) => {
 							e.stopPropagation();
 							loesche(g.fall.id, klartext(g.fall.title ?? g.fall.front));
 						}}
-						aria-label="Löschen"
-					>×</button>
+						aria-label="Löschen">×</button
+					>
 				</div>
 				{#if offen[g.fall.id]}
 					<div class="fall-liste">
@@ -230,8 +264,8 @@
 								<button
 									class="loeschen"
 									onclick={() => loesche(node.id, klartext(node.title ?? node.front))}
-									aria-label="Löschen"
-								>×</button>
+									aria-label="Löschen">×</button
+								>
 							</div>
 						{/each}
 					</div>
@@ -263,8 +297,8 @@
 								<button
 									class="loeschen"
 									onclick={() => loesche(node.id, klartext(node.title ?? node.front))}
-									aria-label="Löschen"
-								>×</button>
+									aria-label="Löschen">×</button
+								>
 							</div>
 						{/each}
 					</div>
@@ -283,14 +317,18 @@
 		flex-direction: column;
 		gap: 2rem;
 	}
-	.leiste { display: flex; }
+	.leiste {
+		display: flex;
+	}
 	.zurueck {
 		color: var(--text-fluester);
 		text-decoration: none;
 		font-size: 0.85rem;
 		transition: color 0.15s ease;
 	}
-	.zurueck:hover { color: var(--text); }
+	.zurueck:hover {
+		color: var(--text);
+	}
 	h1 {
 		font-size: 1.5rem;
 		font-weight: 700;
@@ -305,10 +343,20 @@
 		color: var(--text-fluester);
 		margin: 0 0 0.9rem;
 	}
-	.zahl { font-weight: 400; margin-left: 0.3rem; }
-	.block { display: flex; flex-direction: column; }
+	.zahl {
+		font-weight: 400;
+		margin-left: 0.3rem;
+	}
+	.block {
+		display: flex;
+		flex-direction: column;
+	}
 
-	.neu-zeile { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+	.neu-zeile {
+		display: flex;
+		gap: 0.5rem;
+		flex-wrap: wrap;
+	}
 	.feld {
 		background: var(--flaeche);
 		border: 1px solid var(--linie);
@@ -318,9 +366,17 @@
 		font-family: inherit;
 		font-size: 0.88rem;
 	}
-	.feld:focus { outline: none; border-color: var(--akzent); }
-	.feld-schmal { flex: 0 0 auto; }
-	.feld-breit { flex: 1; min-width: 12rem; }
+	.feld:focus {
+		outline: none;
+		border-color: var(--akzent);
+	}
+	.feld-schmal {
+		flex: 0 0 auto;
+	}
+	.feld-breit {
+		flex: 1;
+		min-width: 12rem;
+	}
 
 	.knopf-blau {
 		background: var(--akzent);
@@ -332,13 +388,26 @@
 		font-size: 0.88rem;
 		font-weight: 500;
 		cursor: pointer;
-		transition: background 0.15s ease, transform 0.1s ease, opacity 0.15s ease;
+		transition:
+			background 0.15s ease,
+			transform 0.1s ease,
+			opacity 0.15s ease;
 	}
-	.knopf-blau:hover { background: var(--akzent-hover); }
-	.knopf-blau:active { transform: scale(0.97); }
-	.knopf-blau:disabled { opacity: 0.4; cursor: default; }
+	.knopf-blau:hover {
+		background: var(--akzent-hover);
+	}
+	.knopf-blau:active {
+		transform: scale(0.97);
+	}
+	.knopf-blau:disabled {
+		opacity: 0.4;
+		cursor: default;
+	}
 
-	.daten-zeile { display: flex; gap: 0.5rem; }
+	.daten-zeile {
+		display: flex;
+		gap: 0.5rem;
+	}
 	.knopf-grau {
 		display: inline-block;
 		background: var(--flaeche-hoch);
@@ -352,8 +421,14 @@
 		cursor: pointer;
 		transition: background 0.15s ease;
 	}
-	.knopf-grau:hover { background: var(--linie-stark); }
-	.status { font-size: 0.85rem; color: var(--text-leise); margin: 0.75rem 0 0; }
+	.knopf-grau:hover {
+		background: var(--linie-stark);
+	}
+	.status {
+		font-size: 0.85rem;
+		color: var(--text-leise);
+		margin: 0.75rem 0 0;
+	}
 
 	/* Fall-Block: klappbarer Container mit Baum drunter */
 	.fall-block {
@@ -372,13 +447,17 @@
 		cursor: pointer;
 		transition: background 0.1s ease;
 	}
-	.fall-kopf:hover { background: var(--flaeche); }
+	.fall-kopf:hover {
+		background: var(--flaeche);
+	}
 	.pfeil {
 		color: var(--text-fluester);
 		transition: transform 0.15s ease;
 		flex-shrink: 0;
 	}
-	.pfeil.auf { transform: rotate(90deg); }
+	.pfeil.auf {
+		transform: rotate(90deg);
+	}
 	.fall-titel {
 		flex: 1;
 		color: var(--text);
@@ -388,7 +467,9 @@
 		overflow: hidden;
 		text-overflow: ellipsis;
 	}
-	.fall-titel:hover { color: var(--akzent); }
+	.fall-titel:hover {
+		color: var(--akzent);
+	}
 	.fall-zahl {
 		font-size: 0.75rem;
 		color: var(--text-fluester);
@@ -407,8 +488,12 @@
 		border-bottom: 1px solid var(--linie);
 		font-size: 0.9rem;
 	}
-	.zeile:last-child { border-bottom: none; }
-	.zeile-eingerueckt { padding-left: 2.5rem; }
+	.zeile:last-child {
+		border-bottom: none;
+	}
+	.zeile-eingerueckt {
+		padding-left: 2.5rem;
+	}
 	.typ-punkt {
 		width: 7px;
 		height: 7px;
@@ -424,7 +509,9 @@
 		overflow: hidden;
 		text-overflow: ellipsis;
 	}
-	.zeile-front:hover { color: var(--akzent); }
+	.zeile-front:hover {
+		color: var(--akzent);
+	}
 	.zeile-id {
 		font-family: var(--mono);
 		font-size: 0.7rem;
@@ -441,7 +528,23 @@
 		padding: 0 0.2rem;
 		transition: color 0.15s ease;
 	}
-	.loeschen:hover { color: #ff453a; }
+	.loeschen:hover {
+		color: #ff453a;
+	}
+	.baum-loeschen {
+		background: none;
+		border: 1px solid var(--linie);
+		border-radius: 999px;
+		color: var(--text-fluester);
+		padding: 0.25rem 0.55rem;
+		font: inherit;
+		font-size: 0.72rem;
+		cursor: pointer;
+	}
+	.baum-loeschen:hover {
+		color: #ff6961;
+		border-color: #7f1d1d;
+	}
 
 	/* Freistehende: nach area gruppiert */
 	.area-block {

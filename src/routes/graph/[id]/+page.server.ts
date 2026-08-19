@@ -1,6 +1,7 @@
 import { error } from '@sveltejs/kit';
 import { supabase } from '$lib/server/supabase';
 import { ladeAlleSeiten } from '$lib/server/db/supabase-pages';
+import { darfKarteSehen, ladeSichtbareIds } from '$lib/server/guest-access';
 import type { Karte, Kante } from '$lib/types';
 import type { PageServerLoad } from './$types';
 
@@ -24,13 +25,20 @@ async function holeNodes(ids: string[]): Promise<Karte[]> {
 
 // Die Spalten brauchen nur den vom Startknoten aus erreichbaren Teilgraphen.
 // So reist nicht bei jedem Graph-Aufruf die komplette Wissensbasis zum Browser.
-export const load: PageServerLoad = async ({ params }) => {
-	const [startErgebnis, alleEdges] = await Promise.all([
+export const load: PageServerLoad = async ({ params, locals }) => {
+	if (!(await darfKarteSehen(locals.sitzung!, params.id))) {
+		throw error(404, 'Karte nicht gefunden');
+	}
+	const [startErgebnis, roheEdges, sichtbareIds] = await Promise.all([
 		supabase.from('nodes').select('*').eq('id', params.id).maybeSingle(),
 		ladeAlleSeiten<Kante>((von, bis) =>
 			supabase.from('edges').select('*').order('id').range(von, bis)
-		)
+		),
+		ladeSichtbareIds(locals.sitzung!)
 	]);
+	const alleEdges = sichtbareIds
+		? roheEdges.filter((edge) => sichtbareIds.has(edge.from_id) && sichtbareIds.has(edge.to_id))
+		: roheEdges;
 	const { data: start, error: startError } = startErgebnis;
 
 	if (startError) {

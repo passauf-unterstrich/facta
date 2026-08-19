@@ -28,17 +28,23 @@
 		if (kandidaten.length === 0) return;
 		const reihenfolge = mischen(kandidaten.map((k) => k.id));
 		const [erster, ...rest] = reihenfolge;
-		const queryRest = rest.length > 0 ? `?streifzug=${rest.join(',')}` : '';
-		goto(`/karte/${erster}${queryRest}`, { replaceState: true });
+		const params = new URLSearchParams();
+		params.set('streifzug', rest.join(','));
+		if (gebietFilter) params.set('area', gebietFilter);
+		goto(`/karte/${erster}?${params}`, { replaceState: true });
 	});
+
+	function zurBibliothek() {
+		goto(gebietFilter ? `/?area=${encodeURIComponent(gebietFilter)}` : '/');
+	}
 </script>
 
 <div class="seite">
 	{#if kandidaten.length === 0}
 		<p>Keine Fälle im aktuellen Filter.</p>
-		<button class="knopf" onclick={() => goto('/')}>Zurück</button>
+		<button class="knopf" onclick={zurBibliothek}>Zurück</button>
 	{:else}
-		<p class="lade">Zufälliger Fall startet …</p>
+		<p class="lade">Zufälliger Baum startet …</p>
 	{/if}
 </div>
 

@@ -4,6 +4,7 @@ import { speichereKarteSupabase } from '$lib/server/db/supabase-node-write';
 import { ladeAlleSeiten } from '$lib/server/db/supabase-pages';
 import type { KartenVorschau, KartenTyp } from '$lib/types';
 import type { RequestHandler } from './$types';
+import { ladeSichtbareIds } from '$lib/server/guest-access';
 
 const ERLAUBTE_TYPEN: KartenTyp[] = [
 	'fall',
@@ -17,15 +18,15 @@ const ERLAUBTE_TYPEN: KartenTyp[] = [
 const ERLAUBTE_MODES = ['open', 'struktur'];
 
 // GET /api/nodes → alle Karten
-export const GET: RequestHandler = async () => {
+export const GET: RequestHandler = async ({ locals }) => {
 	try {
-		const nodes = await ladeAlleSeiten<KartenVorschau>((von, bis) =>
-			supabase
-				.from('nodes')
-				.select('id, type, area, front, title')
-				.order('id')
-				.range(von, bis)
-		);
+		const [alleNodes, sichtbareIds] = await Promise.all([
+			ladeAlleSeiten<KartenVorschau>((von, bis) =>
+				supabase.from('nodes').select('id, type, area, front, title').order('id').range(von, bis)
+			),
+			ladeSichtbareIds(locals.sitzung!)
+		]);
+		const nodes = sichtbareIds ? alleNodes.filter((node) => sichtbareIds.has(node.id)) : alleNodes;
 		return json(nodes);
 	} catch (err) {
 		const message = err instanceof Error ? err.message : 'Karten konnten nicht geladen werden';
@@ -37,17 +38,7 @@ export const GET: RequestHandler = async () => {
 export const POST: RequestHandler = async ({ request }) => {
 	const daten = await request.json();
 
-	const {
-		id,
-		type,
-		area,
-		front,
-		back,
-		chips,
-		title,
-		ref,
-		mode
-	} = daten as {
+	const { id, type, area, front, back, chips, title, ref, mode } = daten as {
 		id: string;
 		type: KartenTyp;
 		area?: string | null;
@@ -64,17 +55,11 @@ export const POST: RequestHandler = async ({ request }) => {
 	}
 
 	if (!ERLAUBTE_TYPEN.includes(type)) {
-		throw error(
-			400,
-			`Unbekannter Typ "${type}". Erlaubt: ${ERLAUBTE_TYPEN.join(', ')}`
-		);
+		throw error(400, `Unbekannter Typ "${type}". Erlaubt: ${ERLAUBTE_TYPEN.join(', ')}`);
 	}
 
 	if (mode !== undefined && !ERLAUBTE_MODES.includes(mode)) {
-		throw error(
-			400,
-			`Unbekannter Mode "${mode}". Erlaubt: ${ERLAUBTE_MODES.join(', ')}`
-		);
+		throw error(400, `Unbekannter Mode "${mode}". Erlaubt: ${ERLAUBTE_MODES.join(', ')}`);
 	}
 
 	try {

@@ -3,7 +3,9 @@
 declare global {
 	namespace App {
 		// interface Error {}
-		// interface Locals {}
+		interface Locals {
+			sitzung?: { rolle: 'owner' } | { rolle: 'guest'; portalId: string; portalName: string };
+		}
 		// interface PageData {}
 		// interface PageState {}
 		// interface Platform {}

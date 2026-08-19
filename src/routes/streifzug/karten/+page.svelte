@@ -79,7 +79,11 @@
 
 	function beenden() {
 		sessionStorage.removeItem(schluessel());
-		goto('/');
+		goto(gebietFilter ? `/?area=${encodeURIComponent(gebietFilter)}` : '/');
+	}
+
+	function kartenLink(id: string): string {
+		return `/karte/${id}${gebietFilter ? `?area=${encodeURIComponent(gebietFilter)}` : ''}`;
 	}
 
 	// Beim Betreten: gespeicherten Streifzug wieder aufnehmen, sonst starten
@@ -136,7 +140,7 @@
 			node={karte}
 			{aufgedeckt}
 			onaufdecken={() => (aufgedeckt = true)}
-			onlink={(id) => goto(`/karte/${id}`)}
+			onlink={(id) => goto(kartenLink(id))}
 			{typMap}
 		/>
 		<div class="aktion">

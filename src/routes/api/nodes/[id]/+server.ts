@@ -2,17 +2,25 @@ import { json, error } from '@sveltejs/kit';
 import { supabase } from '$lib/server/supabase';
 import { holeKarteSupabase, holeKinderSupabase } from '$lib/server/db/supabase-queries';
 import type { RequestHandler } from './$types';
+import { darfKarteSehen, ladeSichtbareIds } from '$lib/server/guest-access';
 
 // GET /api/nodes/[id] → die Karte + ihre Kinder
-export const GET: RequestHandler = async ({ params }) => {
+export const GET: RequestHandler = async ({ params, locals }) => {
 	const id = params.id!;
+	if (!(await darfKarteSehen(locals.sitzung!, id))) throw error(404, 'Karte nicht gefunden');
 
 	const node = await holeKarteSupabase(id);
 	if (!node) {
 		throw error(404, `Karte "${id}" nicht gefunden`);
 	}
 
-	const children = await holeKinderSupabase(id);
+	const [alleKinder, sichtbareIds] = await Promise.all([
+		holeKinderSupabase(id),
+		ladeSichtbareIds(locals.sitzung!)
+	]);
+	const children = sichtbareIds
+		? alleKinder.filter((kind) => sichtbareIds.has(kind.id))
+		: alleKinder;
 
 	return json({ node, children });
 };
@@ -76,10 +84,7 @@ export const DELETE: RequestHandler = async ({ params }) => {
 
 	// 4. Karte löschen.
 	// Die Foreign Keys in edges sorgen für ON DELETE CASCADE.
-	const { error: deleteError } = await supabase
-		.from('nodes')
-		.delete()
-		.eq('id', id);
+	const { error: deleteError } = await supabase.from('nodes').delete().eq('id', id);
 
 	if (deleteError) {
 		throw error(500, deleteError.message);

@@ -2,6 +2,8 @@
 	import { klartext, rendere } from '$lib/markdown';
 	import { parseZeilen } from '$lib/schalen';
 	import type { Karte } from '$lib/types';
+	import { page } from '$app/state';
+	import { goto } from '$app/navigation';
 
 	let { data } = $props();
 
@@ -9,6 +11,30 @@
 	// Ein angeklicktes Blatt (verlinkt, aber ohne Verzweigung): sein
 	// voller Text erscheint rechts im Detail-Panel.
 	let blattVorschau = $state<string | null>(null);
+	const streifzugRest = $derived.by(() => {
+		const raw = page.url.searchParams.get('streifzug');
+		return raw ? raw.split(',').filter(Boolean) : [];
+	});
+	const streifzugAktiv = $derived(page.url.searchParams.has('streifzug'));
+	const gebietFilter = $derived(page.url.searchParams.get('area'));
+	const bibliothekLink = $derived(
+		gebietFilter ? `/?area=${encodeURIComponent(gebietFilter)}` : '/'
+	);
+	function zielLink(art: 'karte' | 'graph', id: string, rest = streifzugRest): string {
+		const params = new URLSearchParams();
+		if (streifzugAktiv) params.set('streifzug', rest.join(','));
+		if (gebietFilter) params.set('area', gebietFilter);
+		const query = params.toString();
+		return `/${art}/${id}${query ? `?${query}` : ''}`;
+	}
+	function naechsterBaum() {
+		if (streifzugRest.length === 0) {
+			goto(bibliothekLink);
+			return;
+		}
+		const [naechster, ...rest] = streifzugRest;
+		goto(zielLink('graph', naechster, rest));
+	}
 
 	// Nachschlagewerke einmal bauen
 	const nodeMap = $derived(new Map(data.nodes.map((n) => [n.id, n])));
@@ -97,7 +123,7 @@
 </script>
 
 <div class="kopf">
-	<a class="zurueck" href={`/karte/${data.start.id}`}>‹ Zur Karte</a>
+	<a class="zurueck" href={zielLink('karte', data.start.id)}>‹ Lernen</a>
 	<h1>{klartext(data.start.title ?? data.start.front)}</h1>
 	{#if data.start.front.trim()}
 		<button
@@ -109,6 +135,19 @@
 		</button>
 	{/if}
 </div>
+
+{#if streifzugAktiv}
+	<div class="streifzug-hud">
+		<span class="streifzug-label">Zufälliger Baum</span>
+		{#if streifzugRest.length > 0}
+			<button class="streifzug-knopf" onclick={naechsterBaum}>Nächster Baum ›</button>
+			<span class="streifzug-rest">noch {streifzugRest.length}</span>
+		{:else}
+			<span class="streifzug-rest">letzter Baum</span>
+			<button class="streifzug-knopf" onclick={() => goto(bibliothekLink)}>Beenden</button>
+		{/if}
+	</div>
+{/if}
 
 {#if zeigeSachverhalt && data.start.front.trim()}
 	<div class="sv-panel">
@@ -188,7 +227,9 @@
 {/if}
 
 <style>
-	:global(body) { overflow: hidden; }
+	:global(body) {
+		overflow: hidden;
+	}
 
 	.kopf {
 		display: flex;
@@ -203,7 +244,9 @@
 		white-space: nowrap;
 		transition: color 0.15s ease;
 	}
-	.zurueck:hover { color: var(--text); }
+	.zurueck:hover {
+		color: var(--text);
+	}
 	h1 {
 		font-size: 1.1rem;
 		font-weight: 600;
@@ -225,9 +268,15 @@
 		font-weight: 500;
 		cursor: pointer;
 		white-space: nowrap;
-		transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+		transition:
+			color 0.15s ease,
+			border-color 0.15s ease,
+			background 0.15s ease;
 	}
-	.sv-toggle:hover { color: var(--text-leise); border-color: var(--linie-stark); }
+	.sv-toggle:hover {
+		color: var(--text-leise);
+		border-color: var(--linie-stark);
+	}
 	.sv-toggle.aktiv {
 		color: var(--text);
 		background: var(--flaeche-hoch);
@@ -246,8 +295,14 @@
 		animation: sv-auf 0.18s ease;
 	}
 	@keyframes sv-auf {
-		from { opacity: 0; transform: translateY(-6px); }
-		to { opacity: 1; transform: translateY(0); }
+		from {
+			opacity: 0;
+			transform: translateY(-6px);
+		}
+		to {
+			opacity: 1;
+			transform: translateY(0);
+		}
 	}
 	.sv-ref {
 		font-family: var(--mono);
@@ -260,8 +315,12 @@
 		line-height: 1.6;
 		color: var(--text-leise);
 	}
-	.sv-text :global(p) { margin: 0 0 0.6em; }
-	.sv-text :global(p:last-child) { margin-bottom: 0; }
+	.sv-text :global(p) {
+		margin: 0 0 0.6em;
+	}
+	.sv-text :global(p:last-child) {
+		margin-bottom: 0;
+	}
 	.sv-text :global(strong) {
 		color: var(--typ-definition);
 		font-weight: 600;
@@ -290,8 +349,14 @@
 		animation: spalte-auf 0.18s ease;
 	}
 	@keyframes spalte-auf {
-		from { opacity: 0; transform: translateX(-6px); }
-		to { opacity: 1; transform: translateX(0); }
+		from {
+			opacity: 0;
+			transform: translateX(-6px);
+		}
+		to {
+			opacity: 1;
+			transform: translateX(0);
+		}
 	}
 
 	.section {
@@ -326,19 +391,28 @@
 		font-size: 0.85rem;
 		text-align: left;
 		cursor: pointer;
-		transition: background 0.1s ease, color 0.1s ease;
+		transition:
+			background 0.1s ease,
+			color 0.1s ease;
 	}
-	.eintrag:hover { background: var(--flaeche); color: var(--text); }
+	.eintrag:hover {
+		background: var(--flaeche);
+		color: var(--text);
+	}
 	.eintrag.im-pfad {
 		background: var(--flaeche-hoch);
 		color: var(--text);
 	}
-	.eintrag.blatt { color: var(--text-fluester); }
+	.eintrag.blatt {
+		color: var(--text-fluester);
+	}
 	button.eintrag.blatt:hover {
 		background: var(--flaeche);
 		color: var(--text-leise);
 	}
-	div.eintrag.blatt { cursor: default; }
+	div.eintrag.blatt {
+		cursor: default;
+	}
 
 	.typ-punkt {
 		width: 6px;
@@ -376,8 +450,14 @@
 		animation: detail-auf 0.2s ease;
 	}
 	@keyframes detail-auf {
-		from { opacity: 0; transform: translateX(8px); }
-		to { opacity: 1; transform: translateX(0); }
+		from {
+			opacity: 0;
+			transform: translateX(8px);
+		}
+		to {
+			opacity: 1;
+			transform: translateX(0);
+		}
 	}
 	.detail-typ {
 		display: flex;
@@ -389,7 +469,10 @@
 		letter-spacing: 0.08em;
 		color: var(--text-fluester);
 	}
-	.detail-ref { margin-left: auto; font-size: 0.7rem; }
+	.detail-ref {
+		margin-left: auto;
+		font-size: 0.7rem;
+	}
 	.detail-titel {
 		font-size: 1.25rem;
 		font-weight: 600;
@@ -403,13 +486,19 @@
 		line-height: 1.65;
 		color: var(--text);
 	}
-	.detail-front :global(p) { margin: 0 0 0.75em; }
-	.detail-front :global(p:last-child) { margin-bottom: 0; }
+	.detail-front :global(p) {
+		margin: 0 0 0.75em;
+	}
+	.detail-front :global(p:last-child) {
+		margin-bottom: 0;
+	}
 	.detail-front :global(strong) {
 		color: var(--typ-definition);
 		font-weight: 600;
 	}
-	.detail-front :global(em) { font-style: italic; }
+	.detail-front :global(em) {
+		font-style: italic;
+	}
 	/* Rückseite: gestrichelte Linie als weiche Grenze */
 	.detail-back {
 		padding-top: 1.25rem;
@@ -419,7 +508,9 @@
 		line-height: 1.65;
 		color: var(--text-leise);
 	}
-	.detail-back :global(p) { margin: 0 0 0.75em; }
+	.detail-back :global(p) {
+		margin: 0 0 0.75em;
+	}
 	.detail-back :global(strong) {
 		color: var(--typ-definition);
 		font-weight: 600;
@@ -442,11 +533,70 @@
 		font-size: 0.78rem;
 		cursor: pointer;
 		text-align: left;
-		transition: border-color 0.15s ease, color 0.15s ease;
+		transition:
+			border-color 0.15s ease,
+			color 0.15s ease;
 	}
 	.chip:hover {
 		border-color: var(--typ-thema);
 		color: var(--text);
 	}
-	.chip-passiv { cursor: default; opacity: 0.7; }
+	.chip-passiv {
+		cursor: default;
+		opacity: 0.7;
+	}
+	.streifzug-hud {
+		position: fixed;
+		right: 1rem;
+		bottom: 1rem;
+		z-index: 100;
+		display: flex;
+		align-items: center;
+		gap: 0.6rem;
+		background: color-mix(in srgb, var(--flaeche) 88%, transparent);
+		backdrop-filter: blur(12px);
+		border: 1px solid var(--linie);
+		border-radius: 999px;
+		padding: 0.35rem 0.5rem 0.35rem 0.9rem;
+		box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+	}
+	.streifzug-label {
+		font-size: 0.72rem;
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+		color: var(--text-fluester);
+		font-weight: 500;
+	}
+	.streifzug-knopf {
+		background: var(--akzent);
+		color: white;
+		border: 0;
+		border-radius: 999px;
+		padding: 0.3rem 0.9rem;
+		font: inherit;
+		font-size: 0.78rem;
+		font-weight: 500;
+		cursor: pointer;
+	}
+	.streifzug-rest {
+		font-size: 0.72rem;
+		color: var(--text-fluester);
+	}
+	@media (max-width: 640px) {
+		.kopf {
+			padding: 1rem;
+			gap: 0.75rem;
+		}
+		.kopf h1 {
+			font-size: 0.95rem;
+		}
+		.streifzug-label,
+		.streifzug-rest {
+			display: none;
+		}
+		.streifzug-hud {
+			right: 0.75rem;
+			bottom: 0.75rem;
+		}
+	}
 </style>
