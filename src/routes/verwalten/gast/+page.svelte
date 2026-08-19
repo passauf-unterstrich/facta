@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { invalidateAll } from '$app/navigation';
-	import { onMount } from 'svelte';
 	let { data } = $props();
 	let status = $state('');
 	let name = $state('Gastzugang');
@@ -9,8 +8,8 @@
 	let gastLink = $state('');
 	let suche = $state('');
 	let ausgewaehlteRootIds = $state<string[]>([]);
-	onMount(() => {
-		if (data.portal) gastLink = `${window.location.origin}/gast/${data.portal.slug}`;
+	$effect(() => {
+		gastLink = data.portal ? `${window.location.origin}/gast/${data.portal.slug}` : '';
 	});
 
 	async function action(action: string, extra: Record<string, unknown> = {}) {
@@ -36,7 +35,10 @@
 		return true;
 	}
 	async function copyLink() {
-		await navigator.clipboard.writeText(gastLink);
+		const aktuellerLink = data.portal
+			? `${window.location.origin}/gast/${data.portal.slug}`
+			: gastLink;
+		await navigator.clipboard.writeText(aktuellerLink);
 		status = 'Gastlink kopiert.';
 	}
 	const shared = $derived(new Set(data.shares.map((s: { root_id: string }) => s.root_id)));
