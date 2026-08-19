@@ -38,10 +38,10 @@
 <main class="login-seite">
 	<section class="login-karte">
 		<div class="zeichen">F</div>
-		<p class="ueberzeile">Persönlicher Gastzugang</p>
+		<p class="ueberzeile">Kursmaterialien</p>
 		<h1>{data.name}</h1>
-		<p class="erklaerung">Freigegebene Fälle und Wissenskarten zum Lernen.</p>
-		{#if !data.verfuegbar}<p class="fehler">Dieser Gastzugang ist derzeit geschlossen.</p>
+		<p class="erklaerung">Kursmaterialien, strukturiert aufbereitet und thematisch verknüpft.</p>
+		{#if !data.verfuegbar}<p class="fehler">Dieser Zugang ist derzeit nicht verfügbar.</p>
 		{:else}<form onsubmit={anmelden}>
 				<label for="password">Passwort</label><input
 					id="password"
@@ -52,7 +52,7 @@
 				/>
 				{#if fehlermeldung}<p class="fehler" aria-live="polite">{fehlermeldung}</p>{/if}<button
 					type="submit"
-					disabled={laedt}>{laedt ? 'Wird geöffnet …' : 'Gastbereich öffnen'}</button
+					disabled={laedt}>{laedt ? 'Wird geöffnet …' : 'Materialien öffnen'}</button
 				>
 			</form>{/if}
 	</section>

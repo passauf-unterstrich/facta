@@ -119,7 +119,7 @@
 		<h1>Facta</h1>
 		<p class="untertitel">
 			{data.rolle === 'guest'
-				? `${data.portalName} · Nur Lernen und Graph`
+				? `${data.portalName} · Kursmaterialien`
 				: 'Dein vernetztes Wissen für die Fallbearbeitung.'}
 		</p>
 	</header>
