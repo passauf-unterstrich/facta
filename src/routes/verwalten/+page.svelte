@@ -204,14 +204,32 @@
 		<div class="daten-zeile">
 			<label class="knopf-grau">
 				<input type="file" accept=".json,application/json" onchange={importiere} hidden />
-				JSON importieren
+				<span class="aktion-titel">JSON importieren</span>
+				<span class="aktion-hinweis">Neue Kartensätze einlesen</span>
 			</label>
-			<a class="knopf-grau" href="/api/export" download>Backup exportieren</a>
-			<button class="knopf-grau" onclick={kopierePrompt}>KI-Prompt kopieren</button>
-			<a class="knopf-grau" href="/verwalten/gast">Gastportal verwalten</a>
+			<a class="knopf-grau" href="/api/export" download>
+				<span class="aktion-titel">Backup exportieren</span>
+				<span class="aktion-hinweis">Alle Karten als JSON sichern</span>
+			</a>
+			<button class="knopf-grau" onclick={kopierePrompt}>
+				<span class="aktion-titel">KI-Prompt kopieren</span>
+				<span class="aktion-hinweis">Vorlage für neue Kartensätze</span>
+			</button>
 		</div>
 		{#if importStatus}<p class="status">{importStatus}</p>{/if}
 		{#if promptStatus}<p class="status">{promptStatus}</p>{/if}
+	</section>
+
+	<section class="block">
+		<h2>Zugriff</h2>
+		<a class="portal-karte" href="/verwalten/gast">
+			<span class="portal-monogramm" aria-hidden="true">G</span>
+			<span class="portal-text">
+				<strong>Gastportal</strong>
+				<span>Freigaben, Passwort und Zugriffe verwalten</span>
+			</span>
+			<span class="portal-pfeil" aria-hidden="true">›</span>
+		</a>
 	</section>
 
 	<section class="block">
@@ -405,24 +423,104 @@
 	}
 
 	.daten-zeile {
-		display: flex;
+		display: grid;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
 		gap: 0.5rem;
 	}
 	.knopf-grau {
-		display: inline-block;
+		display: flex;
+		min-width: 0;
+		min-height: 4.25rem;
+		flex-direction: column;
+		align-items: flex-start;
+		justify-content: center;
 		background: var(--flaeche-hoch);
 		color: var(--text);
 		border: 1px solid var(--linie);
 		border-radius: var(--radius-m);
-		padding: 0.55rem 1.1rem;
+		padding: 0.75rem 0.9rem;
+		font-family: inherit;
 		font-size: 0.88rem;
 		font-weight: 500;
+		text-align: left;
 		text-decoration: none;
 		cursor: pointer;
-		transition: background 0.15s ease;
+		transition:
+			background 0.15s ease,
+			border-color 0.15s ease,
+			transform 0.1s ease;
 	}
 	.knopf-grau:hover {
 		background: var(--linie-stark);
+		border-color: color-mix(in srgb, var(--text-fluester) 55%, var(--linie));
+	}
+	.knopf-grau:active {
+		transform: scale(0.985);
+	}
+	.aktion-titel {
+		line-height: 1.25;
+	}
+	.aktion-hinweis {
+		margin-top: 0.25rem;
+		color: var(--text-fluester);
+		font-size: 0.72rem;
+		font-weight: 400;
+		line-height: 1.3;
+	}
+
+	.portal-karte {
+		display: flex;
+		align-items: center;
+		gap: 0.85rem;
+		padding: 0.85rem 1rem;
+		border: 1px solid color-mix(in srgb, var(--akzent) 38%, var(--linie));
+		border-radius: var(--radius-m);
+		background: color-mix(in srgb, var(--akzent) 8%, var(--flaeche));
+		color: var(--text);
+		text-decoration: none;
+		transition:
+			background 0.15s ease,
+			border-color 0.15s ease,
+			transform 0.1s ease;
+	}
+	.portal-karte:hover {
+		background: color-mix(in srgb, var(--akzent) 13%, var(--flaeche));
+		border-color: color-mix(in srgb, var(--akzent) 62%, var(--linie));
+	}
+	.portal-karte:active {
+		transform: scale(0.99);
+	}
+	.portal-monogramm {
+		display: grid;
+		width: 2.15rem;
+		height: 2.15rem;
+		flex: 0 0 2.15rem;
+		place-items: center;
+		border-radius: 50%;
+		background: var(--akzent);
+		color: white;
+		font-size: 0.78rem;
+		font-weight: 700;
+	}
+	.portal-text {
+		display: flex;
+		min-width: 0;
+		flex: 1;
+		flex-direction: column;
+		gap: 0.15rem;
+	}
+	.portal-text strong {
+		font-size: 0.9rem;
+		font-weight: 600;
+	}
+	.portal-text span {
+		color: var(--text-leise);
+		font-size: 0.76rem;
+		line-height: 1.35;
+	}
+	.portal-pfeil {
+		color: var(--text-fluester);
+		font-size: 1.35rem;
 	}
 	.status {
 		font-size: 0.85rem;
@@ -563,5 +661,45 @@
 		letter-spacing: 0.06em;
 		color: var(--text-fluester);
 		background: color-mix(in srgb, var(--flaeche) 60%, transparent);
+	}
+
+	@media (max-width: 640px) {
+		.seite {
+			padding: 1.25rem 1rem 5rem;
+			gap: 1.65rem;
+		}
+		.neu-zeile {
+			display: grid;
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+		}
+		.feld-schmal {
+			width: 100%;
+		}
+		.feld-breit,
+		.knopf-blau {
+			grid-column: 1 / -1;
+			width: 100%;
+		}
+		.daten-zeile {
+			grid-template-columns: 1fr;
+		}
+		.knopf-grau {
+			min-height: 3.8rem;
+		}
+		.portal-karte {
+			padding: 0.8rem 0.9rem;
+		}
+		.zeile-id,
+		.fall-zahl {
+			display: none;
+		}
+		.baum-loeschen {
+			font-size: 0;
+			padding: 0.25rem 0.45rem;
+		}
+		.baum-loeschen::after {
+			content: 'Baum';
+			font-size: 0.68rem;
+		}
 	}
 </style>
