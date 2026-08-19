@@ -9,7 +9,7 @@ export async function ladeKartenVorschauen(): Promise<KartenVorschau[]> {
 	const nodes = await ladeAlleSeiten<KartenVorschauMitStand>((von, bis) =>
 		supabase
 			.from('nodes')
-			.select('id, type, area, front, title, updated_at')
+			.select('id, type, area, front, title, ref, updated_at')
 			// Die unveränderliche ID hält Seitengrenzen auch bei parallelen Imports stabil.
 			.order('id')
 			.range(von, bis)
@@ -17,7 +17,7 @@ export async function ladeKartenVorschauen(): Promise<KartenVorschau[]> {
 
 	return nodes
 		.sort((a, b) => b.updated_at.localeCompare(a.updated_at) || a.id.localeCompare(b.id))
-		.map(({ id, type, area, front, title }) => ({ id, type, area, front, title }));
+		.map(({ id, type, area, front, title, ref }) => ({ id, type, area, front, title, ref }));
 }
 
 /** Lädt alle Kanten mit genau den Feldern, die Übersichten benötigen. */

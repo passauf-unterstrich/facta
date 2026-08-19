@@ -27,7 +27,7 @@ export type Karte = {
 
 // Schlanke Varianten für Übersichten und den Zufallsmodus. Große Rückseiten
 // werden erst übertragen, wenn eine konkrete Karte geöffnet wird.
-export type KartenVorschau = Pick<Karte, 'id' | 'type' | 'area' | 'front' | 'title'>;
+export type KartenVorschau = Pick<Karte, 'id' | 'type' | 'area' | 'front' | 'title' | 'ref'>;
 export type KartenAuswahl = Pick<Karte, 'id' | 'area'>;
 
 export type Kante = {

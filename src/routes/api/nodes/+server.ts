@@ -22,7 +22,11 @@ export const GET: RequestHandler = async ({ locals }) => {
 	try {
 		const [alleNodes, sichtbareIds] = await Promise.all([
 			ladeAlleSeiten<KartenVorschau>((von, bis) =>
-				supabase.from('nodes').select('id, type, area, front, title').order('id').range(von, bis)
+				supabase
+					.from('nodes')
+					.select('id, type, area, front, title, ref')
+					.order('id')
+					.range(von, bis)
 			),
 			ladeSichtbareIds(locals.sitzung!)
 		]);

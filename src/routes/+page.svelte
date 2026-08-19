@@ -33,6 +33,9 @@
 	function kartenLink(id: string): string {
 		return `/karte/${id}${gebiet ? `?area=${encodeURIComponent(gebiet)}` : ''}`;
 	}
+	function fallDeckblatt(fall: KartenVorschau): string {
+		return klartext(fall.ref?.trim() || fall.title || fall.front);
+	}
 
 	async function abmelden() {
 		await fetch('/logout', {
@@ -61,6 +64,7 @@
 			return (
 				n.front.toLowerCase().includes(q) ||
 				(n.title ?? '').toLowerCase().includes(q) ||
+				(n.ref ?? '').toLowerCase().includes(q) ||
 				n.id.toLowerCase().includes(q)
 			);
 		})
@@ -170,7 +174,7 @@
 					{#each faelle as fall (fall.id)}
 						<a class="fall-karte" href={kartenLink(fall.id)}>
 							<span class="typ-punkt" style:--punkt="var(--typ-fall)"></span>
-							<span class="fall-front">{klartext(fall.title ?? fall.front)}</span>
+							<span class="fall-front">{fallDeckblatt(fall)}</span>
 						</a>
 					{/each}
 				</div>
@@ -201,7 +205,7 @@
 								href={kartenLink(g.fall.id)}
 								onclick={(e) => e.stopPropagation()}
 							>
-								{klartext(g.fall.title ?? g.fall.front)}
+								{fallDeckblatt(g.fall)}
 							</a>
 							<span class="fall-zahl">{g.karten.length} Karten</span>
 						</div>
