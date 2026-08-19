@@ -44,14 +44,30 @@
 	}
 
 	let modus = $state<'lernen' | 'bauen'>('lernen');
+	let autoAufdecken = $state(false);
+	const autoAufdeckenKey = $derived(`facta:auto-aufdecken:${data.rolle}`);
 	onMount(() => {
 		if (data.rolle === 'owner' && page.url.searchParams.get('modus') === 'bauen') modus = 'bauen';
+		try {
+			autoAufdecken = sessionStorage.getItem(autoAufdeckenKey) === '1';
+		} catch {
+			// Private Browsermodi können Web-Speicher sperren. Dann gilt
+			// die Auswahl weiterhin für die aktuelle geladene Seite.
+		}
 	});
+	function schalteAutoAufdecken() {
+		autoAufdecken = !autoAufdecken;
+		try {
+			sessionStorage.setItem(autoAufdeckenKey, autoAufdecken ? '1' : '0');
+		} catch {
+			// Der Schalter funktioniert auch ohne verfügbaren Web-Speicher.
+		}
+	}
 	let zeigeVerknuepft = $state(false);
 
 	// Lern-Zustand (Ableitung: gehört zur Karten-ID)
 	let aufgedecktFuer = $state('');
-	const basisAufgedeckt = $derived(aufgedecktFuer === data.node.id);
+	const basisAufgedeckt = $derived(autoAufdecken || aufgedecktFuer === data.node.id);
 
 	// Layer-Stack
 	type Layer = { node: Karte; children: Kind[]; aufgedeckt: boolean };
@@ -90,7 +106,10 @@
 		if (!daten) return;
 		const bisher = stackFuer === data.node.id ? stack : [];
 		stackFuer = data.node.id;
-		stack = [...bisher, { node: daten.node, children: daten.children, aufgedeckt: false }];
+		stack = [
+			...bisher,
+			{ node: daten.node, children: daten.children, aufgedeckt: autoAufdecken }
+		];
 	}
 
 	function schliesseOberste() {
@@ -154,17 +173,30 @@
 	<nav class="leiste">
 		<a class="zurueck" href={bibliothekLink}>‹ Bibliothek</a>
 
-		{#if data.children.length > 0}
-			<button
-				class="schalter"
-				class:aktiv={zeigeVerknuepft}
-				onclick={() => (zeigeVerknuepft = !zeigeVerknuepft)}
-			>
-				Verknüpft <span class="schalter-zahl">{data.children.length}</span>
-			</button>
-		{:else}
-			<span class="platzhalter"></span>
-		{/if}
+		<div class="leiste-aktionen">
+			{#if modus === 'lernen'}
+				<button
+					class="auto-schalter"
+					class:aktiv={autoAufdecken}
+					type="button"
+					aria-pressed={autoAufdecken}
+					title="Rückseiten in dieser Sitzung direkt anzeigen"
+					onclick={schalteAutoAufdecken}
+				>
+					<span class="auto-spur" aria-hidden="true"><span></span></span>
+					<span>Auto-Aufdecken</span>
+				</button>
+			{/if}
+			{#if data.children.length > 0}
+				<button
+					class="schalter"
+					class:aktiv={zeigeVerknuepft}
+					onclick={() => (zeigeVerknuepft = !zeigeVerknuepft)}
+				>
+					Verknüpft <span class="schalter-zahl">{data.children.length}</span>
+				</button>
+			{/if}
+		</div>
 	</nav>
 
 	{#if modus === 'lernen'}
@@ -218,7 +250,7 @@
 			{#if modus === 'lernen'}
 				<LernKarte
 					node={layer.node}
-					aufgedeckt={layer.aufgedeckt}
+					aufgedeckt={autoAufdecken || layer.aufgedeckt}
 					onaufdecken={() => (stack[i].aufgedeckt = true)}
 					onlink={oeffne}
 					onschliessen={schliesseOberste}
@@ -376,8 +408,60 @@
 		font-size: 0.7rem;
 		opacity: 0.7;
 	}
-	.platzhalter {
-		width: 1px;
+	.leiste-aktionen {
+		display: flex;
+		align-items: center;
+		justify-content: flex-end;
+		gap: 0.45rem;
+	}
+	.auto-schalter {
+		display: flex;
+		align-items: center;
+		gap: 0.42rem;
+		background: none;
+		border: none;
+		padding: 0.3rem 0.25rem;
+		color: var(--text-fluester);
+		font-family: inherit;
+		font-size: 0.75rem;
+		cursor: pointer;
+		transition: color 0.15s ease;
+	}
+	.auto-schalter:hover,
+	.auto-schalter.aktiv {
+		color: var(--text-leise);
+	}
+	.auto-spur {
+		position: relative;
+		width: 1.75rem;
+		height: 1rem;
+		flex: 0 0 1.75rem;
+		border: 1px solid var(--linie-stark);
+		border-radius: 999px;
+		background: var(--flaeche-hoch);
+		transition:
+			background 0.15s ease,
+			border-color 0.15s ease;
+	}
+	.auto-spur span {
+		position: absolute;
+		top: 2px;
+		left: 2px;
+		width: calc(1rem - 6px);
+		height: calc(1rem - 6px);
+		border-radius: 50%;
+		background: var(--text-fluester);
+		transition:
+			transform 0.15s ease,
+			background 0.15s ease;
+	}
+	.auto-schalter.aktiv .auto-spur {
+		border-color: var(--akzent);
+		background: color-mix(in srgb, var(--akzent) 28%, var(--flaeche-hoch));
+	}
+	.auto-schalter.aktiv .auto-spur span {
+		background: var(--akzent);
+		transform: translateX(0.75rem);
 	}
 
 	.overlay {
@@ -465,5 +549,25 @@
 	.streifzug-rest {
 		font-size: 0.72rem;
 		color: var(--text-fluester);
+	}
+
+	@media (max-width: 560px) {
+		.seite {
+			padding-inline: 1rem;
+		}
+		.leiste {
+			align-items: flex-start;
+		}
+		.leiste-aktionen {
+			flex-wrap: wrap;
+			gap: 0.3rem;
+		}
+		.auto-schalter {
+			font-size: 0.7rem;
+		}
+		.schalter {
+			font-size: 0.72rem;
+			padding-inline: 0.65rem;
+		}
 	}
 </style>
