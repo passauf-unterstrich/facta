@@ -102,6 +102,24 @@ export const POST: RequestHandler = async ({ request }) => {
 			});
 			if (error) throw error;
 			return json(data);
+		} else if (action === 'share_many') {
+			const rootIds = [
+				...new Set(
+					(Array.isArray(body.rootIds) ? body.rootIds : [])
+						.map((id) => String(id).trim())
+						.filter(Boolean)
+				)
+			];
+			if (rootIds.length === 0)
+				return json({ message: 'Bitte mindestens einen Baum auswählen.' }, { status: 400 });
+			if (rootIds.length > 500)
+				return json({ message: 'Es können höchstens 500 Bäume auf einmal freigegeben werden.' }, { status: 400 });
+			const { data, error } = await supabase.rpc('share_facta_trees', {
+				p_portal_id: aktuell.id,
+				p_root_ids: rootIds
+			});
+			if (error) throw error;
+			return json(data);
 		} else if (action === 'unshare') {
 			const { error } = await supabase
 				.from('guest_tree_shares')

@@ -5,9 +5,10 @@
 	let status = $state('');
 	let name = $state('Gastzugang');
 	let password = $state('');
-	let rootId = $state('');
 	let expiresAt = $state('');
 	let gastLink = $state('');
+	let suche = $state('');
+	let ausgewaehlteRootIds = $state<string[]>([]);
 	onMount(() => {
 		if (data.portal) gastLink = `${window.location.origin}/gast/${data.portal.slug}`;
 	});
@@ -24,7 +25,12 @@
 			status = result.message ?? 'Aktion fehlgeschlagen.';
 			return false;
 		}
-		status = result.nodes ? `${result.nodes} Karten im Baum freigegeben.` : 'Gespeichert.';
+		status =
+			typeof result.trees === 'number'
+				? `${result.trees} Bäume mit insgesamt ${result.nodes} Karten freigegeben.`
+				: typeof result.nodes === 'number'
+					? `${result.nodes} Karten im Baum freigegeben.`
+					: 'Gespeichert.';
 		password = '';
 		await invalidateAll();
 		return true;
@@ -34,7 +40,76 @@
 		status = 'Gastlink kopiert.';
 	}
 	const shared = $derived(new Set(data.shares.map((s: { root_id: string }) => s.root_id)));
-	const verfuegbareRoots = $derived(data.roots.filter((r: { id: string }) => !shared.has(r.id)));
+	type Root = { id: string; title: string; area: string | null };
+	const verfuegbareRoots = $derived(
+		(data.roots as Root[])
+			.filter((root) => !shared.has(root.id))
+			.sort((a, b) => a.title.localeCompare(b.title, 'de'))
+	);
+	const gefilterteRoots = $derived.by(() => {
+		const begriff = suche.trim().toLocaleLowerCase('de');
+		if (!begriff) return verfuegbareRoots;
+		return verfuegbareRoots.filter((root) =>
+			`${root.title} ${root.area ?? ''}`.toLocaleLowerCase('de').includes(begriff)
+		);
+	});
+	const rootGruppen = $derived.by(() => {
+		const gruppen = new Map<string, Root[]>();
+		for (const root of gefilterteRoots) {
+			const area = root.area ?? '_';
+			if (!gruppen.has(area)) gruppen.set(area, []);
+			gruppen.get(area)!.push(root);
+		}
+		return [...gruppen.entries()].sort(([a], [b]) => gebietName(a).localeCompare(gebietName(b), 'de'));
+	});
+	const ausgewaehlt = $derived(new Set(ausgewaehlteRootIds));
+
+	const GEBIET_NAMEN: Record<string, string> = {
+		zivilrecht: 'Zivilrecht',
+		strafrecht: 'Strafrecht',
+		oeffentliches_recht: 'Öffentliches Recht',
+		kapitalgesellschaftsrecht: 'Kapitalgesellschaftsrecht',
+		wissen_zivilrecht: 'Wissen Zivilrecht',
+		wissen_kapitalgesellschaftsrecht: 'Wissen Kapitalgesellschaftsrecht',
+		_: 'Ohne Gebiet'
+	};
+	function gebietName(area: string) {
+		return GEBIET_NAMEN[area] ?? area.replaceAll('_', ' ');
+	}
+	function setzeAuswahl(ids: string[], aktiv: boolean) {
+		const neu = new Set(ausgewaehlteRootIds);
+		for (const id of ids) aktiv ? neu.add(id) : neu.delete(id);
+		ausgewaehlteRootIds = [...neu];
+	}
+	function toggleRoot(id: string) {
+		setzeAuswahl([id], !ausgewaehlt.has(id));
+	}
+	function toggleGruppe(roots: Root[]) {
+		const alleGewaehlt = roots.every((root) => ausgewaehlt.has(root.id));
+		setzeAuswahl(
+			roots.map((root) => root.id),
+			!alleGewaehlt
+		);
+	}
+	async function teileAuswahl() {
+		const rootIds = ausgewaehlteRootIds.filter((id) => !shared.has(id));
+		if (
+			rootIds.length === 0 ||
+			!confirm(
+				`${rootIds.length} vollständige Bäume für den Gast freigeben? Bereits bestehende Freigaben und deine Originalkarten bleiben unverändert.`
+			)
+		)
+			return;
+		if (await action('share_many', { rootIds })) ausgewaehlteRootIds = [];
+	}
+	async function aktualisiereAlle() {
+		const rootIds = data.shares.map((share: { root_id: string }) => share.root_id);
+		if (
+			rootIds.length > 0 &&
+			confirm(`Die Schnappschüsse aller ${rootIds.length} freigegebenen Bäume aktualisieren?`)
+		)
+			await action('share_many', { rootIds });
+	}
 </script>
 
 <div class="seite">
@@ -109,15 +184,66 @@
 			</div>
 		</section>
 		<section>
-			<h2>Freigegebene Bäume <span>{data.shares.length}</span></h2>
-			<div class="row">
-				<select bind:value={rootId}
-					><option value="">Baum auswählen …</option>{#each verfuegbareRoots as root}<option
-							value={root.id}>{root.title} · {root.area ?? 'ohne Gebiet'}</option
-						>{/each}</select
-				><button onclick={() => rootId && action('share', { rootId })} disabled={!rootId}
-					>Gesamten Baum freigeben</button
+			<div class="statuszeile">
+				<div>
+					<h2>Bäume freigeben</h2>
+					<p class="muted">Mehrere Bäume markieren und gemeinsam als Schnappschuss freigeben.</p>
+				</div>
+				<span class="verfuegbar">{verfuegbareRoots.length} verfügbar</span>
+			</div>
+			<div class="auswahl-werkzeuge">
+				<input bind:value={suche} type="search" placeholder="Bäume durchsuchen …" />
+				<div class="actions">
+					<button
+						onclick={() => setzeAuswahl(gefilterteRoots.map((root) => root.id), true)}
+						disabled={gefilterteRoots.length === 0}>Alle {gefilterteRoots.length} auswählen</button
+					>
+					<button onclick={() => (ausgewaehlteRootIds = [])} disabled={ausgewaehlteRootIds.length === 0}
+						>Auswahl leeren</button
+					>
+				</div>
+			</div>
+			<div class="baum-auswahl">
+				{#each rootGruppen as [area, roots] (area)}
+					<div class="auswahl-gruppe">
+						<div class="gruppen-kopf">
+							<strong>{gebietName(area)}</strong>
+							<span>{roots.filter((root) => ausgewaehlt.has(root.id)).length}/{roots.length}</span>
+							<button onclick={() => toggleGruppe(roots)}>
+								{roots.every((root) => ausgewaehlt.has(root.id)) ? 'Entfernen' : 'Alle wählen'}
+							</button>
+						</div>
+						<div class="optionen">
+							{#each roots as root (root.id)}
+								<label class="baum-option" class:gewaehlt={ausgewaehlt.has(root.id)}>
+									<input
+										type="checkbox"
+										checked={ausgewaehlt.has(root.id)}
+										onchange={() => toggleRoot(root.id)}
+									/>
+									<span>{root.title}</span>
+								</label>
+							{/each}
+						</div>
+					</div>
+				{/each}
+				{#if gefilterteRoots.length === 0}
+					<p class="muted leer">Keine passenden, noch nicht freigegebenen Bäume.</p>
+				{/if}
+			</div>
+			<div class="auswahl-fuss">
+				<span><strong>{ausgewaehlteRootIds.length}</strong> Bäume ausgewählt</span>
+				<button class="primary" onclick={teileAuswahl} disabled={ausgewaehlteRootIds.length === 0}
+					>Auswahl freigeben</button
 				>
+			</div>
+		</section>
+		<section>
+			<div class="statuszeile">
+				<h2>Freigegebene Bäume <span>{data.shares.length}</span></h2>
+				{#if data.shares.length > 0}
+					<button onclick={aktualisiereAlle}>Alle Schnappschüsse aktualisieren</button>
+				{/if}
 			</div>
 			<div class="list">
 				{#each data.shares as share}<div class="item">
@@ -233,8 +359,7 @@
 		font-size: 0.76rem;
 		color: var(--text-fluester);
 	}
-	input,
-	select {
+	input {
 		flex: 1;
 		min-width: 0;
 		background: var(--bg);
@@ -258,6 +383,16 @@
 		opacity: 0.4;
 		cursor: default;
 	}
+	.primary {
+		background: var(--akzent);
+		border-color: var(--akzent);
+		color: white;
+		font-weight: 600;
+	}
+	.primary:hover:not(:disabled) {
+		background: var(--akzent-hover);
+		border-color: var(--akzent-hover);
+	}
 	.danger {
 		border-color: #7f1d1d;
 		color: #ff6961;
@@ -267,6 +402,114 @@
 	}
 	.off {
 		color: #ff6961;
+	}
+	.verfuegbar {
+		flex-shrink: 0;
+		color: var(--text-fluester);
+		font-size: 0.78rem;
+	}
+	.auswahl-werkzeuge {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+	}
+	.auswahl-werkzeuge > input {
+		min-width: 13rem;
+	}
+	.baum-auswahl {
+		max-height: 34rem;
+		overflow: auto;
+		border: 1px solid var(--linie);
+		border-radius: var(--radius-m);
+		background: color-mix(in srgb, var(--bg) 55%, transparent);
+	}
+	.auswahl-gruppe + .auswahl-gruppe {
+		border-top: 1px solid var(--linie);
+	}
+	.gruppen-kopf {
+		position: sticky;
+		top: 0;
+		z-index: 1;
+		display: flex;
+		align-items: center;
+		gap: 0.65rem;
+		padding: 0.55rem 0.7rem;
+		background: color-mix(in srgb, var(--flaeche-hoch) 94%, transparent);
+		backdrop-filter: blur(8px);
+	}
+	.gruppen-kopf strong {
+		flex: 1;
+		font-size: 0.76rem;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+	}
+	.gruppen-kopf span {
+		color: var(--text-fluester);
+		font-size: 0.72rem;
+	}
+	.gruppen-kopf button {
+		padding: 0.3rem 0.55rem;
+		font-size: 0.72rem;
+	}
+	.optionen {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 0.4rem;
+		padding: 0.55rem;
+	}
+	.baum-option {
+		display: flex;
+		align-items: flex-start;
+		gap: 0.55rem;
+		min-width: 0;
+		padding: 0.6rem 0.65rem;
+		border: 1px solid var(--linie);
+		border-radius: calc(var(--radius-m) - 2px);
+		background: var(--flaeche);
+		color: var(--text-leise);
+		font-size: 0.8rem;
+		line-height: 1.35;
+		cursor: pointer;
+		transition:
+			border-color 0.15s ease,
+			background 0.15s ease,
+			color 0.15s ease;
+	}
+	.baum-option:hover {
+		border-color: var(--linie-stark);
+		color: var(--text);
+	}
+	.baum-option.gewaehlt {
+		border-color: color-mix(in srgb, var(--akzent) 65%, var(--linie));
+		background: color-mix(in srgb, var(--akzent) 11%, var(--flaeche));
+		color: var(--text);
+	}
+	.baum-option input {
+		width: 1rem;
+		height: 1rem;
+		min-width: 1rem;
+		flex: 0 0 1rem;
+		margin: 0.05rem 0 0;
+		padding: 0;
+		accent-color: var(--akzent);
+	}
+	.baum-option span {
+		min-width: 0;
+	}
+	.leer {
+		padding: 1rem;
+		margin: 0;
+	}
+	.auswahl-fuss {
+		display: flex;
+		align-items: center;
+		justify-content: flex-end;
+		gap: 0.8rem;
+		padding-top: 0.1rem;
+	}
+	.auswahl-fuss span {
+		color: var(--text-leise);
+		font-size: 0.8rem;
 	}
 	.list {
 		display: grid;
@@ -304,12 +547,30 @@
 	@media (max-width: 650px) {
 		.row,
 		.statuszeile,
-		.item {
+		.item,
+		.auswahl-werkzeuge {
 			align-items: stretch;
 			flex-direction: column;
 		}
 		.actions {
 			flex-wrap: wrap;
+		}
+		.auswahl-werkzeuge > input {
+			min-width: 0;
+		}
+		.optionen {
+			grid-template-columns: 1fr;
+		}
+		.auswahl-fuss {
+			position: sticky;
+			bottom: 0.5rem;
+			z-index: 2;
+			justify-content: space-between;
+			padding: 0.6rem;
+			border: 1px solid var(--linie-stark);
+			border-radius: var(--radius-m);
+			background: color-mix(in srgb, var(--flaeche-hoch) 94%, transparent);
+			backdrop-filter: blur(8px);
 		}
 	}
 </style>
