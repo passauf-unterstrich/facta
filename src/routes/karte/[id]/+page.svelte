@@ -4,6 +4,7 @@
 	import BauKarte from '$lib/components/BauKarte.svelte';
 	import KinderListe from '$lib/components/KinderListe.svelte';
 	import LinkMenu from '$lib/components/LinkMenu.svelte';
+	import KernwissenErfasser from '$lib/components/KernwissenErfasser.svelte';
 	import type { Karte, Kind, BauDaten } from '$lib/types';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
@@ -64,6 +65,13 @@
 		}
 	}
 	let zeigeVerknuepft = $state(false);
+	let kernwissenHinweis = $state('');
+	let kernwissenHinweisTimer: ReturnType<typeof setTimeout> | undefined;
+	function kernwissenGespeichert(titel: string) {
+		kernwissenHinweis = `„${titel}“ wurde zu Kernwissen Klausur hinzugefügt.`;
+		if (kernwissenHinweisTimer) clearTimeout(kernwissenHinweisTimer);
+		kernwissenHinweisTimer = setTimeout(() => (kernwissenHinweis = ''), 4500);
+	}
 
 	// Lern-Zustand (Ableitung: gehört zur Karten-ID)
 	let aufgedecktFuer = $state('');
@@ -74,6 +82,10 @@
 	let stack = $state<Layer[]>([]);
 	let stackFuer = $state('');
 	const layers = $derived(stackFuer === data.node.id ? stack : []);
+	const kernwissenQuelle = $derived.by(() => {
+		const oberste = layers.at(-1)?.node ?? data.node;
+		return oberste.title?.trim() || oberste.ref?.trim() || oberste.front.slice(0, 160);
+	});
 
 	// id → typ für alle aktuell bekannten Karten: nährt die Signal-
 	// Erkennung im Renderer (Link auf 'thema' = gelbe Markierung).
@@ -282,6 +294,14 @@
 		</div>
 	</div>
 {/each}
+
+{#if data.rolle === 'owner' && modus === 'lernen'}
+	<KernwissenErfasser quelleTitel={kernwissenQuelle} ongespeichert={kernwissenGespeichert} />
+{/if}
+
+{#if kernwissenHinweis}
+	<div class="kernwissen-hinweis" role="status">{kernwissenHinweis}</div>
+{/if}
 
 <div class="modus-hud">
 	<button class:aktiv={modus === 'lernen'} onclick={() => (modus = 'lernen')}>Lernen</button>
@@ -549,6 +569,25 @@
 	.streifzug-rest {
 		font-size: 0.72rem;
 		color: var(--text-fluester);
+	}
+	.kernwissen-hinweis {
+		position: fixed;
+		left: 50%;
+		bottom: 5.25rem;
+		z-index: 220;
+		transform: translateX(-50%);
+		width: max-content;
+		max-width: calc(100vw - 2rem);
+		border: 1px solid color-mix(in srgb, var(--akzent) 45%, var(--linie));
+		border-radius: 999px;
+		background: color-mix(in srgb, var(--flaeche-hoch) 92%, transparent);
+		backdrop-filter: blur(12px);
+		-webkit-backdrop-filter: blur(12px);
+		box-shadow: 0 8px 28px rgba(0, 0, 0, 0.35);
+		padding: 0.52rem 0.85rem;
+		color: var(--text-leise);
+		font-size: 0.76rem;
+		text-align: center;
 	}
 
 	@media (max-width: 560px) {

@@ -17,6 +17,7 @@
 		kapitalgesellschaftsrecht: 'KapGesR',
 		wissen_zivilrecht: 'Wissen ZR',
 		wissen_kapitalgesellschaftsrecht: 'Wissen KapGesR',
+		kernwissen_klausur: 'Kernwissen Klausur',
 		_: 'Ohne Gebiet'
 	};
 	function gebietsName(a: string): string {
@@ -51,6 +52,9 @@
 		const vorhanden = new Set(
 			data.nodes.map((n: KartenVorschau) => n.area).filter((a): a is string => !!a)
 		);
+		// Das persönliche Klausurgebiet bleibt auch im leeren Ausgangszustand
+		// sichtbar. Im Gastportal erscheint es weder leer noch befüllt.
+		if (data.rolle === 'owner') vorhanden.add('kernwissen_klausur');
 		const bekannt = Object.keys(GEBIET_NAMEN).filter((a) => vorhanden.has(a));
 		const unbekannt = [...vorhanden].filter((a) => !(a in GEBIET_NAMEN)).sort();
 		return [...bekannt, ...unbekannt];

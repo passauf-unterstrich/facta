@@ -106,6 +106,35 @@
 		await invalidateAll();
 	}
 
+	const kernwissenAnzahl = $derived(
+		data.nodes.filter((node: KartenVorschau) => node.area === 'kernwissen_klausur').length
+	);
+	let kernwissenStatus = $state('');
+	async function loescheKernwissen() {
+		if (kernwissenAnzahl === 0) return;
+		if (
+			!confirm(
+				`Alle ${kernwissenAnzahl} Karten aus „Kernwissen Klausur“ wirklich löschen? Andere Karten und Gebiete bleiben unverändert.`
+			)
+		)
+			return;
+		const bestaetigung = prompt('Zur Sicherheitsprüfung bitte KERNWISSEN LÖSCHEN eingeben.');
+		if (bestaetigung !== 'KERNWISSEN LÖSCHEN') {
+			kernwissenStatus = 'Löschen abgebrochen.';
+			return;
+		}
+
+		kernwissenStatus = 'Lösche Klausur-Kernwissen …';
+		const res = await fetch('/api/admin/kernwissen', { method: 'DELETE' });
+		const antwort = await res.json().catch(() => null);
+		if (!res.ok) {
+			kernwissenStatus = antwort?.message ?? 'Kernwissen konnte nicht gelöscht werden.';
+			return;
+		}
+		kernwissenStatus = `${antwort.nodes} Kernwissen-Karten wurden gelöscht.`;
+		await invalidateAll();
+	}
+
 	// --- Fall-Gruppierung ---
 	// Von jeder fall-Karte aus per Kanten alle erreichbaren Karten
 	// sammeln. Rest = "Freistehende Karten", nach area gruppiert.
@@ -186,6 +215,7 @@
 		kapitalgesellschaftsrecht: 'KapGesR',
 		wissen_zivilrecht: 'Wissen ZR',
 		wissen_kapitalgesellschaftsrecht: 'Wissen KapGesR',
+		kernwissen_klausur: 'Kernwissen Klausur',
 		_: 'Ohne Gebiet'
 	};
 
@@ -217,6 +247,7 @@
 				<option value="kapitalgesellschaftsrecht">KapGesR</option>
 				<option value="wissen_zivilrecht">Wissen ZR</option>
 				<option value="wissen_kapitalgesellschaftsrecht">Wissen KapGesR</option>
+				<option value="kernwissen_klausur">Kernwissen Klausur</option>
 			</select>
 			<input
 				class="feld feld-breit"
@@ -261,6 +292,20 @@
 			</span>
 			<span class="portal-pfeil" aria-hidden="true">›</span>
 		</a>
+	</section>
+
+	<section class="block">
+		<h2>Klausur-Kernwissen <span class="zahl">{kernwissenAnzahl}</span></h2>
+		<div class="kernwissen-verwaltung">
+			<div>
+				<strong>Temporäre Merkkarten</strong>
+				<span>Nur dieses Gebiet nach der Klausur gesammelt leeren.</span>
+			</div>
+			<button class="kernwissen-loeschen" onclick={loescheKernwissen} disabled={kernwissenAnzahl === 0}>
+				Alle löschen
+			</button>
+		</div>
+		{#if kernwissenStatus}<p class="status">{kernwissenStatus}</p>{/if}
 	</section>
 
 	<section class="block">
@@ -564,6 +609,46 @@
 	.portal-pfeil {
 		color: var(--text-fluester);
 		font-size: 1.35rem;
+	}
+	.kernwissen-verwaltung {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 1rem;
+		border: 1px solid var(--linie);
+		border-radius: var(--radius-m);
+		background: var(--flaeche);
+		padding: 0.85rem 1rem;
+	}
+	.kernwissen-verwaltung > div {
+		display: flex;
+		min-width: 0;
+		flex-direction: column;
+		gap: 0.18rem;
+	}
+	.kernwissen-verwaltung strong {
+		font-size: 0.88rem;
+		font-weight: 600;
+	}
+	.kernwissen-verwaltung span {
+		color: var(--text-leise);
+		font-size: 0.74rem;
+		line-height: 1.35;
+	}
+	.kernwissen-loeschen {
+		flex: 0 0 auto;
+		border: 1px solid color-mix(in srgb, #ff453a 42%, var(--linie));
+		border-radius: 999px;
+		background: none;
+		color: #ff6961;
+		padding: 0.42rem 0.75rem;
+		font: inherit;
+		font-size: 0.76rem;
+		cursor: pointer;
+	}
+	.kernwissen-loeschen:disabled {
+		opacity: 0.35;
+		cursor: default;
 	}
 	.status {
 		font-size: 0.85rem;
