@@ -244,11 +244,17 @@ Gib ausschließlich das verlangte JSON-Objekt mit title, front und back aus.`;
 
 <svelte:window
 	onpointerup={pruefeMarkierung}
+	onmouseup={pruefeMarkierung}
+	ontouchend={pruefeMarkierung}
 	onkeyup={pruefeMarkierung}
 	onkeydown={(event) => {
 		if (event.key === 'Escape' && dialogOffen) schliesseDialog();
 	}}
 />
+<!-- Safari aktualisiert die sichtbare Textauswahl in verschachtelten Karten
+     teilweise erst nach pointerup. selectionchange ist dort die verlässliche
+     Quelle; Maus und Touch oben bleiben als schnelle Fallbacks erhalten. -->
+<svelte:document onselectionchange={pruefeMarkierung} />
 
 {#if position && !dialogOffen}
 	<button
