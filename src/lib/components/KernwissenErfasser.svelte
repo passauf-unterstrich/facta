@@ -14,6 +14,8 @@
 	type Entwurf = { title: string; front: string; back: string };
 
 	const OLLAMA = 'http://127.0.0.1:11434';
+	const BRUECKE_URL = 'http://127.0.0.1:11435/';
+	const BRUECKE_ORIGIN = 'http://127.0.0.1:11435';
 	const MODELL_SCHLUESSEL = 'facta:kernwissen:ollama-modell';
 	const SCHEMA = {
 		type: 'object',
@@ -49,6 +51,7 @@ REDAKTION
 
 	let markierung = $state('');
 	let kommentar = $state('');
+	let nutzeBruecke = $state(false);
 	let modelle = $state<string[]>([]);
 	let modell = $state('');
 	let modellStatus = $state('Suche lokale Modelle …');
@@ -68,17 +71,94 @@ REDAKTION
 			anker instanceof Element ? anker : anker?.parentElement instanceof Element ? anker.parentElement : null;
 		if (text && element?.closest('.karte')) markierung = text.slice(0, 6000);
 		window.getSelection()?.removeAllRanges();
-		ladeModelle();
+		nutzeBruecke = istSafariBrowser();
+		if (nutzeBruecke) {
+			modell = localStorage.getItem(MODELL_SCHLUESSEL) || 'llama3.1:8b';
+			modelle = [modell];
+			modellStatus = 'Safari nutzt die lokale Facta-Brücke. Alles bleibt auf diesem Mac.';
+		} else {
+			ladeModelle();
+		}
 		await tick();
 		kommentarFeld?.focus();
 	});
 
+	function istSafariBrowser(): boolean {
+		return (
+			/Safari/i.test(navigator.userAgent) &&
+			!/(Chrome|Chromium|CriOS|Edg|OPR)/i.test(navigator.userAgent)
+		);
+	}
+
+	function brueckenAnfrage(action: 'tags' | 'chat', payload?: object): Promise<unknown> {
+		const requestId = crypto.randomUUID();
+		return new Promise((resolve, reject) => {
+			let fenster: Window | null = null;
+			let antwortTimer: ReturnType<typeof setTimeout> | undefined;
+			let gesendet = false;
+
+			function aufraeumen() {
+				window.removeEventListener('message', empfange);
+				clearTimeout(startTimer);
+				if (antwortTimer) clearTimeout(antwortTimer);
+			}
+
+			function empfange(event: MessageEvent) {
+				if (event.origin !== BRUECKE_ORIGIN || event.source !== fenster) return;
+				if (event.data?.type === 'facta-ollama-ready' && !gesendet) {
+					gesendet = true;
+					clearTimeout(startTimer);
+					fenster?.postMessage(
+						{ type: 'facta-ollama-request', requestId, action, payload },
+						BRUECKE_ORIGIN
+					);
+					antwortTimer = setTimeout(() => {
+						aufraeumen();
+						reject(new Error('Das lokale Modell hat zu lange gebraucht.'));
+					}, 120_000);
+					return;
+				}
+				if (event.data?.type !== 'facta-ollama-response' || event.data?.requestId !== requestId)
+					return;
+				aufraeumen();
+				if (event.data.ok) resolve(event.data.data);
+				else reject(new Error(event.data.message || 'Die lokale KI konnte nicht antworten.'));
+			}
+
+			window.addEventListener('message', empfange);
+			const startTimer = setTimeout(() => {
+				aufraeumen();
+				fenster?.close();
+				reject(
+					new Error(
+						'Die lokale Facta-Brücke ist nicht erreichbar. Bitte den Hintergrunddienst einmal einrichten oder neu starten.'
+					)
+				);
+			}, 8_000);
+
+			fenster = window.open(
+				BRUECKE_URL,
+				'facta-ollama-bridge',
+				'popup,width=430,height=230,resizable=yes'
+			);
+			if (!fenster) {
+				aufraeumen();
+				reject(new Error('Safari hat das lokale Hilfsfenster blockiert. Bitte Pop-ups für Facta erlauben.'));
+			}
+		});
+	}
+
 	async function ladeModelle() {
 		modellStatus = 'Suche lokale Modelle …';
 		try {
-			const res = await fetch(`${OLLAMA}/api/tags`);
-			if (!res.ok) throw new Error(`Ollama antwortet mit ${res.status}`);
-			const daten = await res.json();
+			let daten: { models?: Array<{ name?: string }> };
+			if (nutzeBruecke) {
+				daten = (await brueckenAnfrage('tags')) as { models?: Array<{ name?: string }> };
+			} else {
+				const res = await fetch(`${OLLAMA}/api/tags`);
+				if (!res.ok) throw new Error(`Ollama antwortet mit ${res.status}`);
+				daten = await res.json();
+			}
 			modelle = Array.isArray(daten.models)
 				? daten.models
 						.map((m: { name?: string }) => m.name)
@@ -92,10 +172,8 @@ REDAKTION
 		} catch {
 			modelle = [];
 			modell = '';
-			const istSafari =
-				/Safari/i.test(navigator.userAgent) && !/(Chrome|Chromium|CriOS|Edg|OPR)/i.test(navigator.userAgent);
-			modellStatus = istSafari
-				? 'Safari blockiert die lokale Ollama-Verbindung von einer HTTPS-Seite. Öffne Facta für Memorize in Chrome oder Firefox.'
+			modellStatus = nutzeBruecke
+				? 'Die lokale Facta-Brücke ist nicht erreichbar.'
 				: 'Ollama ist in diesem Browser nicht erreichbar. Prüfe, ob der lokale Dienst läuft und Facta als Ursprung erlaubt ist.';
 		}
 	}
@@ -124,31 +202,37 @@ REDAKTION
 		fehler = '';
 		try {
 			localStorage.setItem(MODELL_SCHLUESSEL, modell);
-			const res = await fetch(`${OLLAMA}/api/chat`, {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({
-					model: modell,
-					stream: false,
-					format: SCHEMA,
-					options: { temperature: 0, num_predict: 320 },
-					messages: [
-						{
-							role: 'system',
-							content: SYSTEMPROMPT
-						},
-						{
-							role: 'user',
-							content: `MEIN DIKTIERTER ODER GESCHRIEBENER INHALT (maßgebliches Lernziel und Grundlage):\n${kommentar.trim()}${markierung ? `\n\nOPTIONALE MARKIERTE PASSAGE (nur Zusatzkontext):\n${markierung}` : ''}\n\nQUELLKARTE:\n${quelleTitel}`
-						}
-					]
-				})
-			});
-			if (!res.ok) {
-				const antwort = await res.text();
-				throw new Error(antwort || `Ollama antwortet mit ${res.status}`);
+			const auftrag = {
+				model: modell,
+				stream: false,
+				format: SCHEMA,
+				options: { temperature: 0, num_predict: 320 },
+				messages: [
+					{
+						role: 'system',
+						content: SYSTEMPROMPT
+					},
+					{
+						role: 'user',
+						content: `MEIN DIKTIERTER ODER GESCHRIEBENER INHALT (maßgebliches Lernziel und Grundlage):\n${kommentar.trim()}${markierung ? `\n\nOPTIONALE MARKIERTE PASSAGE (nur Zusatzkontext):\n${markierung}` : ''}\n\nQUELLKARTE:\n${quelleTitel}`
+					}
+				]
+			};
+			let daten: { message?: { content?: string } };
+			if (nutzeBruecke) {
+				daten = (await brueckenAnfrage('chat', auftrag)) as { message?: { content?: string } };
+			} else {
+				const res = await fetch(`${OLLAMA}/api/chat`, {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify(auftrag)
+				});
+				if (!res.ok) {
+					const antwort = await res.text();
+					throw new Error(antwort || `Ollama antwortet mit ${res.status}`);
+				}
+				daten = await res.json();
 			}
-			const daten = await res.json();
 			const inhalt = daten?.message?.content;
 			if (typeof inhalt !== 'string') throw new Error('Ollama hat keinen Kartenentwurf geliefert.');
 			const entwurf = JSON.parse(inhalt);
