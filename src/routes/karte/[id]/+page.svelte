@@ -187,29 +187,6 @@
 		<a class="zurueck" href={bibliothekLink}>‹ Bibliothek</a>
 
 		<div class="leiste-aktionen">
-			{#if modus === 'lernen'}
-				{#if data.rolle === 'owner'}
-					<button
-						class="memorize-mini"
-						type="button"
-						title="Kernwissenkarte erstellen"
-						onclick={() => (kernwissenOffen = true)}
-					>
-						<span aria-hidden="true">＋</span> Memorize
-					</button>
-				{/if}
-				<button
-					class="auto-schalter"
-					class:aktiv={autoAufdecken}
-					type="button"
-					aria-pressed={autoAufdecken}
-					title="Rückseiten in dieser Sitzung direkt anzeigen"
-					onclick={schalteAutoAufdecken}
-				>
-					<span class="auto-spur" aria-hidden="true"><span></span></span>
-					<span>Auto-Aufdecken</span>
-				</button>
-			{/if}
 			{#if data.children.length > 0}
 				<button
 					class="schalter"
@@ -316,6 +293,32 @@
 
 {#if kernwissenHinweis}
 	<div class="kernwissen-hinweis" role="status">{kernwissenHinweis}</div>
+{/if}
+
+{#if modus === 'lernen'}
+	<div class="lernwerkzeuge" aria-label="Lernwerkzeuge">
+		{#if data.rolle === 'owner'}
+			<button
+				class="memorize-mini"
+				type="button"
+				title="Kernwissenkarte erstellen"
+				onclick={() => (kernwissenOffen = true)}
+			>
+				<span aria-hidden="true">＋</span> Memorize
+			</button>
+		{/if}
+		<button
+			class="auto-schalter"
+			class:aktiv={autoAufdecken}
+			type="button"
+			aria-pressed={autoAufdecken}
+			title="Rückseiten in dieser Sitzung direkt anzeigen"
+			onclick={schalteAutoAufdecken}
+		>
+			<span class="auto-spur" aria-hidden="true"><span></span></span>
+			<span>Auto-Aufdecken</span>
+		</button>
+	</div>
 {/if}
 
 <div class="modus-hud">
@@ -448,6 +451,22 @@
 		align-items: center;
 		justify-content: flex-end;
 		gap: 0.45rem;
+	}
+	.lernwerkzeuge {
+		position: fixed;
+		left: 1rem;
+		bottom: max(1rem, env(safe-area-inset-bottom));
+		z-index: 110;
+		display: flex;
+		align-items: center;
+		gap: 0.65rem;
+		border: 1px solid var(--linie);
+		border-radius: 999px;
+		background: color-mix(in srgb, var(--flaeche) 88%, transparent);
+		backdrop-filter: blur(12px);
+		-webkit-backdrop-filter: blur(12px);
+		box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+		padding: 0.28rem 0.55rem;
 	}
 	.auto-schalter {
 		display: flex;
@@ -636,6 +655,13 @@
 		.leiste-aktionen {
 			flex-wrap: wrap;
 			gap: 0.3rem;
+		}
+		.lernwerkzeuge {
+			left: 50%;
+			bottom: max(0.75rem, env(safe-area-inset-bottom));
+			transform: translateX(-50%);
+			max-width: calc(100vw - 1.5rem);
+			white-space: nowrap;
 		}
 		.auto-schalter {
 			font-size: 0.7rem;
