@@ -92,8 +92,11 @@ REDAKTION
 		} catch {
 			modelle = [];
 			modell = '';
-			modellStatus =
-				'Ollama ist in diesem Browser nicht erreichbar. Öffne Ollama auf diesem Mac und erlaube Facta als Ursprung.';
+			const istSafari =
+				/Safari/i.test(navigator.userAgent) && !/(Chrome|Chromium|CriOS|Edg|OPR)/i.test(navigator.userAgent);
+			modellStatus = istSafari
+				? 'Safari blockiert die lokale Ollama-Verbindung von einer HTTPS-Seite. Öffne Facta für Memorize in Chrome oder Firefox.'
+				: 'Ollama ist in diesem Browser nicht erreichbar. Prüfe, ob der lokale Dienst läuft und Facta als Ursprung erlaubt ist.';
 		}
 	}
 

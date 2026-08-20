@@ -188,6 +188,16 @@
 
 		<div class="leiste-aktionen">
 			{#if modus === 'lernen'}
+				{#if data.rolle === 'owner'}
+					<button
+						class="memorize-mini"
+						type="button"
+						title="Kernwissenkarte erstellen"
+						onclick={() => (kernwissenOffen = true)}
+					>
+						<span aria-hidden="true">＋</span> Memorize
+					</button>
+				{/if}
 				<button
 					class="auto-schalter"
 					class:aktiv={autoAufdecken}
@@ -314,11 +324,6 @@
 		<button class:aktiv={modus === 'bauen'} onclick={() => (modus = 'bauen')}>Bauen</button>
 	{/if}
 	<a class="hud-link" href={zielLink('graph', data.node.id)}>Graph</a>
-	{#if data.rolle === 'owner' && modus === 'lernen'}
-		<button class="memorize" type="button" onclick={() => (kernwissenOffen = true)}>
-			<span aria-hidden="true">＋</span> Memorize
-		</button>
-	{/if}
 </div>
 
 {#if streifzugAktiv}
@@ -393,14 +398,6 @@
 		background: var(--flaeche-hoch);
 		color: var(--text);
 	}
-	.modus-hud button.memorize {
-		border-left: 1px solid var(--linie);
-		border-radius: 0 999px 999px 0;
-		color: var(--text-leise);
-	}
-	.modus-hud button.memorize span {
-		color: var(--akzent);
-	}
 	.hud-link {
 		display: flex;
 		align-items: center;
@@ -468,6 +465,27 @@
 	.auto-schalter:hover,
 	.auto-schalter.aktiv {
 		color: var(--text-leise);
+	}
+	.memorize-mini {
+		display: flex;
+		align-items: center;
+		gap: 0.22rem;
+		border: none;
+		background: none;
+		padding: 0.3rem 0.15rem;
+		color: var(--text-fluester);
+		font: inherit;
+		font-size: 0.72rem;
+		font-weight: 500;
+		cursor: pointer;
+		transition: color 0.15s ease;
+	}
+	.memorize-mini:hover {
+		color: var(--text-leise);
+	}
+	.memorize-mini span {
+		color: var(--akzent);
+		font-size: 0.8rem;
 	}
 	.auto-spur {
 		position: relative;
