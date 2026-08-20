@@ -83,8 +83,9 @@ REDAKTION
 		window.getSelection()?.removeAllRanges();
 		nutzeBruecke = istSafariBrowser();
 		if (nutzeBruecke) {
-			modell = localStorage.getItem(MODELL_SCHLUESSEL) || 'llama3.1:8b';
-			modelle = [modell];
+			const lokalesModell = localStorage.getItem(MODELL_SCHLUESSEL) || 'llama3.1:8b';
+			modelle = [lokalesModell];
+			modell = SELF_SERVICE;
 			modellStatus = 'Safari nutzt die lokale Facta-Brücke. Alles bleibt auf diesem Mac.';
 		} else {
 			ladeModelle();
@@ -240,8 +241,7 @@ REDAKTION
 						.map((m: { name?: string }) => m.name)
 						.filter((name: string | undefined): name is string => typeof name === 'string' && !!name)
 				: [];
-			const gemerkt = localStorage.getItem(MODELL_SCHLUESSEL) ?? '';
-			modell = modelle.includes(gemerkt) ? gemerkt : (modelle[0] ?? SELF_SERVICE);
+			modell = SELF_SERVICE;
 			modellStatus = modelle.length
 				? `${modelle.length} lokale${modelle.length === 1 ? 's Modell' : ' Modelle'} verfügbar.`
 				: 'Ollama läuft, aber es ist noch kein Modell installiert.';
