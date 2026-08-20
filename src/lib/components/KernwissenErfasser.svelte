@@ -3,14 +3,15 @@
 
 	let {
 		quelleTitel,
-		ongespeichert
+		ongespeichert,
+		onschliessen
 	}: {
 		quelleTitel: string;
 		ongespeichert?: (titel: string) => void;
+		onschliessen: () => void;
 	} = $props();
 
 	type Entwurf = { title: string; front: string; back: string };
-	type Position = { x: number; y: number };
 
 	const OLLAMA = 'http://127.0.0.1:11434';
 	const MODELL_SCHLUESSEL = 'facta:kernwissen:ollama-modell';
@@ -31,7 +32,7 @@ Erzeuge genau EINE atomare Wiederholungskarte. Sie soll nicht den gesamten Ausga
 
 PRIORITÄTEN
 1. Der Nutzerkommentar legt fest, WAS gelernt werden soll. Auch ein langer oder diktierter Kommentar ist zunächst auf seine eine zentrale Lernabsicht zu reduzieren.
-2. Die markierte Passage ist die inhaltliche Grundlage. Führe keine neuen Themen, Meinungen oder Details aus Außenwissen ein.
+2. Der diktierte oder geschriebene Nutzertext ist die inhaltliche Grundlage. Eine eventuell markierte Passage ist nur zusätzlicher Kontext. Führe keine neuen Themen, Meinungen oder Details aus Außenwissen ein.
 3. Bei bloßem sprachlichem Ballast darfst und sollst du mutig kürzen. Verändere jedoch keine Rechtsnorm, Tatbestandsvoraussetzung, Rechtsfolge, Ausnahme, Negation, Zahl oder Rangfolge.
 
 REDAKTION
@@ -44,11 +45,9 @@ REDAKTION
 - Normzitate knapp, aber exakt. Keine Floskeln wie „Wichtig ist“, „Merke“, „Hierbei ist zu beachten“ oder „Der Text besagt“.
 - Kein Vorwort, keine Quellenangabe, keine Meta-Erklärung, keine zusätzliche Karte.
 
-Gib ausschließlich das verlangte JSON-Objekt mit title, front und back aus.`;
+	Gib ausschließlich das verlangte JSON-Objekt mit title, front und back aus.`;
 
 	let markierung = $state('');
-	let position = $state<Position | null>(null);
-	let dialogOffen = $state(false);
 	let kommentar = $state('');
 	let modelle = $state<string[]>([]);
 	let modell = $state('');
@@ -59,8 +58,19 @@ Gib ausschließlich das verlangte JSON-Objekt mit title, front und back aus.`;
 	let fehler = $state('');
 	let kommentarFeld = $state<HTMLTextAreaElement>();
 
-	onMount(() => {
+	onMount(async () => {
+		// Eine noch bestehende Auswahl nehmen wir gern als Zusatzkontext mit.
+		// Sie ist ausdrücklich keine Voraussetzung mehr für die Funktion.
+		const auswahl = window.getSelection();
+		const text = auswahl?.toString().replace(/\s+/g, ' ').trim() ?? '';
+		const anker = auswahl?.anchorNode;
+		const element =
+			anker instanceof Element ? anker : anker?.parentElement instanceof Element ? anker.parentElement : null;
+		if (text && element?.closest('.karte')) markierung = text.slice(0, 6000);
+		window.getSelection()?.removeAllRanges();
 		ladeModelle();
+		await tick();
+		kommentarFeld?.focus();
 	});
 
 	async function ladeModelle() {
@@ -87,59 +97,9 @@ Gib ausschließlich das verlangte JSON-Objekt mit title, front und back aus.`;
 		}
 	}
 
-	function pruefeMarkierung(event?: Event) {
-		if (dialogOffen) return;
-		const ziel = event?.target instanceof Element ? event.target : null;
-		if (ziel?.closest('[data-kernwissen-trigger]')) return;
-
-		// Mobile Browser setzen die endgültige Auswahl teils erst direkt
-		// nach dem Pointer-Ereignis. Ein kurzer Aufschub fängt beides ab.
-		setTimeout(() => {
-			if (dialogOffen) return;
-			const auswahl = window.getSelection();
-			const text = auswahl?.toString().replace(/\s+/g, ' ').trim() ?? '';
-			if (!auswahl || auswahl.rangeCount === 0 || !text) {
-				position = null;
-				return;
-			}
-
-			const anker = auswahl.anchorNode;
-			const element =
-				anker instanceof Element ? anker : anker?.parentElement instanceof Element ? anker.parentElement : null;
-			if (!element?.closest('.karte')) {
-				position = null;
-				return;
-			}
-
-			const rect = auswahl.getRangeAt(0).getBoundingClientRect();
-			if (!rect.width && !rect.height) return;
-			markierung = text.slice(0, 6000);
-			position = {
-				x: Math.min(Math.max(rect.left + rect.width / 2, 74), window.innerWidth - 74),
-				y: Math.max(rect.top - 12, 52)
-			};
-		}, 20);
-	}
-
-	async function oeffneDialog() {
-		if (!markierung) return;
-		dialogOffen = true;
-		position = null;
-		kommentar = '';
-		erzeugt = null;
-		fehler = '';
-		window.getSelection()?.removeAllRanges();
-		await tick();
-		kommentarFeld?.focus();
-	}
-
 	function schliesseDialog() {
 		if (arbeite || speichere) return;
-		dialogOffen = false;
-		markierung = '';
-		position = null;
-		erzeugt = null;
-		fehler = '';
+		onschliessen();
 	}
 
 	function istEntwurf(wert: unknown): wert is Entwurf {
@@ -176,7 +136,7 @@ Gib ausschließlich das verlangte JSON-Objekt mit title, front und back aus.`;
 						},
 						{
 							role: 'user',
-							content: `MEIN KOMMENTAR (maßgebliches Lernziel):\n${kommentar.trim()}\n\nMARKIERTE PASSAGE (nur Kontext):\n${markierung}\n\nQUELLKARTE:\n${quelleTitel}`
+							content: `MEIN DIKTIERTER ODER GESCHRIEBENER INHALT (maßgebliches Lernziel und Grundlage):\n${kommentar.trim()}${markierung ? `\n\nOPTIONALE MARKIERTE PASSAGE (nur Zusatzkontext):\n${markierung}` : ''}\n\nQUELLKARTE:\n${quelleTitel}`
 						}
 					]
 				})
@@ -230,10 +190,8 @@ Gib ausschließlich das verlangte JSON-Objekt mit title, front und back aus.`;
 			const antwort = await res.json().catch(() => null);
 			if (!res.ok) throw new Error(antwort?.message ?? 'Speichern fehlgeschlagen.');
 			const titel = erzeugt.title.trim();
-			dialogOffen = false;
-			markierung = '';
-			erzeugt = null;
 			ongespeichert?.(titel);
+			onschliessen();
 		} catch (err) {
 			fehler = err instanceof Error ? err.message : 'Speichern fehlgeschlagen.';
 		} finally {
@@ -242,40 +200,14 @@ Gib ausschließlich das verlangte JSON-Objekt mit title, front und back aus.`;
 	}
 </script>
 
-<svelte:window
-	onpointerup={pruefeMarkierung}
-	onmouseup={pruefeMarkierung}
-	ontouchend={pruefeMarkierung}
-	onkeyup={pruefeMarkierung}
-	onkeydown={(event) => {
-		if (event.key === 'Escape' && dialogOffen) schliesseDialog();
-	}}
-/>
-<!-- Safari aktualisiert die sichtbare Textauswahl in verschachtelten Karten
-     teilweise erst nach pointerup. selectionchange ist dort die verlässliche
-     Quelle; Maus und Touch oben bleiben als schnelle Fallbacks erhalten. -->
-<svelte:document onselectionchange={pruefeMarkierung} />
 
-{#if position && !dialogOffen}
-	<button
-		class="markierungs-knopf"
-		style:left={`${position.x}px`}
-		style:top={`${position.y}px`}
-		type="button"
-		data-kernwissen-trigger
-		onpointerdown={(event) => event.preventDefault()}
-		onclick={oeffneDialog}
-	>
-		<span aria-hidden="true">＋</span> Kernwissen
-	</button>
-{/if}
+<svelte:window onkeydown={(event) => event.key === 'Escape' && schliesseDialog()} />
 
-{#if dialogOffen}
-	<div
-		class="vorhang"
-		role="presentation"
-		onmousedown={(event) => event.target === event.currentTarget && schliesseDialog()}
-	>
+<div
+	class="vorhang"
+	role="presentation"
+	onmousedown={(event) => event.target === event.currentTarget && schliesseDialog()}
+>
 		<div class="dialog" role="dialog" aria-modal="true" aria-labelledby="kernwissen-titel">
 			<header>
 				<div>
@@ -285,18 +217,18 @@ Gib ausschließlich das verlangte JSON-Objekt mit title, front und back aus.`;
 				<button class="schliessen" type="button" onclick={schliesseDialog} aria-label="Schließen">×</button>
 			</header>
 
-			<div class="abschnitt">
+			{#if markierung}<div class="abschnitt">
 				<span class="feld-label">Markierte Passage</span>
 				<blockquote>{markierung}</blockquote>
-			</div>
+			</div>{/if}
 
 			<div class="abschnitt">
-				<label for="kernwissen-kommentar">Was willst du dir daraus unbedingt merken?</label>
+				<label for="kernwissen-kommentar">Was willst du als Kernwissen festhalten?</label>
 				<textarea
 					id="kernwissen-kommentar"
 					bind:value={kommentar}
 					rows="4"
-					placeholder="Dein Kommentar bestimmt den Schwerpunkt der Karte …"
+					placeholder="Sprich oder tippe den entscheidenden Gedanken ein …"
 					bind:this={kommentarFeld}
 				></textarea>
 			</div>
@@ -342,34 +274,8 @@ Gib ausschließlich das verlangte JSON-Objekt mit title, front und back aus.`;
 			{#if fehler}<p class="fehler" role="alert">{fehler}</p>{/if}
 		</div>
 	</div>
-{/if}
 
 <style>
-	.markierungs-knopf {
-		position: fixed;
-		z-index: 240;
-		transform: translate(-50%, -100%);
-		border: 1px solid color-mix(in srgb, var(--akzent) 65%, var(--linie));
-		border-radius: 999px;
-		background: color-mix(in srgb, var(--flaeche-hoch) 90%, transparent);
-		backdrop-filter: blur(12px);
-		-webkit-backdrop-filter: blur(12px);
-		box-shadow: 0 8px 24px rgba(0, 0, 0, 0.38);
-		color: var(--text);
-		padding: 0.42rem 0.72rem;
-		font: inherit;
-		font-size: 0.76rem;
-		font-weight: 600;
-		white-space: nowrap;
-		cursor: pointer;
-	}
-	.markierungs-knopf:hover {
-		background: color-mix(in srgb, var(--akzent) 18%, var(--flaeche-hoch));
-	}
-	.markierungs-knopf span {
-		color: var(--akzent);
-	}
-
 	.vorhang {
 		position: fixed;
 		inset: 0;

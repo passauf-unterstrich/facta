@@ -29,6 +29,7 @@
 	let reihenfolge = $state<string[]>([]);
 	let index = $state(0);
 	let aufgedeckt = $state(false);
+	let kernwissenOffen = $state(false);
 	let kernwissenHinweis = $state('');
 	let kernwissenHinweisTimer: ReturnType<typeof setTimeout> | undefined;
 
@@ -125,6 +126,11 @@
 				<span class="filter">aus {GEBIET_NAMEN[gebietFilter] ?? gebietFilter}</span>
 			{/if}
 		</div>
+		{#if data.rolle === 'owner' && karte}
+			<button class="memorize-knopf" type="button" onclick={() => (kernwissenOffen = true)}>
+				<span aria-hidden="true">＋</span> Memorize
+			</button>
+		{/if}
 		<span class="fortschritt">
 			{#if reihenfolge.length > 0 && index < reihenfolge.length}
 				{index + 1} / {reihenfolge.length}
@@ -159,10 +165,11 @@
 	{/if}
 </div>
 
-{#if data.rolle === 'owner' && karte}
+{#if data.rolle === 'owner' && karte && kernwissenOffen}
 	<KernwissenErfasser
 		quelleTitel={karte.title?.trim() || karte.ref?.trim() || karte.front.slice(0, 160)}
 		ongespeichert={kernwissenGespeichert}
+		onschliessen={() => (kernwissenOffen = false)}
 	/>
 {/if}
 
@@ -216,6 +223,25 @@
 		font-family: var(--mono);
 		font-size: 0.75rem;
 		color: var(--text-fluester);
+	}
+	.memorize-knopf {
+		flex: 0 0 auto;
+		border: 1px solid var(--linie);
+		border-radius: 999px;
+		background: var(--flaeche);
+		color: var(--text-leise);
+		padding: 0.34rem 0.7rem;
+		font: inherit;
+		font-size: 0.76rem;
+		font-weight: 500;
+		cursor: pointer;
+	}
+	.memorize-knopf:hover {
+		border-color: var(--linie-stark);
+		color: var(--text);
+	}
+	.memorize-knopf span {
+		color: var(--akzent);
 	}
 	.aktion {
 		display: flex;

@@ -65,6 +65,7 @@
 		}
 	}
 	let zeigeVerknuepft = $state(false);
+	let kernwissenOffen = $state(false);
 	let kernwissenHinweis = $state('');
 	let kernwissenHinweisTimer: ReturnType<typeof setTimeout> | undefined;
 	function kernwissenGespeichert(titel: string) {
@@ -177,7 +178,7 @@
 
 <svelte:window
 	onkeydown={(e) => {
-		if (e.key === 'Escape' && !link && layers.length > 0) schliesseOberste();
+		if (e.key === 'Escape' && !kernwissenOffen && !link && layers.length > 0) schliesseOberste();
 	}}
 />
 
@@ -295,8 +296,12 @@
 	</div>
 {/each}
 
-{#if data.rolle === 'owner' && modus === 'lernen'}
-	<KernwissenErfasser quelleTitel={kernwissenQuelle} ongespeichert={kernwissenGespeichert} />
+{#if data.rolle === 'owner' && modus === 'lernen' && kernwissenOffen}
+	<KernwissenErfasser
+		quelleTitel={kernwissenQuelle}
+		ongespeichert={kernwissenGespeichert}
+		onschliessen={() => (kernwissenOffen = false)}
+	/>
 {/if}
 
 {#if kernwissenHinweis}
@@ -309,6 +314,11 @@
 		<button class:aktiv={modus === 'bauen'} onclick={() => (modus = 'bauen')}>Bauen</button>
 	{/if}
 	<a class="hud-link" href={zielLink('graph', data.node.id)}>Graph</a>
+	{#if data.rolle === 'owner' && modus === 'lernen'}
+		<button class="memorize" type="button" onclick={() => (kernwissenOffen = true)}>
+			<span aria-hidden="true">＋</span> Memorize
+		</button>
+	{/if}
 </div>
 
 {#if streifzugAktiv}
@@ -382,6 +392,14 @@
 	.modus-hud button.aktiv {
 		background: var(--flaeche-hoch);
 		color: var(--text);
+	}
+	.modus-hud button.memorize {
+		border-left: 1px solid var(--linie);
+		border-radius: 0 999px 999px 0;
+		color: var(--text-leise);
+	}
+	.modus-hud button.memorize span {
+		color: var(--akzent);
 	}
 	.hud-link {
 		display: flex;
