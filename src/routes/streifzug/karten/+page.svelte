@@ -167,6 +167,7 @@
 
 {#if data.rolle === 'owner' && karte && kernwissenOffen}
 	<KernwissenErfasser
+		quelleId={karte.id}
 		quelleTitel={karte.title?.trim() || karte.ref?.trim() || karte.front.slice(0, 160)}
 		ongespeichert={kernwissenGespeichert}
 		onschliessen={() => (kernwissenOffen = false)}

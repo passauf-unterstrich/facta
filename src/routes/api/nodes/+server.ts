@@ -5,6 +5,7 @@ import { ladeAlleSeiten } from '$lib/server/db/supabase-pages';
 import type { KartenVorschau, KartenTyp } from '$lib/types';
 import type { RequestHandler } from './$types';
 import { ladeSichtbareIds } from '$lib/server/guest-access';
+import { findeHauptbaumIdSupabase } from '$lib/server/db/supabase-tree';
 
 const ERLAUBTE_TYPEN: KartenTyp[] = [
 	'fall',
@@ -42,7 +43,7 @@ export const GET: RequestHandler = async ({ locals }) => {
 export const POST: RequestHandler = async ({ request }) => {
 	const daten = await request.json();
 
-	const { id, type, area, front, back, chips, title, ref, mode } = daten as {
+	const { id, type, area, front, back, chips, title, ref, mode, quelleId, quelleBaumId } = daten as {
 		id: string;
 		type: KartenTyp;
 		area?: string | null;
@@ -52,6 +53,8 @@ export const POST: RequestHandler = async ({ request }) => {
 		title?: string | null;
 		ref?: string | null;
 		mode?: string;
+		quelleId?: string;
+		quelleBaumId?: string | null;
 	};
 
 	if (!id || !type || typeof front !== 'string') {
@@ -67,13 +70,47 @@ export const POST: RequestHandler = async ({ request }) => {
 	}
 
 	try {
+		let gespeicherteChips = chips;
+		if (area === 'kernwissen_klausur' && typeof quelleId === 'string' && quelleId.trim()) {
+			const sichereQuelleId = quelleId.trim();
+			const { data: quelle, error: quelleError } = await supabase
+				.from('nodes')
+				.select('id')
+				.eq('id', sichereQuelleId)
+				.maybeSingle();
+			if (quelleError) throw quelleError;
+			if (!quelle) throw error(400, 'Die Ausgangskarte wurde nicht gefunden.');
+			let hauptbaumId: string | null = null;
+
+			if (typeof quelleBaumId === 'string' && quelleBaumId.trim()) {
+				const kandidat = quelleBaumId.trim();
+				const { data: hauptbaum, error: hauptbaumError } = await supabase
+					.from('nodes')
+					.select('id, type')
+					.eq('id', kandidat)
+					.maybeSingle();
+				if (hauptbaumError) throw hauptbaumError;
+				if (hauptbaum?.type === 'fall') hauptbaumId = hauptbaum.id;
+			}
+
+			hauptbaumId ??= await findeHauptbaumIdSupabase(sichereQuelleId);
+			const herkunft =
+				hauptbaumId === sichereQuelleId
+					? [`[[Zum Hauptbaum|${sichereQuelleId}]]`]
+					: [
+							`[[Zur Ausgangskarte|${sichereQuelleId}]]`,
+							...(hauptbaumId ? [`[[Zum Hauptbaum|${hauptbaumId}]]`] : [])
+						];
+			gespeicherteChips = [...herkunft, ...(chips?.trim() ? [chips.trim()] : [])].join('\n');
+		}
+
 		const result = await speichereKarteSupabase({
 			id,
 			type,
 			area,
 			front,
 			back,
-			chips,
+			chips: gespeicherteChips,
 			title,
 			ref,
 			mode

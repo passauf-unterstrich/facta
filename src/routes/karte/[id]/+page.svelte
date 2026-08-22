@@ -84,8 +84,12 @@
 	let stackFuer = $state('');
 	const layers = $derived(stackFuer === data.node.id ? stack : []);
 	const kernwissenQuelle = $derived.by(() => {
-		const oberste = layers.at(-1)?.node ?? data.node;
-		return oberste.title?.trim() || oberste.ref?.trim() || oberste.front.slice(0, 160);
+		const node = layers.at(-1)?.node ?? data.node;
+		return {
+			id: node.id,
+			titel: node.title?.trim() || node.ref?.trim() || node.front.slice(0, 160),
+			baumId: data.node.type === 'fall' ? data.node.id : null
+		};
 	});
 
 	// id → typ für alle aktuell bekannten Karten: nährt die Signal-
@@ -123,6 +127,17 @@
 			...bisher,
 			{ node: daten.node, children: daten.children, aufgedeckt: autoAufdecken }
 		];
+	}
+
+	function folgeKartenLink(node: Karte, id: string) {
+		// Herkunftslinks einer Kernwissenkarte sind echte Rücksprünge. Ein
+		// Seitenwechsel stellt sicher, dass Lernmodus und Graph anschließend
+		// auf der Ausgangskarte bzw. dem richtigen Hauptbaum basieren.
+		if (node.area === 'kernwissen_klausur') {
+			goto(zielLink('karte', id));
+			return;
+		}
+		oeffne(id);
 	}
 
 	function schliesseOberste() {
@@ -204,7 +219,7 @@
 			node={data.node}
 			aufgedeckt={basisAufgedeckt}
 			onaufdecken={() => (aufgedecktFuer = data.node.id)}
-			onlink={oeffne}
+			onlink={(id) => folgeKartenLink(data.node, id)}
 		/>
 	{:else}
 		{#key `${data.node.id}:${data.node.updated_at}`}
@@ -252,7 +267,7 @@
 					node={layer.node}
 					aufgedeckt={autoAufdecken || layer.aufgedeckt}
 					onaufdecken={() => (stack[i].aufgedeckt = true)}
-					onlink={oeffne}
+					onlink={(id) => folgeKartenLink(layer.node, id)}
 					onschliessen={schliesseOberste}
 					{typMap}
 				/>
@@ -285,7 +300,9 @@
 
 {#if data.rolle === 'owner' && modus === 'lernen' && kernwissenOffen}
 	<KernwissenErfasser
-		quelleTitel={kernwissenQuelle}
+		quelleId={kernwissenQuelle.id}
+		quelleBaumId={kernwissenQuelle.baumId}
+		quelleTitel={kernwissenQuelle.titel}
 		ongespeichert={kernwissenGespeichert}
 		onschliessen={() => (kernwissenOffen = false)}
 	/>

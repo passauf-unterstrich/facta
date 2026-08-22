@@ -2,10 +2,14 @@
 	import { onMount, tick } from 'svelte';
 
 	let {
+		quelleId,
+		quelleBaumId,
 		quelleTitel,
 		ongespeichert,
 		onschliessen
 	}: {
+		quelleId: string;
+		quelleBaumId?: string | null;
 		quelleTitel: string;
 		ongespeichert?: (titel: string) => void;
 		onschliessen: () => void;
@@ -34,19 +38,21 @@ AUFGABE
 Erzeuge aus der Nutzereingabe genau EINE didaktisch gute Wiederholungskarte. „Genau eine Karte“ beschränkt nur die Anzahl der Karten, nicht den zulässigen Umfang ihrer Rückseite. Eine Karte darf mehrere zusammengehörige Prüfungsschritte, Voraussetzungen oder Argumente enthalten.
 
 VERBINDLICHE VOLLSTÄNDIGKEITSREGEL
-1. Der diktierte oder geschriebene Nutzertext legt fest, WAS auf der Karte stehen muss. Behandle jede darin enthaltene eigenständige juristische Aussage zunächst als Pflichtinhalt.
-2. Lass nur erkennbare Versprecher, Füllwörter, bloße Wiederholungen und eindeutig verworfene Selbstkorrekturen weg. Fasse sprachlich zusammen, aber streiche keinen inhaltlichen Baustein allein deshalb, weil die Karte sonst länger wird.
+1. Der diktierte oder geschriebene Nutzertext ist regelmäßig bereits ein fachlich gut formulierter, nahezu fertiger Entwurf genau des Gedankens, den der Nutzer später wiederholen will. Übernimm deshalb seine Gedankenführung, Gewichtung, inhaltliche Reichweite und bewusst genannten Einzelheiten als verbindliche Leitlinie. Suche darin nicht erst einen vermeintlich engeren „Hauptgedanken“ und interpretiere das Lernziel nicht eigenmächtig um.
+2. Deine redaktionelle Leistung besteht vor allem darin, den Nutzertext sprachlich zu glätten, übersichtlich zu ordnen und als präzise Frage mit eigenständig verständlicher Antwort zu formulieren. Lass nur erkennbare Versprecher, Füllwörter, bloße Wiederholungen und eindeutig verworfene Selbstkorrekturen weg. Eindeutige Diktier- oder Transkriptionsfehler darfst du aus dem juristischen Zusammenhang behutsam berichtigen; bei inhaltlicher Unsicherheit bleibt die Nutzerformulierung maßgeblich.
 3. Erhalte insbesondere sämtliche genannten Rechtsnormen, Definitionen, Prüfungsschritte und ihre Reihenfolge, Voraussetzungen, Unterscheidungen, Ausnahmen, Negationen, Indizien, Argumentationslinien, Rechtsfolgen und Ergebnisse.
 4. Konkrete Nutzerwünsche zu Schwerpunkt, Vollständigkeit, Aufbau oder Darstellungsform sind verbindlich. Verlangt der Nutzer etwa „alle Bestandteile“, „inhaltlich vollständig“ oder „in Stichpunkten“, muss die Rückseite genau dies leisten.
-5. Die optional markierte Passage ist Zusatzkontext. Nutze sie, um den diktierten Pflichtinhalt richtig und vollständig abzubilden. Ergänze keine neuen Themen, Meinungen oder Details aus Außenwissen.
+5. Die optional markierte Passage ist verbindlicher fachlicher Kontext, nicht bloß dekorativer Zusatz. Nutze alle daraus für das erklärte Lernziel relevanten Definitionen, Voraussetzungen, Abgrenzungen, Bezüge und Präzisierungen, auch wenn der Nutzer sie im Kommentar nicht nochmals vollständig ausgesprochen hat. Sie dient dazu, das Diktat richtig einzuordnen und sinnvoll zu vervollständigen; sie darf dessen Schwerpunkt, Gedankenführung oder gewünschte Reichweite nicht verdrängen. Übernimm sie nicht mechanisch und weite das Lernziel nicht auf sachfremde Punkte der Passage aus. Ergänze keine neuen Themen, Meinungen oder Details aus Außenwissen.
+6. Die fertige Karte muss ohne Ausgangskarte verständlich sein. Formuliere sie so, dass der Nutzer sie nach zwei Wochen und nach vielen anderen Lerninhalten isoliert lesen, eindeutig einordnen und sofort verstehen kann. Löse unklare Rückverweise wie „hier“, „dabei“, „dies“, „das“ oder „in diesem Fall“ auf und benenne das betroffene Rechtsproblem, Tatbestandsmerkmal oder Prüfungsstadium ausdrücklich.
 
 REDAKTION
 - Ermittle intern vor dem Schreiben alle eigenständigen inhaltlichen Bausteine des Nutzertexts. Prüfe vor der Ausgabe jeden dieser Bausteine gegen die Rückseite und überarbeite sie, falls noch etwas fehlt. Gib diese interne Checkliste nicht aus.
+- Prüfe danach gedanklich die Karte ohne Nutzertext, markierte Passage und Quellkarte: Sind Gegenstand, rechtlicher Zusammenhang und Reichweite weiterhin eindeutig? Falls nicht, ergänze den knappsten erforderlichen Kontext.
 - Vollständigkeit und juristische Präzision gehen vor Kürze. Formuliere erst danach so knapp und lernbar wie möglich. Es gibt keine feste Wortgrenze.
 - Begründungen und Zwischenschritte sind beizubehalten, wenn der Nutzer sie bewusst diktiert oder als klausurrelevant bezeichnet. Sachverhalt, Literatur, Fundstellen und Nebeninformationen dürfen nur entfallen, soweit sie erkennbar nicht zum gewünschten Lerninhalt gehören.
 - title: sachliches Stichwort, höchstens 7 Wörter.
-- front: eine eindeutige Abruffrage, die den gesamten gewünschten Inhalt der einen Karte abfragt, ohne die Antwort vorwegzunehmen.
-- back: inhaltlich vollständige und klar strukturierte Antwort. Verwende bei mehreren Prüfungsschritten oder Argumenten Absätze, Nummerierungen oder prägnante Stichpunkte. Die Rückseite darf und soll länger sein, wenn dies für die vom Nutzer ausgewählten Inhalte erforderlich ist.
+- front: eine eindeutige Abruffrage, die den gesamten gewünschten Inhalt der einen Karte abfragt, ohne die Antwort vorwegzunehmen. Benenne den rechtlichen Gegenstand so konkret, dass die Frage isoliert verständlich ist.
+- back: inhaltlich vollständige, eigenständig verständliche und klar strukturierte Antwort. Verwende bei mehreren Prüfungsschritten oder Argumenten Absätze, Nummerierungen oder prägnante Stichpunkte. Die Rückseite darf und soll länger sein, wenn dies für die vom Nutzer ausgewählten Inhalte oder ihre spätere Einordnung erforderlich ist.
 - Normzitate knapp, aber exakt. Keine Floskeln wie „Wichtig ist“, „Merke“, „Hierbei ist zu beachten“ oder „Der Text besagt“.
 - Kein Vorwort, keine Quellenangabe, keine Meta-Erklärung, keine zusätzliche Karte.
 
@@ -348,7 +354,9 @@ REDAKTION
 					back: erzeugt.back.trim(),
 					chips: '',
 					ref: null,
-					mode: 'open'
+					mode: 'open',
+					quelleId,
+					quelleBaumId: quelleBaumId ?? null
 				})
 			});
 			const antwort = await res.json().catch(() => null);

@@ -50,8 +50,8 @@ export const DELETE: RequestHandler = async ({ params }) => {
 	// 2. Alle Karten finden, die auf diese Karte verlinken.
 	const { data: betroffene, error: affectedError } = await supabase
 		.from('nodes')
-		.select('id, front, back')
-		.or(`front.like.%|${id}]]%,back.like.%|${id}]]%`)
+		.select('id, front, back, chips')
+		.or(`front.like.%|${id}]]%,back.like.%|${id}]]%,chips.like.%|${id}]]%`)
 		.neq('id', id);
 
 	if (affectedError) {
@@ -65,13 +65,15 @@ export const DELETE: RequestHandler = async ({ params }) => {
 	for (const n of betroffene ?? []) {
 		const front = n.front.replace(linkRegex, '$1');
 		const back = n.back.replace(linkRegex, '$1');
+		const chips = n.chips.replace(linkRegex, '$1');
 
-		if (front !== n.front || back !== n.back) {
+		if (front !== n.front || back !== n.back || chips !== n.chips) {
 			const { error: updateError } = await supabase
 				.from('nodes')
 				.update({
 					front,
 					back,
+					chips,
 					updated_at: new Date().toISOString()
 				})
 				.eq('id', n.id);
